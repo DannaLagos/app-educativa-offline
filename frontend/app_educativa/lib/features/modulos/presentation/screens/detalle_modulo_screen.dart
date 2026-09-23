@@ -34,6 +34,7 @@ class DetalleModuloScreen extends StatelessWidget {
                   size: 72,
                 ),
               ),
+
               const SizedBox(height: 24),
 
               Text(
@@ -53,10 +54,12 @@ class DetalleModuloScreen extends StatelessWidget {
                     size: 20,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    modulo.area,
-                    style: const TextStyle(
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      modulo.area,
+                      style: const TextStyle(
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -103,7 +106,7 @@ class DetalleModuloScreen extends StatelessWidget {
               const SizedBox(height: 28),
 
               const Text(
-                'Archivo del módulo',
+                'Contenido disponible',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -136,6 +139,17 @@ class DetalleModuloScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              const Text(
+                'Este recurso pertenece al contenido educativo del módulo.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  height: 1.4,
                 ),
               ),
             ],
