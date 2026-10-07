@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../data/perfil_local_datasource.dart';
 import '../../domain/perfil_estudiante.dart';
 import 'inicio_screen.dart';
@@ -40,13 +41,31 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
       nombre: nombre,
     );
 
-    await _perfilLocalDataSource.guardarPerfil(perfil);
+    try {
+      await _perfilLocalDataSource.guardarPerfil(perfil);
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _guardando = false;
+        _error = 'No fue posible guardar tu perfil. Intenta de nuevo.';
+      });
+      return;
+    }
 
     if (!mounted) return;
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => InicioScreen(perfil: perfil),
+      ),
+    );
+  }
+
+  void _abrirLoginAdmin() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const LoginAdminScreen(),
       ),
     );
   }
@@ -114,6 +133,12 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
                               style: TextStyle(fontSize: 16),
                             ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: _abrirLoginAdmin,
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    label: const Text('Acceso administrador'),
                   ),
                 ],
               ),

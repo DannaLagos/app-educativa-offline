@@ -34,10 +34,13 @@ class _VerificarPerfilScreenState extends State<VerificarPerfilScreen> {
   final PerfilLocalDataSource _perfilLocalDataSource =
       PerfilLocalDataSource();
 
+  late final Future<PerfilEstudiante?> _perfilFuture =
+      _perfilLocalDataSource.obtenerPerfil();
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PerfilEstudiante?>(
-      future: _perfilLocalDataSource.obtenerPerfil(),
+      future: _perfilFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(

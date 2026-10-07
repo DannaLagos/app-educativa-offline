@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../../modulos/presentation/screens/modulos_screen.dart';
 import '../../domain/perfil_estudiante.dart';
 
@@ -19,11 +20,26 @@ class InicioScreen extends StatelessWidget {
     );
   }
 
+  void _abrirLoginAdmin(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const LoginAdminScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inicio'),
+        actions: [
+          IconButton(
+            tooltip: 'Acceso administrador',
+            icon: const Icon(Icons.admin_panel_settings_outlined),
+            onPressed: () => _abrirLoginAdmin(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
