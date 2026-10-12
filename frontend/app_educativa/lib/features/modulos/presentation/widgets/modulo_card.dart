@@ -23,10 +23,9 @@ class ModuloCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFF90A4AE)),
+        side: const BorderSide(color: AppTheme.borde),
       ),
       child: InkWell(
         onTap: onTap,

@@ -60,7 +60,7 @@ class AppEducativa extends StatelessWidget {
       controller: modulosController,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'App Educativa',
+        title: 'Aprendo',
         theme: AppTheme.claro,
         home: const VerificarPerfilScreen(),
       ),

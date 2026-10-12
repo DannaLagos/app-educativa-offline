@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../../modulos/presentation/screens/mis_descargas_screen.dart';
 import '../../../modulos/presentation/screens/modulos_screen.dart';
@@ -120,7 +121,7 @@ class _OpcionInicio extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           border: Border.all(
-            color: const Color(0xFF90A4AE),
+            color: AppTheme.borde,
           ),
           borderRadius: BorderRadius.circular(18),
         ),
