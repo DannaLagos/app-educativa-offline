@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Necesario para consultar el catálogo y descargar módulos. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="app_educativa"
         android:name="${applicationName}"

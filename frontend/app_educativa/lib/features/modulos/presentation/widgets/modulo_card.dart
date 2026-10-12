@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../domain/estado_descarga.dart';
 import '../../domain/modulo.dart';
+import 'estado_descarga_chip.dart';
 
 class ModuloCard extends StatelessWidget {
   final Modulo modulo;
+  final EstadoDescarga estado;
+  final double? progreso;
   final VoidCallback onTap;
 
   const ModuloCard({
     super.key,
     required this.modulo,
+    required this.estado,
     required this.onTap,
+    this.progreso,
   });
 
   @override
@@ -19,6 +26,7 @@ class ModuloCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFF90A4AE)),
       ),
       child: InkWell(
         onTap: onTap,
@@ -36,9 +44,12 @@ class ModuloCard extends StatelessWidget {
                       .primaryContainer,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.menu_book_rounded,
                   size: 30,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onPrimaryContainer,
                 ),
               ),
               const SizedBox(width: 16),
@@ -49,31 +60,29 @@ class ModuloCard extends StatelessWidget {
                     Text(
                       modulo.nombre,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      modulo.area,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey.shade700,
+                      '${modulo.area} · Grado ${modulo.grado}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.textoSecundario,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Grado ${modulo.grado}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
+                    const SizedBox(height: 10),
+                    EstadoDescargaChip(
+                      estado: estado,
+                      progreso: progreso,
                     ),
                   ],
                 ),
               ),
               const Icon(
                 Icons.chevron_right_rounded,
+                size: 32,
               ),
             ],
           ),

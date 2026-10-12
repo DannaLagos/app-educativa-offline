@@ -1,0 +1,13 @@
+{
+  "id": "lg-grado-3-01",
+  "version": 1,
+  "recursos": [
+    {
+      "archivo": "LG_Grado03_01.pdf",
+      "titulo": "Lenguaje - Módulo 1",
+      "tipo": "pdf",
+      "tamano": 1593,
+      "sha256": "4ea3d5b3b6a26269f1d94e2f83aa2c09fd7d1835bb056c2d516816595d89c872"
+    }
+  ]
+}

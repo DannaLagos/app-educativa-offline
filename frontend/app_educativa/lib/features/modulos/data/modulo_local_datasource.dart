@@ -1,60 +1,78 @@
+import '../../../core/database/app_database.dart';
 import '../domain/modulo.dart';
 
 class ModuloLocalDataSource {
-  Future<List<Modulo>> obtenerModulosDisponibles() async {
-    final modulos = <Modulo>[
-      const Modulo(
-        id: 'cs-grado-1',
-        nombre: 'Ciencias Sociales',
-        area: 'Ciencias Sociales',
-        grado: 1,
-        descripcion: 'Módulo educativo de Ciencias Sociales para grado primero.',
-        archivo: 'CS_Fichas.pdf',
-        habilitado: true,
-      ),
-      const Modulo(
-        id: 'lg-grado-3-01',
-        nombre: 'Lenguaje - Módulo 1',
-        area: 'Lenguaje',
-        grado: 3,
-        descripcion: 'Primer módulo educativo de Lenguaje para grado tercero.',
-        archivo: 'LG_Grado03_01.pdf',
-        habilitado: true,
-      ),
-      const Modulo(
-        id: 'lg-grado-3-02',
-        nombre: 'Lenguaje - Módulo 2',
-        area: 'Lenguaje',
-        grado: 3,
-        descripcion: 'Segundo módulo educativo de Lenguaje para grado tercero.',
-        archivo: 'LG_Grado03_02.pdf',
-        habilitado: true,
-      ),
-      const Modulo(
-        id: 'lg-grado-3-03',
-        nombre: 'Lenguaje - Módulo 3',
-        area: 'Lenguaje',
-        grado: 3,
-        descripcion: 'Tercer módulo educativo de Lenguaje para grado tercero.',
-        archivo: 'LG_Grado03_03.pdf',
-        habilitado: true,
-      ),
-    ];
+  final AppDatabase _appDatabase;
 
-    return modulos
-        .where((modulo) => modulo.habilitado)
-        .toList();
+  ModuloLocalDataSource({
+    AppDatabase? appDatabase,
+  }) : _appDatabase = appDatabase ?? AppDatabase.instance;
+
+  /// Guarda el catálogo recibido del servidor sin perder el estado de
+  /// descarga local. Los módulos que ya no vienen en el catálogo quedan
+  /// deshabilitados (no se borran: pueden estar descargados).
+  Future<void> guardarCatalogo(List<Modulo> modulos) async {
+    final db = await _appDatabase.database;
+
+    await db.transaction((txn) async {
+      for (final modulo in modulos) {
+        final datosCatalogo = modulo.toMap()
+          ..remove('estado_descarga')
+          ..remove('ruta_local')
+          ..remove('fecha_descarga');
+
+        final actualizados = await txn.update(
+          'modulo',
+          datosCatalogo,
+          where: 'id = ?',
+          whereArgs: [modulo.id],
+        );
+
+        if (actualizados == 0) {
+          await txn.insert('modulo', modulo.toMap());
+        }
+      }
+
+      final ids = modulos.map((modulo) => modulo.id).toList();
+
+      await txn.update(
+        'modulo',
+        {'habilitado': 0},
+        where: ids.isEmpty
+            ? null
+            : 'id NOT IN (${List.filled(ids.length, '?').join(', ')})',
+        whereArgs: ids.isEmpty ? null : ids,
+      );
+    });
   }
 
-  Future<Modulo?> obtenerModuloPorId(String id) async {
-    final modulos = await obtenerModulosDisponibles();
+  /// Módulos habilitados, ordenados por área, grado y nombre.
+  Future<List<Modulo>> obtenerCatalogo() async {
+    final db = await _appDatabase.database;
 
-    for (final modulo in modulos) {
-      if (modulo.id == id) {
-        return modulo;
-      }
+    final filas = await db.query(
+      'modulo',
+      where: 'habilitado = 1',
+      orderBy: 'area, grado, nombre',
+    );
+
+    return filas.map(Modulo.fromMap).toList();
+  }
+
+  Future<Modulo?> obtenerModulo(String id) async {
+    final db = await _appDatabase.database;
+
+    final filas = await db.query(
+      'modulo',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (filas.isEmpty) {
+      return null;
     }
 
-    return null;
+    return Modulo.fromMap(filas.first);
   }
 }

@@ -1,0 +1,44 @@
+{
+  "modulos": [
+    {
+      "id": "cs-grado-1",
+      "nombre": "Ciencias Sociales",
+      "area": "Ciencias Sociales",
+      "grado": 1,
+      "descripcion": "Módulo educativo de Ciencias Sociales para grado primero.",
+      "version": 1,
+      "habilitado": true,
+      "contenidos": ["Mi familia", "Mi escuela", "Mi barrio"]
+    },
+    {
+      "id": "lg-grado-3-01",
+      "nombre": "Lenguaje - Módulo 1",
+      "area": "Lenguaje",
+      "grado": 3,
+      "descripcion": "Primer módulo educativo de Lenguaje para grado tercero.",
+      "version": 1,
+      "habilitado": true,
+      "contenidos": ["El cuento", "Los personajes", "Inicio, nudo y desenlace"]
+    },
+    {
+      "id": "lg-grado-3-02",
+      "nombre": "Lenguaje - Módulo 2",
+      "area": "Lenguaje",
+      "grado": 3,
+      "descripcion": "Segundo módulo educativo de Lenguaje para grado tercero.",
+      "version": 1,
+      "habilitado": true,
+      "contenidos": ["El sustantivo", "El adjetivo", "El verbo"]
+    },
+    {
+      "id": "lg-grado-3-03",
+      "nombre": "Lenguaje - Módulo 3",
+      "area": "Lenguaje",
+      "grado": 3,
+      "descripcion": "Tercer módulo educativo de Lenguaje para grado tercero.",
+      "version": 1,
+      "habilitado": true,
+      "contenidos": ["La poesía", "La rima", "Escribo mi poema"]
+    }
+  ]
+}

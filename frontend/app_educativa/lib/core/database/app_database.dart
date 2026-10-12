@@ -6,11 +6,19 @@ import '../../features/admin/data/admin_config.dart';
 import '../security/password_hasher.dart';
 
 class AppDatabase {
-  AppDatabase._();
+  AppDatabase._() : _ruta = null;
+
+  /// Abre la base en [ruta]. Pensado para pruebas (por ejemplo,
+  /// `inMemoryDatabasePath` con sqflite_common_ffi).
+  AppDatabase.conRuta(String ruta) : _ruta = ruta;
 
   static final AppDatabase instance = AppDatabase._();
 
-  static Database? _database;
+  static const int version = 3;
+
+  final String? _ruta;
+
+  Database? _database;
 
   Future<Database> get database async {
     if (_database != null) {
@@ -22,16 +30,15 @@ class AppDatabase {
   }
 
   Future<Database> _initDatabase() async {
-    final databasePath = await getDatabasesPath();
-
-    final path = join(
-      databasePath,
-      'app_educativa.db',
-    );
+    final path = _ruta ??
+        join(
+          await getDatabasesPath(),
+          'app_educativa.db',
+        );
 
     return openDatabase(
       path,
-      version: 2,
+      version: version,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -49,6 +56,7 @@ class AppDatabase {
     ''');
 
     await _crearTablaSuperadministrador(db);
+    await _crearTablasModulos(db);
   }
 
   Future<void> _onUpgrade(
@@ -59,6 +67,43 @@ class AppDatabase {
     if (oldVersion < 2) {
       await _crearTablaSuperadministrador(db);
     }
+
+    if (oldVersion < 3) {
+      await _crearTablasModulos(db);
+    }
+  }
+
+  Future<void> _crearTablasModulos(Database db) async {
+    // Caché del catálogo y estado de descarga de cada módulo.
+    await db.execute('''
+      CREATE TABLE modulo (
+        id TEXT PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        area TEXT NOT NULL,
+        grado INTEGER NOT NULL,
+        descripcion TEXT NOT NULL,
+        version INTEGER NOT NULL,
+        habilitado INTEGER NOT NULL,
+        contenidos TEXT NOT NULL DEFAULT '[]',
+        estado_descarga TEXT NOT NULL DEFAULT 'no_descargado',
+        ruta_local TEXT,
+        fecha_descarga TEXT
+      )
+    ''');
+
+    // Progreso del estudiante. Va separado de modulo y sin clave foránea
+    // en cascada: eliminar la descarga de un módulo nunca debe borrarlo.
+    // Se llena a partir del Sprint 2.
+    await db.execute('''
+      CREATE TABLE progreso_modulo (
+        id TEXT PRIMARY KEY,
+        perfil_id TEXT NOT NULL,
+        modulo_id TEXT NOT NULL,
+        porcentaje INTEGER NOT NULL DEFAULT 0,
+        ultima_actualizacion TEXT,
+        UNIQUE (perfil_id, modulo_id)
+      )
+    ''');
   }
 
   Future<void> _crearTablaSuperadministrador(Database db) async {
