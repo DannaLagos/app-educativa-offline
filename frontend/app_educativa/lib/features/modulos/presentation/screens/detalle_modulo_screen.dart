@@ -73,7 +73,9 @@ class DetalleModuloScreen extends StatelessWidget {
                 controller: controller,
               ),
 
-              if (modulo.fechaDescarga != null) ...[
+              if (modulo.fechaDescarga != null &&
+                  controller.estadoDe(modulo) ==
+                      EstadoDescarga.descargado) ...[
                 const SizedBox(height: 8),
                 Text(
                   'Descargado el ${_formatearFecha(modulo.fechaDescarga!)}',
@@ -182,22 +184,7 @@ class _SeccionDescarga extends StatelessWidget {
         ];
       case EstadoDescarga.error:
         return [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFEBEE),
-              border: Border.all(color: AppTheme.rojo, width: 2),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Text(
-              controller.errorDe(modulo) ?? '',
-              style: const TextStyle(
-                fontSize: 18,
-                color: AppTheme.rojo,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          _Aviso.error(controller.errorDe(modulo) ?? ''),
           const SizedBox(height: 16),
           BotonGrande(
             texto: 'Reintentar',
@@ -206,7 +193,26 @@ class _SeccionDescarga extends StatelessWidget {
           ),
         ];
       case EstadoDescarga.descargado:
+        final error = controller.errorDe(modulo);
+
         return [
+          if (error != null) ...[
+            _Aviso.error(error),
+            const SizedBox(height: 16),
+          ],
+          if (modulo.tieneActualizacion) ...[
+            const _Aviso.informacion(
+              'Hay una versión nueva de este módulo. '
+              'Actualízalo cuando tengas internet.',
+            ),
+            const SizedBox(height: 16),
+            BotonGrande(
+              texto: 'Actualizar',
+              icono: Icons.system_update_rounded,
+              onPressed: () => _descargar(context),
+            ),
+            const SizedBox(height: 12),
+          ],
           BotonGrande(
             texto: 'Abrir módulo',
             icono: Icons.menu_book_rounded,
@@ -228,6 +234,40 @@ class _SeccionDescarga extends StatelessWidget {
           ),
         ];
     }
+  }
+}
+
+class _Aviso extends StatelessWidget {
+  final String texto;
+  final Color color;
+  final Color fondo;
+
+  const _Aviso.error(this.texto)
+      : color = AppTheme.rojo,
+        fondo = const Color(0xFFFFEBEE);
+
+  const _Aviso.informacion(this.texto)
+      : color = AppTheme.azul,
+        fondo = const Color(0xFFE3F2FD);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: fondo,
+        border: Border.all(color: color, width: 2),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(
+          fontSize: 18,
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
   }
 }
 

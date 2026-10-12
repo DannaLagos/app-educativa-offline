@@ -204,6 +204,7 @@ void main() {
 
       expect(find.text('Descargando 60 %'), findsOneWidget);
       expect(find.text('Descargar'), findsNothing);
+      expect(find.textContaining('Descargado el'), findsNothing);
 
       when(() => repositorio.obtenerModulo(id)).thenAnswer(
         (_) async => moduloDePrueba(estado: EstadoDescarga.descargado),
@@ -485,6 +486,84 @@ void main() {
 
       expect(find.text('Aún no tienes módulos descargados.'), findsOneWidget);
       expect(find.text('Ver módulos'), findsOneWidget);
+    });
+  });
+
+  group('versión nueva disponible', () {
+    final desactualizado = moduloDePrueba(
+      estado: EstadoDescarga.descargado,
+      rutaLocal: '/datos/modulos/lg-grado-3-01',
+      version: 2,
+      versionDescargada: 1,
+    );
+
+    testWidgets('el detalle avisa y permite actualizar', (tester) async {
+      catalogo([desactualizado]);
+      await controller.cargarCatalogo();
+      when(
+        () => descargaService.descargar(
+          any(),
+          onProgreso: any(named: 'onProgreso'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => repositorio.obtenerModulo(any())).thenAnswer(
+        (_) async => moduloDePrueba(
+          estado: EstadoDescarga.descargado,
+          version: 2,
+        ),
+      );
+
+      await tester.pumpWidget(
+        app(const DetalleModuloScreen(moduloId: 'lg-grado-3-01')),
+      );
+
+      expect(find.textContaining('Hay una versión nueva'), findsOneWidget);
+      expect(find.text('Abrir módulo'), findsOneWidget);
+
+      await tester.tap(find.text('Actualizar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Actualizar'), findsNothing);
+      expect(find.textContaining('Hay una versión nueva'), findsNothing);
+    });
+
+    testWidgets('si la actualización falla se puede seguir abriendo',
+        (tester) async {
+      catalogo([desactualizado]);
+      await controller.cargarCatalogo();
+      when(
+        () => descargaService.descargar(
+          any(),
+          onProgreso: any(named: 'onProgreso'),
+        ),
+      ).thenThrow(
+        const DescargaException(MotivoFalloDescarga.conexionInterrumpida),
+      );
+      when(() => repositorio.obtenerModulo(any()))
+          .thenAnswer((_) async => desactualizado);
+
+      await tester.pumpWidget(
+        app(const DetalleModuloScreen(moduloId: 'lg-grado-3-01')),
+      );
+      await tester.tap(find.text('Actualizar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Descargado'), findsOneWidget);
+      expect(
+        find.text(MotivoFalloDescarga.conexionInterrumpida.mensaje),
+        findsOneWidget,
+      );
+      expect(find.text('Abrir módulo'), findsOneWidget);
+      expect(find.text('Actualizar'), findsOneWidget);
+    });
+
+    testWidgets('la tarjeta del catálogo muestra el aviso', (tester) async {
+      catalogo([desactualizado]);
+
+      await tester.pumpWidget(app(const ModulosScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hay una versión nueva'), findsOneWidget);
     });
   });
 }

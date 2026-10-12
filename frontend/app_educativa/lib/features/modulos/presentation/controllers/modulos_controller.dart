@@ -77,7 +77,9 @@ class ModulosController extends ChangeNotifier {
     if (_progreso.containsKey(modulo.id)) {
       return EstadoDescarga.descargando;
     }
-    if (_errores.containsKey(modulo.id)) {
+    // Si falló una actualización, el módulo sigue descargado y usable; el
+    // error se muestra aparte (ver errorDe).
+    if (_errores.containsKey(modulo.id) && !modulo.estaDescargado) {
       return EstadoDescarga.error;
     }
 

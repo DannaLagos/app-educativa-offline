@@ -77,6 +77,30 @@ class ModuloCard extends StatelessWidget {
                       estado: estado,
                       progreso: progreso,
                     ),
+                    if (modulo.tieneActualizacion &&
+                        estado == EstadoDescarga.descargado) ...[
+                      const SizedBox(height: 8),
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.system_update_rounded,
+                            size: 20,
+                            color: AppTheme.azul,
+                          ),
+                          SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Hay una versión nueva',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.azul,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

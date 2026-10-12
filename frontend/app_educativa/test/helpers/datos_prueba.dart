@@ -25,6 +25,8 @@ Modulo moduloDePrueba({
   EstadoDescarga estado = EstadoDescarga.noDescargado,
   String? rutaLocal,
   DateTime? fechaDescarga,
+  int version = 1,
+  int? versionDescargada,
 }) {
   return Modulo(
     id: id,
@@ -32,11 +34,14 @@ Modulo moduloDePrueba({
     area: area,
     grado: grado,
     descripcion: 'Descripción de $nombre',
-    version: 1,
+    version: version,
     habilitado: habilitado,
     contenidos: const ['El cuento', 'Los personajes'],
     estadoDescarga: estado,
     rutaLocal: rutaLocal,
     fechaDescarga: fechaDescarga,
+    // Por defecto, un módulo descargado tiene la misma versión del catálogo.
+    versionDescargada: versionDescargada ??
+        (estado == EstadoDescarga.descargado ? version : null),
   );
 }

@@ -15,6 +15,10 @@ class Modulo {
   final String? rutaLocal;
   final DateTime? fechaDescarga;
 
+  /// Versión del contenido guardado en el dispositivo (null si no está
+  /// descargado o si se descargó antes de que se registrara la versión).
+  final int? versionDescargada;
+
   const Modulo({
     required this.id,
     required this.nombre,
@@ -27,9 +31,14 @@ class Modulo {
     this.estadoDescarga = EstadoDescarga.noDescargado,
     this.rutaLocal,
     this.fechaDescarga,
+    this.versionDescargada,
   });
 
   bool get estaDescargado => estadoDescarga == EstadoDescarga.descargado;
+
+  /// El catálogo tiene una versión más nueva que la guardada.
+  bool get tieneActualizacion =>
+      estaDescargado && (versionDescargada ?? 0) < version;
 
   /// Construye el módulo a partir de una entrada de catalogo.json.
   factory Modulo.desdeCatalogo(Map<String, dynamic> json) {
@@ -60,6 +69,7 @@ class Modulo {
       'estado_descarga': estadoDescarga.valor,
       'ruta_local': rutaLocal,
       'fecha_descarga': fechaDescarga?.toIso8601String(),
+      'version_descargada': versionDescargada,
     };
   }
 
@@ -83,6 +93,7 @@ class Modulo {
       rutaLocal: map['ruta_local'] as String?,
       fechaDescarga:
           fechaDescarga == null ? null : DateTime.parse(fechaDescarga),
+      versionDescargada: map['version_descargada'] as int?,
     );
   }
 }

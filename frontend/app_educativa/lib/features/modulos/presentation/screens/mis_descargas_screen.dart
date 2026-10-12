@@ -182,6 +182,17 @@ class _TarjetaDescarga extends StatelessWidget {
                 ],
               ),
             ),
+            if (modulo.tieneActualizacion) ...[
+              const SizedBox(height: 10),
+              const Text(
+                'Hay una versión nueva. Actualízala desde Módulos educativos.',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.azul,
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             BotonGrande(
               texto: 'Abrir',

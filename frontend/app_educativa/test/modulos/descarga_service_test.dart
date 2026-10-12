@@ -48,9 +48,10 @@ void main() {
     );
   }
 
-  ManifestModulo manifest({String? shaParte2}) => ManifestModulo(
+  ManifestModulo manifest({String? shaParte2, int version = 1}) =>
+      ManifestModulo(
         id: modulo.id,
-        version: 1,
+        version: version,
         recursos: [
           recurso('parte1.pdf'),
           recurso('parte2.pdf', sha: shaParte2),
@@ -141,6 +142,7 @@ void main() {
     expect(guardado!.estadoDescarga, EstadoDescarga.descargado);
     expect(guardado.rutaLocal, carpeta.path);
     expect(guardado.fechaDescarga, fecha);
+    expect(guardado.versionDescargada, 1);
 
     expect(
       File(p.join(carpeta.path, 'parte1.pdf')).readAsBytesSync(),
@@ -295,5 +297,60 @@ void main() {
       }),
       throwsFormatException,
     );
+  });
+
+  group('actualizar un módulo descargado', () {
+    Future<void> descargarVersion1() async {
+      servidorResponde();
+      await servicio.descargar(modulo);
+    }
+
+    test('reemplaza el contenido y guarda la versión nueva', () async {
+      await descargarVersion1();
+      final anterior = (await local.obtenerModulo(modulo.id))!;
+
+      final original = archivos['parte1.pdf']!;
+      addTearDown(() => archivos['parte1.pdf'] = original);
+      archivos['parte1.pdf'] = List<int>.filled(300, 9);
+      when(() => remote.obtenerManifest(modulo.id))
+          .thenAnswer((_) async => manifest(version: 2));
+      servidorResponde();
+
+      await servicio.descargar(anterior);
+
+      final guardado = (await local.obtenerModulo(modulo.id))!;
+      expect(guardado.estadoDescarga, EstadoDescarga.descargado);
+      expect(guardado.versionDescargada, 2);
+      expect(
+        File(p.join(guardado.rutaLocal!, 'parte1.pdf')).readAsBytesSync(),
+        List<int>.filled(300, 9),
+      );
+      expect(contenidoCarpetaModulos(), [modulo.id]);
+    });
+
+    test('si la actualización falla conserva la versión anterior', () async {
+      await descargarVersion1();
+      final anterior = (await local.obtenerModulo(modulo.id))!;
+      final bytesAnteriores = List<int>.from(archivos['parte1.pdf']!);
+
+      when(() => remote.obtenerManifest(modulo.id))
+          .thenAnswer((_) async => manifest(version: 2));
+      servidorResponde(fallarEn: 'parte2.pdf');
+
+      await expectLater(
+        servicio.descargar(anterior),
+        throwsA(isA<DescargaException>()),
+      );
+
+      final guardado = (await local.obtenerModulo(modulo.id))!;
+      expect(guardado.estadoDescarga, EstadoDescarga.descargado);
+      expect(guardado.versionDescargada, 1);
+      expect(guardado.rutaLocal, anterior.rutaLocal);
+      expect(
+        File(p.join(guardado.rutaLocal!, 'parte1.pdf')).readAsBytesSync(),
+        bytesAnteriores,
+      );
+      expect(contenidoCarpetaModulos(), [modulo.id]);
+    });
   });
 }

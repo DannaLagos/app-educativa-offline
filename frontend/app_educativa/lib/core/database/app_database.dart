@@ -14,7 +14,7 @@ class AppDatabase {
 
   static final AppDatabase instance = AppDatabase._();
 
-  static const int version = 3;
+  static const int version = 4;
 
   final String? _ruta;
 
@@ -57,6 +57,7 @@ class AppDatabase {
 
     await _crearTablaSuperadministrador(db);
     await _crearTablasModulos(db);
+    await _agregarVersionDescargada(db);
   }
 
   Future<void> _onUpgrade(
@@ -71,6 +72,19 @@ class AppDatabase {
     if (oldVersion < 3) {
       await _crearTablasModulos(db);
     }
+
+    if (oldVersion < 4) {
+      await _agregarVersionDescargada(db);
+    }
+  }
+
+  /// Versión del contenido que está guardado en el dispositivo, para avisar
+  /// cuando el catálogo trae una más nueva. Los módulos descargados antes de
+  /// esta migración quedan en NULL y se tratan como desactualizados.
+  Future<void> _agregarVersionDescargada(Database db) async {
+    await db.execute(
+      'ALTER TABLE modulo ADD COLUMN version_descargada INTEGER',
+    );
   }
 
   Future<void> _crearTablasModulos(Database db) async {

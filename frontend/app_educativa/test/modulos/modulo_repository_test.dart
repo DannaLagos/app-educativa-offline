@@ -9,6 +9,7 @@ import 'package:app_educativa/features/modulos/data/modulo_local_datasource.dart
 import 'package:app_educativa/features/modulos/data/modulo_remote_datasource.dart';
 import 'package:app_educativa/features/modulos/data/modulo_repository.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
+import 'package:app_educativa/features/modulos/domain/modulo.dart';
 import 'package:app_educativa/features/modulos/domain/recurso_local.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -300,6 +301,59 @@ void main() {
       final descargados = await repositorio.obtenerDescargados();
 
       expect(descargados.map((m) => m.id), [sociales.id]);
+    });
+  });
+
+  group('versiones nuevas', () {
+    Future<void> descargadoEnVersion(int version) async {
+      await local.guardarCatalogo([lenguaje]);
+      await local.actualizarEstadoDescarga(
+        lenguaje.id,
+        EstadoDescarga.descargado,
+        rutaLocal: '/datos/modulos/${lenguaje.id}',
+        fechaDescarga: DateTime(2026, 10, 12),
+        versionDescargada: version,
+      );
+    }
+
+    Future<Modulo> sincronizarConVersion(int version) async {
+      when(() => conectividad.hayConexion()).thenAnswer((_) async => true);
+      when(() => remote.obtenerCatalogo()).thenAnswer(
+        (_) async => [moduloDePrueba(version: version)],
+      );
+      return (await repositorio.obtenerCatalogo()).modulos.single;
+    }
+
+    test('avisa cuando el catálogo trae una versión mayor', () async {
+      await descargadoEnVersion(1);
+
+      final modulo = await sincronizarConVersion(2);
+
+      expect(modulo.estadoDescarga, EstadoDescarga.descargado);
+      expect(modulo.versionDescargada, 1);
+      expect(modulo.tieneActualizacion, isTrue);
+    });
+
+    test('no avisa si la versión descargada es la del catálogo', () async {
+      await descargadoEnVersion(2);
+
+      final modulo = await sincronizarConVersion(2);
+
+      expect(modulo.tieneActualizacion, isFalse);
+    });
+
+    test('un módulo descargado sin versión conocida se trata como antiguo',
+        () async {
+      await local.guardarCatalogo([lenguaje]);
+      await local.actualizarEstadoDescarga(
+        lenguaje.id,
+        EstadoDescarga.descargado,
+        rutaLocal: '/datos/modulos/${lenguaje.id}',
+      );
+
+      final modulo = await sincronizarConVersion(1);
+
+      expect(modulo.tieneActualizacion, isTrue);
     });
   });
 }

@@ -48,6 +48,10 @@ class DescargaException implements Exception {
 /// Descarga un módulo de forma atómica: todo va a una carpeta temporal, se
 /// verifica cada archivo y solo al final se mueve a su carpeta definitiva y
 /// se marca como "descargado".
+///
+/// También sirve para actualizar un módulo ya descargado: la versión anterior
+/// sigue en su carpeta hasta que la nueva está completa, y si la
+/// actualización falla se conserva la anterior.
 class DescargaService {
   final ModuloRemoteDataSource _remote;
   final ModuloLocalDataSource _local;
@@ -99,10 +103,11 @@ class DescargaService {
         EstadoDescarga.descargado,
         rutaLocal: carpeta.path,
         fechaDescarga: _ahora(),
+        versionDescargada: manifest.version,
       );
       onProgreso?.call(1);
     } catch (error) {
-      await _deshacer(modulo.id);
+      await _deshacer(modulo);
 
       if (error is DescargaException) {
         rethrow;
@@ -161,14 +166,25 @@ class DescargaService {
     }
   }
 
-  Future<void> _deshacer(String moduloId) async {
+  Future<void> _deshacer(Modulo modulo) async {
     try {
-      await _almacenamiento.eliminarTemporal(moduloId);
+      await _almacenamiento.eliminarTemporal(modulo.id);
     } on FileSystemException {
       // Se limpia al próximo inicio con limpiarIncompletas().
     }
 
-    await _local.actualizarEstadoDescarga(moduloId, EstadoDescarga.error);
+    if (modulo.estaDescargado) {
+      // Falló una actualización: la versión anterior sigue intacta.
+      await _local.actualizarEstadoDescarga(
+        modulo.id,
+        EstadoDescarga.descargado,
+        rutaLocal: modulo.rutaLocal,
+        fechaDescarga: modulo.fechaDescarga,
+        versionDescargada: modulo.versionDescargada,
+      );
+    } else {
+      await _local.actualizarEstadoDescarga(modulo.id, EstadoDescarga.error);
+    }
   }
 
   /// Se llama al abrir la app: borra descargas a medias y carpetas que no

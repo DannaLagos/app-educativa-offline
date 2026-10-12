@@ -20,7 +20,8 @@ class ModuloLocalDataSource {
         final datosCatalogo = modulo.toMap()
           ..remove('estado_descarga')
           ..remove('ruta_local')
-          ..remove('fecha_descarga');
+          ..remove('fecha_descarga')
+          ..remove('version_descargada');
 
         final actualizados = await txn.update(
           'modulo',
@@ -91,13 +92,14 @@ class ModuloLocalDataSource {
     return filas.map(Modulo.fromMap).toList();
   }
 
-  /// Cambia el estado de descarga. La ruta y la fecha solo se guardan
-  /// cuando el módulo queda descargado; en otro estado se limpian.
+  /// Cambia el estado de descarga. La ruta, la fecha y la versión solo se
+  /// guardan cuando el módulo queda descargado; en otro estado se limpian.
   Future<void> actualizarEstadoDescarga(
     String id,
     EstadoDescarga estado, {
     String? rutaLocal,
     DateTime? fechaDescarga,
+    int? versionDescargada,
   }) async {
     final db = await _appDatabase.database;
     final descargado = estado == EstadoDescarga.descargado;
@@ -108,6 +110,7 @@ class ModuloLocalDataSource {
         'estado_descarga': estado.valor,
         'ruta_local': descargado ? rutaLocal : null,
         'fecha_descarga': descargado ? fechaDescarga?.toIso8601String() : null,
+        'version_descargada': descargado ? versionDescargada : null,
       },
       where: 'id = ?',
       whereArgs: [id],
