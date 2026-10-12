@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'core/network/conectividad_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/modulos/data/almacenamiento_modulos.dart';
+import 'features/modulos/data/descarga_service.dart';
 import 'features/modulos/data/modulo_local_datasource.dart';
 import 'features/modulos/data/modulo_remote_datasource.dart';
 import 'features/modulos/data/modulo_repository.dart';
@@ -12,14 +14,28 @@ import 'features/perfil/domain/perfil_estudiante.dart';
 import 'features/perfil/presentation/screens/crear_perfil_screen.dart';
 import 'features/perfil/presentation/screens/inicio_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final remote = ModuloRemoteDataSource();
+  final local = ModuloLocalDataSource();
+  final conectividad = ConectividadService();
+
   final modulosController = ModulosController(
     repositorio: ModuloRepository(
-      remote: ModuloRemoteDataSource(),
-      local: ModuloLocalDataSource(),
-      conectividad: ConectividadService(),
+      remote: remote,
+      local: local,
+      conectividad: conectividad,
+    ),
+    descargaService: DescargaService(
+      remote: remote,
+      local: local,
+      conectividad: conectividad,
+      almacenamiento: AlmacenamientoModulos(),
     ),
   );
+
+  await modulosController.inicializar();
 
   runApp(
     AppEducativa(

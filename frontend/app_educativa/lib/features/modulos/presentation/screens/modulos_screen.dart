@@ -131,7 +131,8 @@ class _ModulosScreenState extends State<ModulosScreen> {
             for (final modulo in grupo.value)
               ModuloCard(
                 modulo: modulo,
-                estado: modulo.estadoDescarga,
+                estado: controller.estadoDe(modulo),
+                progreso: controller.progresoDe(modulo.id),
                 onTap: () => _abrirModulo(modulo),
               ),
           ],

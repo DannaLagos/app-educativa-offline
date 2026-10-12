@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/app_button.dart';
+import '../../domain/estado_descarga.dart';
 import '../../domain/modulo.dart';
+import '../controllers/modulos_controller.dart';
 import '../controllers/modulos_scope.dart';
 import '../widgets/estado_descarga_chip.dart';
 
@@ -64,9 +67,9 @@ class DetalleModuloScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              EstadoDescargaChip(
-                estado: modulo.estadoDescarga,
-                grande: true,
+              _SeccionDescarga(
+                modulo: modulo,
+                controller: controller,
               ),
 
               if (modulo.fechaDescarga != null) ...[
@@ -112,6 +115,107 @@ class DetalleModuloScreen extends StatelessWidget {
     String dosDigitos(int valor) => valor.toString().padLeft(2, '0');
 
     return '${dosDigitos(fecha.day)}/${dosDigitos(fecha.month)}/${fecha.year}';
+  }
+}
+
+class _SeccionDescarga extends StatelessWidget {
+  final Modulo modulo;
+  final ModulosController controller;
+
+  const _SeccionDescarga({
+    required this.modulo,
+    required this.controller,
+  });
+
+  Future<void> _descargar(BuildContext context) async {
+    final mensajero = ScaffoldMessenger.of(context);
+    final exito = await controller.descargar(modulo);
+
+    if (exito) {
+      mensajero.showSnackBar(
+        const SnackBar(
+          backgroundColor: AppTheme.verde,
+          content: Text(
+            '¡Listo! Ya puedes usar este módulo sin internet.',
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = controller.estadoDe(modulo);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        EstadoDescargaChip(
+          estado: estado,
+          progreso: controller.progresoDe(modulo.id),
+          grande: true,
+        ),
+        const SizedBox(height: 16),
+        ..._acciones(context, estado),
+      ],
+    );
+  }
+
+  List<Widget> _acciones(BuildContext context, EstadoDescarga estado) {
+    switch (estado) {
+      case EstadoDescarga.noDescargado:
+        return [
+          BotonGrande(
+            texto: 'Descargar',
+            icono: Icons.download_rounded,
+            onPressed: () => _descargar(context),
+          ),
+        ];
+      case EstadoDescarga.descargando:
+        return const [
+          Text(
+            'Espera un momento, estamos guardando el módulo.',
+            style: TextStyle(fontSize: 18),
+          ),
+        ];
+      case EstadoDescarga.error:
+        return [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFEBEE),
+              border: Border.all(color: AppTheme.rojo, width: 2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Text(
+              controller.errorDe(modulo) ?? '',
+              style: const TextStyle(
+                fontSize: 18,
+                color: AppTheme.rojo,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          BotonGrande(
+            texto: 'Reintentar',
+            icono: Icons.refresh_rounded,
+            onPressed: () => _descargar(context),
+          ),
+        ];
+      case EstadoDescarga.descargado:
+        return const [
+          Text(
+            'Disponible sin conexión.',
+            style: TextStyle(
+              fontSize: 18,
+              color: AppTheme.verde,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ];
+    }
   }
 }
 

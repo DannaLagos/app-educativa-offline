@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:app_educativa/features/modulos/data/descarga_service.dart';
 import 'package:app_educativa/features/modulos/data/modulo_repository.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/modulo.dart';
@@ -14,13 +17,22 @@ import '../helpers/datos_prueba.dart';
 
 class MockRepositorio extends Mock implements ModuloRepository {}
 
+class MockDescargaService extends Mock implements DescargaService {}
+
 void main() {
   late MockRepositorio repositorio;
+  late MockDescargaService descargaService;
   late ModulosController controller;
+
+  setUpAll(() => registerFallbackValue(moduloDePrueba()));
 
   setUp(() {
     repositorio = MockRepositorio();
-    controller = ModulosController(repositorio: repositorio);
+    descargaService = MockDescargaService();
+    controller = ModulosController(
+      repositorio: repositorio,
+      descargaService: descargaService,
+    );
   });
 
   void catalogo(List<Modulo> modulos, {bool desdeCache = false}) {
@@ -149,5 +161,119 @@ void main() {
     expect(find.text('Los personajes'), findsOneWidget);
     expect(find.text('Descargado'), findsOneWidget);
     expect(find.text('Descargado el 12/10/2026'), findsOneWidget);
+  });
+
+  group('descarga desde el detalle', () {
+    const id = 'lg-grado-3-01';
+
+    Future<void> abrirDetalle(WidgetTester tester, Modulo modulo) async {
+      catalogo([modulo]);
+      await controller.cargarCatalogo();
+      await tester.pumpWidget(
+        app(const DetalleModuloScreen(moduloId: id)),
+      );
+    }
+
+    testWidgets('muestra el progreso y termina en "Descargado"',
+        (tester) async {
+      final terminar = Completer<void>();
+      late void Function(double) reportar;
+
+      when(
+        () => descargaService.descargar(
+          any(),
+          onProgreso: any(named: 'onProgreso'),
+        ),
+      ).thenAnswer((invocacion) {
+        reportar = invocacion.namedArguments[#onProgreso]
+            as void Function(double);
+        return terminar.future;
+      });
+
+      await abrirDetalle(tester, moduloDePrueba());
+      expect(find.text('No descargado'), findsOneWidget);
+
+      await tester.tap(find.text('Descargar'));
+      await tester.pump();
+      reportar(0.6);
+      await tester.pump();
+
+      expect(find.text('Descargando 60 %'), findsOneWidget);
+      expect(find.text('Descargar'), findsNothing);
+
+      when(() => repositorio.obtenerModulo(id)).thenAnswer(
+        (_) async => moduloDePrueba(estado: EstadoDescarga.descargado),
+      );
+      terminar.complete();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Descargado'), findsOneWidget);
+      expect(find.text('Disponible sin conexión.'), findsOneWidget);
+      expect(
+        find.text('¡Listo! Ya puedes usar este módulo sin internet.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('si falla muestra un mensaje claro y permite reintentar',
+        (tester) async {
+      when(
+        () => descargaService.descargar(
+          any(),
+          onProgreso: any(named: 'onProgreso'),
+        ),
+      ).thenThrow(
+        const DescargaException(MotivoFalloDescarga.sinConexion),
+      );
+      when(() => repositorio.obtenerModulo(id)).thenAnswer(
+        (_) async => moduloDePrueba(),
+      );
+
+      await abrirDetalle(tester, moduloDePrueba());
+      await tester.tap(find.text('Descargar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Error en la descarga'), findsOneWidget);
+      expect(
+        find.text(MotivoFalloDescarga.sinConexion.mensaje),
+        findsOneWidget,
+      );
+
+      // Al reintentar con conexión, la descarga se completa.
+      when(
+        () => descargaService.descargar(
+          any(),
+          onProgreso: any(named: 'onProgreso'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => repositorio.obtenerModulo(id)).thenAnswer(
+        (_) async => moduloDePrueba(estado: EstadoDescarga.descargado),
+      );
+
+      await tester.tap(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Descargado'), findsOneWidget);
+      verify(
+        () => descargaService.descargar(
+          any(),
+          onProgreso: any(named: 'onProgreso'),
+        ),
+      ).called(2);
+    });
+
+    testWidgets('un error guardado de una sesión anterior permite reintentar',
+        (tester) async {
+      await abrirDetalle(
+        tester,
+        moduloDePrueba(estado: EstadoDescarga.error),
+      );
+
+      expect(
+        find.text('La descarga anterior no terminó. Vuelve a intentarlo.'),
+        findsOneWidget,
+      );
+      expect(find.text('Reintentar'), findsOneWidget);
+    });
   });
 }

@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import '../domain/estado_descarga.dart';
 import '../domain/modulo.dart';
 
 class ModuloLocalDataSource {
@@ -74,5 +75,55 @@ class ModuloLocalDataSource {
     }
 
     return Modulo.fromMap(filas.first);
+  }
+
+  /// Módulos en un estado de descarga, habilitados o no.
+  Future<List<Modulo>> obtenerPorEstado(EstadoDescarga estado) async {
+    final db = await _appDatabase.database;
+
+    final filas = await db.query(
+      'modulo',
+      where: 'estado_descarga = ?',
+      whereArgs: [estado.valor],
+      orderBy: 'area, grado, nombre',
+    );
+
+    return filas.map(Modulo.fromMap).toList();
+  }
+
+  /// Cambia el estado de descarga. La ruta y la fecha solo se guardan
+  /// cuando el módulo queda descargado; en otro estado se limpian.
+  Future<void> actualizarEstadoDescarga(
+    String id,
+    EstadoDescarga estado, {
+    String? rutaLocal,
+    DateTime? fechaDescarga,
+  }) async {
+    final db = await _appDatabase.database;
+    final descargado = estado == EstadoDescarga.descargado;
+
+    await db.update(
+      'modulo',
+      {
+        'estado_descarga': estado.valor,
+        'ruta_local': descargado ? rutaLocal : null,
+        'fecha_descarga': descargado ? fechaDescarga?.toIso8601String() : null,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Pasa a "error" las descargas que quedaron en "descargando" (la app se
+  /// cerró a mitad de una descarga).
+  Future<void> marcarDescargasInterrumpidas() async {
+    final db = await _appDatabase.database;
+
+    await db.update(
+      'modulo',
+      {'estado_descarga': EstadoDescarga.error.valor},
+      where: 'estado_descarga = ?',
+      whereArgs: [EstadoDescarga.descargando.valor],
+    );
   }
 }

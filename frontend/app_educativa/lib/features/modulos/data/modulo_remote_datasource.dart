@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/config/api_config.dart';
 import '../../../core/network/servidor_exception.dart';
+import '../domain/manifest_modulo.dart';
 import '../domain/modulo.dart';
 
 class ModuloRemoteDataSource {
@@ -35,6 +36,40 @@ class ModuloRemoteDataSource {
           .toList();
     } on TypeError catch (error) {
       throw ServidorException('El catálogo no tiene el formato esperado.', error);
+    }
+  }
+
+  Future<ManifestModulo> obtenerManifest(String moduloId) async {
+    final json = await _obtenerJson(
+      '$_baseUrl/modulos/${Uri.encodeComponent(moduloId)}/manifest.json',
+    );
+
+    try {
+      return ManifestModulo.fromJson(json);
+    } on FormatException catch (error) {
+      throw ServidorException('El manifest no es válido.', error);
+    } on TypeError catch (error) {
+      throw ServidorException('El manifest no tiene el formato esperado.', error);
+    }
+  }
+
+  /// Descarga un recurso del módulo en [destino]. [onRecibido] informa los
+  /// bytes recibidos de ese archivo.
+  Future<void> descargarArchivo({
+    required String moduloId,
+    required String archivo,
+    required String destino,
+    void Function(int recibidos)? onRecibido,
+  }) async {
+    try {
+      await _dio.download(
+        '$_baseUrl/modulos/${Uri.encodeComponent(moduloId)}/'
+        '${Uri.encodeComponent(archivo)}',
+        destino,
+        onReceiveProgress: (recibidos, _) => onRecibido?.call(recibidos),
+      );
+    } on DioException catch (error) {
+      throw ServidorException('Se interrumpió la descarga.', error);
     }
   }
 
