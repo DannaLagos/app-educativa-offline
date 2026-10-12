@@ -7,8 +7,15 @@ import '../controllers/modulos_scope.dart';
 import '../widgets/modulo_card.dart';
 import 'detalle_modulo_screen.dart';
 
+/// Lista de módulos agrupada por área y grado. Si se indica [area], muestra
+/// solo los módulos de esa área (se llega desde "Áreas educativas").
 class ModulosScreen extends StatefulWidget {
-  const ModulosScreen({super.key});
+  final String? area;
+
+  const ModulosScreen({
+    super.key,
+    this.area,
+  });
 
   @override
   State<ModulosScreen> createState() => _ModulosScreenState();
@@ -41,6 +48,26 @@ class _ModulosScreenState extends State<ModulosScreen> {
     );
   }
 
+  Future<void> _descargar(Modulo modulo) async {
+    final controller = ModulosScope.of(context);
+    final mensajero = ScaffoldMessenger.of(context);
+
+    final exito = await controller.descargar(modulo);
+    final actualizado = controller.modulo(modulo.id) ?? modulo;
+
+    mensajero.showSnackBar(
+      SnackBar(
+        backgroundColor: exito ? AppTheme.verde : AppTheme.rojo,
+        content: Text(
+          exito
+              ? '"${modulo.nombre}" ya está disponible sin internet.'
+              : controller.errorDe(actualizado) ??
+                  'No se pudo descargar el módulo.',
+        ),
+      ),
+    );
+  }
+
   /// Agrupa los módulos (ya ordenados por área y grado) en secciones.
   Map<String, List<Modulo>> _agruparPorAreaYGrado(List<Modulo> modulos) {
     final grupos = <String, List<Modulo>>{};
@@ -63,10 +90,16 @@ class _ModulosScreenState extends State<ModulosScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Módulos educativos'),
+        title: Text(widget.area ?? 'Módulos educativos'),
       ),
       body: SafeArea(
-        child: _construirCuerpo(controller.catalogo),
+        child: _construirCuerpo(
+          widget.area == null
+              ? controller.catalogo
+              : controller.catalogo
+                  .where((modulo) => modulo.area == widget.area)
+                  .toList(),
+        ),
       ),
     );
   }
@@ -102,14 +135,16 @@ class _ModulosScreenState extends State<ModulosScreen> {
             const _AvisoSinConexion(),
             const SizedBox(height: 20),
           ],
-          const Text(
-            '¿Qué quieres aprender hoy?',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
+          if (widget.area == null) ...[
+            const Text(
+              '¿Qué quieres aprender hoy?',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+          ],
           const Text(
             'Toca un módulo para ver su contenido.',
             style: TextStyle(fontSize: 18),
@@ -122,7 +157,7 @@ class _ModulosScreenState extends State<ModulosScreen> {
                 grupo.key,
                 style: const TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   color: AppTheme.azul,
                 ),
               ),
@@ -134,6 +169,7 @@ class _ModulosScreenState extends State<ModulosScreen> {
                 estado: controller.estadoDe(modulo),
                 progreso: controller.progresoDe(modulo.id),
                 onTap: () => _abrirModulo(modulo),
+                onDescargar: () => _descargar(modulo),
               ),
           ],
         ],

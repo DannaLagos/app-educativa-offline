@@ -102,6 +102,11 @@ void main() {
   });
 
   testWidgets('la lista agrupa los módulos por área y grado', (tester) async {
+    // Pantalla alta para que todas las tarjetas se construyan.
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     catalogo([
       moduloDePrueba(
         id: 'cs-grado-1',

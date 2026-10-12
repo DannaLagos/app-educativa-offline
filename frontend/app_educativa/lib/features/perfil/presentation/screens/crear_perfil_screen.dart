@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../data/perfil_local_datasource.dart';
 import '../../domain/perfil_estudiante.dart';
-import 'inicio_screen.dart';
+import 'estudiante_shell.dart';
 
 class CrearPerfilScreen extends StatefulWidget {
   const CrearPerfilScreen({super.key});
@@ -55,10 +56,12 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
+    // Se quita la bienvenida de la pila: desde el inicio no se vuelve atrás.
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (_) => InicioScreen(perfil: perfil),
+        builder: (_) => EstudianteShell(perfil: perfil),
       ),
+      (_) => false,
     );
   }
 
@@ -79,71 +82,62 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    '¡Hola!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '¿Cómo te llamas?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Escribe tu nombre para crear tu perfil y guardar tu progreso.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 32),
-                  TextField(
-                    controller: _nombreController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: 'Nombre',
-                      hintText: 'Por ejemplo, Valentina',
-                      errorText: _error,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _guardando ? null : _crearPerfil,
-                      child: _guardando
-                          ? const CircularProgressIndicator()
-                          : const Text(
-                              'Comenzar',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton.icon(
-                    onPressed: _abrirLoginAdmin,
-                    icon: const Icon(Icons.admin_panel_settings_outlined),
-                    label: const Text('Acceso administrador'),
-                  ),
-                ],
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          children: [
+            const Text(
+              'Crea tu perfil',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
               ),
             ),
-          ),
+            const SizedBox(height: 6),
+            const Text(
+              '¡Comencemos tu nuevo viaje educativo!',
+              style: TextStyle(
+                fontSize: 18,
+                color: AppTheme.textoSecundario,
+              ),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              '¿Cómo te llamas?',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _nombreController,
+              textCapitalization: TextCapitalization.words,
+              style: const TextStyle(fontSize: 19),
+              decoration: InputDecoration(
+                hintText: 'Por ejemplo, Valentina',
+                errorText: _error,
+              ),
+              onSubmitted: (_) => _crearPerfil(),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              height: 60,
+              child: ElevatedButton(
+                onPressed: _guardando ? null : _crearPerfil,
+                child: _guardando
+                    ? const CircularProgressIndicator()
+                    : const Text('¡Listos, continuar!'),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: _abrirLoginAdmin,
+              icon: const Icon(Icons.admin_panel_settings_outlined),
+              label: const Text('Acceso administrador'),
+            ),
+          ],
         ),
       ),
     );

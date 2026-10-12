@@ -152,6 +152,25 @@ class AppTheme {
           borderSide: const BorderSide(color: azul, width: 2),
         ),
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: superficie,
+        indicatorColor: azulClaro,
+        height: 72,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (estados) => IconThemeData(
+            size: 28,
+            color: estados.contains(WidgetState.selected) ? azul : gris,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (estados) => TextStyle(
+            fontFamily: fuente,
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: estados.contains(WidgetState.selected) ? azul : gris,
+          ),
+        ),
+      ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: azul,
         linearTrackColor: grisSuave,

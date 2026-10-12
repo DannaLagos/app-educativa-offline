@@ -6,7 +6,7 @@ import '../../domain/modulo.dart';
 import '../controllers/modulos_scope.dart';
 import '../widgets/confirmar_eliminar_dialog.dart';
 import 'lector_modulo_screen.dart';
-import 'modulos_screen.dart';
+import 'areas_screen.dart';
 
 class MisDescargasScreen extends StatefulWidget {
   const MisDescargasScreen({super.key});
@@ -84,9 +84,9 @@ class _MisDescargasScreenState extends State<MisDescargasScreen> {
             ? const Center(child: CircularProgressIndicator())
             : descargados.isEmpty
                 ? _SinDescargas(
-                    onVerModulos: () => Navigator.of(context).pushReplacement(
+                    onVerModulos: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const ModulosScreen(),
+                        builder: (_) => const AreasScreen(),
                       ),
                     ),
                   )
@@ -184,7 +184,7 @@ class _TarjetaDescarga extends StatelessWidget {
             if (modulo.tieneActualizacion) ...[
               const SizedBox(height: 10),
               const Text(
-                'Hay una versión nueva. Actualízala desde Módulos educativos.',
+                'Hay una versión nueva. Búscala en Inicio para actualizarla.',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

@@ -11,8 +11,8 @@ import 'features/modulos/presentation/controllers/modulos_controller.dart';
 import 'features/modulos/presentation/controllers/modulos_scope.dart';
 import 'features/perfil/data/perfil_local_datasource.dart';
 import 'features/perfil/domain/perfil_estudiante.dart';
-import 'features/perfil/presentation/screens/crear_perfil_screen.dart';
-import 'features/perfil/presentation/screens/inicio_screen.dart';
+import 'features/perfil/presentation/screens/bienvenida_screen.dart';
+import 'features/perfil/presentation/screens/estudiante_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,10 +109,10 @@ class _VerificarPerfilScreenState extends State<VerificarPerfilScreen> {
         final perfil = snapshot.data;
 
         if (perfil == null) {
-          return const CrearPerfilScreen();
+          return const BienvenidaScreen();
         }
 
-        return InicioScreen(
+        return EstudianteShell(
           perfil: perfil,
         );
       },
