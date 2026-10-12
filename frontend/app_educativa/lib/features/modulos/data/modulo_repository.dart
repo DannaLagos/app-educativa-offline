@@ -61,6 +61,26 @@ class ModuloRepository {
 
   Future<Modulo?> obtenerModulo(String id) => _local.obtenerModulo(id);
 
+  /// Módulos guardados en el dispositivo, aunque ya no estén habilitados en
+  /// el catálogo (se pueden seguir usando hasta que se eliminen).
+  Future<List<Modulo>> obtenerDescargados() {
+    return _local.obtenerPorEstado(EstadoDescarga.descargado);
+  }
+
+  /// Borra los archivos del módulo y lo deja como "no descargado". El módulo
+  /// sigue en el catálogo y el progreso del estudiante (tabla
+  /// progreso_modulo) no se toca.
+  Future<void> eliminarDescarga(Modulo modulo) async {
+    // Primero la base de datos: si luego falla el borrado, la carpeta queda
+    // huérfana y se limpia al próximo inicio; nunca queda un módulo
+    // "descargado" sin archivos.
+    await _local.actualizarEstadoDescarga(
+      modulo.id,
+      EstadoDescarga.noDescargado,
+    );
+    await _almacenamiento.eliminar(modulo.id);
+  }
+
   /// Recursos de un módulo descargado. Solo lee archivos del dispositivo:
   /// no consulta la conexión ni el servidor, así que funciona sin internet.
   ///

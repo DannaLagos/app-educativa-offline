@@ -215,4 +215,91 @@ void main() {
       );
     });
   });
+
+  group('gestión de descargas (HU05)', () {
+    Future<Directory> descargar(String id) async {
+      final carpeta = Directory(p.join(raiz.path, 'modulos', id))
+        ..createSync(recursive: true);
+      File(p.join(carpeta.path, 'leccion.pdf')).writeAsBytesSync([1, 2, 3]);
+      await local.actualizarEstadoDescarga(
+        id,
+        EstadoDescarga.descargado,
+        rutaLocal: carpeta.path,
+        fechaDescarga: DateTime(2026, 10, 12),
+      );
+      return carpeta;
+    }
+
+    test('eliminar borra los archivos y el módulo sigue en el catálogo',
+        () async {
+      await local.guardarCatalogo([sociales, lenguaje]);
+      final carpeta = await descargar(lenguaje.id);
+      final modulo = (await local.obtenerModulo(lenguaje.id))!;
+
+      await repositorio.eliminarDescarga(modulo);
+
+      expect(carpeta.existsSync(), isFalse);
+      expect(await repositorio.obtenerDescargados(), isEmpty);
+
+      when(() => conectividad.hayConexion()).thenAnswer((_) async => false);
+      final catalogo = await repositorio.obtenerCatalogo();
+      final enCatalogo = catalogo.modulos.singleWhere(
+        (m) => m.id == lenguaje.id,
+      );
+      expect(enCatalogo.estadoDescarga, EstadoDescarga.noDescargado);
+      expect(enCatalogo.rutaLocal, isNull);
+      expect(enCatalogo.fechaDescarga, isNull);
+    });
+
+    test('eliminar NUNCA borra el progreso del estudiante', () async {
+      await local.guardarCatalogo([lenguaje]);
+      await descargar(lenguaje.id);
+      final db = await base.database;
+      await db.insert('progreso_modulo', {
+        'id': 'pr-1',
+        'perfil_id': 'perfil-1',
+        'modulo_id': lenguaje.id,
+        'porcentaje': 40,
+        'ultima_actualizacion': '2026-10-12T10:00:00.000',
+      });
+
+      await repositorio.eliminarDescarga(
+        (await local.obtenerModulo(lenguaje.id))!,
+      );
+
+      expect(await db.query('progreso_modulo'), [
+        {
+          'id': 'pr-1',
+          'perfil_id': 'perfil-1',
+          'modulo_id': lenguaje.id,
+          'porcentaje': 40,
+          'ultima_actualizacion': '2026-10-12T10:00:00.000',
+        },
+      ]);
+      // La fila del módulo tampoco se borra.
+      expect(await local.obtenerModulo(lenguaje.id), isNotNull);
+    });
+
+    test('un módulo deshabilitado pero descargado sigue en Mis descargas',
+        () async {
+      await local.guardarCatalogo([sociales, lenguaje]);
+      await descargar(lenguaje.id);
+      // El servidor deja de publicar "lenguaje".
+      await local.guardarCatalogo([sociales]);
+
+      final descargados = await repositorio.obtenerDescargados();
+
+      expect(descargados.single.id, lenguaje.id);
+      expect(descargados.single.habilitado, isFalse);
+    });
+
+    test('Mis descargas solo lista los módulos descargados', () async {
+      await local.guardarCatalogo([sociales, lenguaje]);
+      await descargar(sociales.id);
+
+      final descargados = await repositorio.obtenerDescargados();
+
+      expect(descargados.map((m) => m.id), [sociales.id]);
+    });
+  });
 }

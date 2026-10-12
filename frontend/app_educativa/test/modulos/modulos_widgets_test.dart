@@ -9,6 +9,8 @@ import 'package:app_educativa/features/modulos/presentation/controllers/modulos_
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_scope.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/detalle_modulo_screen.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/lector_modulo_screen.dart';
+import 'package:app_educativa/features/modulos/presentation/screens/mis_descargas_screen.dart';
+import 'package:app_educativa/features/modulos/presentation/widgets/confirmar_eliminar_dialog.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/modulos_screen.dart';
 import 'package:app_educativa/features/modulos/presentation/widgets/estado_descarga_chip.dart';
 import 'package:flutter/material.dart';
@@ -371,6 +373,118 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Volver'), findsOneWidget);
+    });
+  });
+
+  group('Mis descargas (HU05)', () {
+    final descargado = moduloDePrueba(
+      estado: EstadoDescarga.descargado,
+      rutaLocal: '/datos/modulos/lg-grado-3-01',
+    );
+
+    testWidgets('el diálogo devuelve false al cancelar y true al confirmar',
+        (tester) async {
+      final respuestas = <bool>[];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async => respuestas.add(
+                await ConfirmarEliminarDialog.mostrar(context, 'Lenguaje 1'),
+              ),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Eliminar "Lenguaje 1"?'), findsOneWidget);
+      expect(find.textContaining('Tu progreso no se pierde'), findsOneWidget);
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Eliminar'));
+      await tester.pumpAndSettle();
+
+      expect(respuestas, [false, true]);
+    });
+
+    testWidgets('lista los módulos guardados como disponibles sin conexión',
+        (tester) async {
+      when(() => repositorio.obtenerDescargados())
+          .thenAnswer((_) async => [descargado]);
+
+      await tester.pumpWidget(app(const MisDescargasScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lenguaje - Módulo 1'), findsOneWidget);
+      expect(find.text('Disponible sin conexión'), findsOneWidget);
+      expect(find.text('Abrir'), findsOneWidget);
+      expect(find.text('Eliminar'), findsOneWidget);
+    });
+
+    testWidgets('cancelar en el diálogo no elimina nada', (tester) async {
+      when(() => repositorio.obtenerDescargados())
+          .thenAnswer((_) async => [descargado]);
+
+      await tester.pumpWidget(app(const MisDescargasScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Eliminar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => repositorio.eliminarDescarga(any()));
+      expect(find.text('Lenguaje - Módulo 1'), findsOneWidget);
+    });
+
+    testWidgets('confirmar elimina el módulo de la lista', (tester) async {
+      var descargados = [descargado];
+      when(() => repositorio.obtenerDescargados())
+          .thenAnswer((_) async => descargados);
+      when(() => repositorio.eliminarDescarga(any())).thenAnswer((_) async {
+        descargados = [];
+      });
+      when(() => repositorio.obtenerModulo(any()))
+          .thenAnswer((_) async => moduloDePrueba());
+
+      await tester.pumpWidget(app(const MisDescargasScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Eliminar'));
+      await tester.pumpAndSettle();
+      // Botón "Eliminar" del diálogo.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Eliminar'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      verify(() => repositorio.eliminarDescarga(any())).called(1);
+      expect(find.text('Aún no tienes módulos descargados.'), findsOneWidget);
+      expect(
+        find.text('Se eliminó "Lenguaje - Módulo 1" del dispositivo.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('sin descargas invita a ver los módulos', (tester) async {
+      when(() => repositorio.obtenerDescargados())
+          .thenAnswer((_) async => []);
+
+      await tester.pumpWidget(app(const MisDescargasScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Aún no tienes módulos descargados.'), findsOneWidget);
+      expect(find.text('Ver módulos'), findsOneWidget);
     });
   });
 }

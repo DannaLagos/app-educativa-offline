@@ -19,6 +19,7 @@ class ModulosController extends ChangeNotifier {
         _descargaService = descargaService;
 
   List<Modulo> _catalogo = const [];
+  List<Modulo> _descargados = const [];
   bool _cargando = false;
   bool _desdeCache = false;
   bool _errorCarga = false;
@@ -30,6 +31,7 @@ class ModulosController extends ChangeNotifier {
   final Map<String, String> _errores = {};
 
   List<Modulo> get catalogo => _catalogo;
+  List<Modulo> get descargados => _descargados;
   bool get cargando => _cargando;
   bool get desdeCache => _desdeCache;
   bool get errorCarga => _errorCarga;
@@ -62,7 +64,7 @@ class ModulosController extends ChangeNotifier {
   }
 
   Modulo? modulo(String id) {
-    for (final modulo in _catalogo) {
+    for (final modulo in [..._catalogo, ..._descargados]) {
       if (modulo.id == id) {
         return modulo;
       }
@@ -91,6 +93,35 @@ class ModulosController extends ChangeNotifier {
         (modulo.estadoDescarga == EstadoDescarga.error
             ? 'La descarga anterior no terminó. Vuelve a intentarlo.'
             : null);
+  }
+
+  Future<void> cargarDescargados() async {
+    try {
+      _descargados = await _repositorio.obtenerDescargados();
+    } catch (error, stack) {
+      debugPrint('Error al cargar las descargas: $error\n$stack');
+    }
+    notifyListeners();
+  }
+
+  /// Elimina los archivos del módulo. Devuelve false si no se pudo.
+  Future<bool> eliminarDescarga(Modulo modulo) async {
+    var exito = false;
+
+    try {
+      await _repositorio.eliminarDescarga(modulo);
+      _errores.remove(modulo.id);
+      exito = true;
+    } catch (error, stack) {
+      debugPrint('Error al eliminar la descarga: $error\n$stack');
+    }
+
+    await _refrescarModulo(modulo.id);
+    // Se relee desde la base de datos para reflejar el estado real, haya
+    // funcionado o no.
+    await cargarDescargados();
+
+    return exito;
   }
 
   /// Devuelve true si el módulo quedó descargado.
