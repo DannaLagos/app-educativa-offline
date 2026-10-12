@@ -1,13 +1,13 @@
 {
   "id": "lg-grado-3-02",
-  "version": 1,
+  "version": 2,
   "recursos": [
     {
-      "archivo": "LG_Grado03_02.pdf",
-      "titulo": "Lenguaje - Módulo 2",
+      "archivo": "LG_Grado03_Periodo2.pdf",
+      "titulo": "Lenguaje grado 3 - Período 2",
       "tipo": "pdf",
-      "tamano": 1578,
-      "sha256": "ddcada053eb4395ef85297a44f386f7f9a99889e520f7f8a7207fc948b117bb2"
+      "tamano": 3593797,
+      "sha256": "e17ebbb38578055fc479877b0ce777366ebb6b699d4ce6de1a1f7c499ca6905b"
     }
   ]
 }

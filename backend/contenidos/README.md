@@ -16,7 +16,8 @@ contenidos/
   descargó lo sigue viendo en "Mis descargas".
 - Después de agregar o cambiar un PDF, corre `python backend/actualizar_manifests.py`.
   Si el tamaño o el sha256 no coinciden, la app rechaza la descarga.
-- Los PDF actuales son de ejemplo y se reemplazarán por el material real.
+- Material actual: Ciencias Sociales grado 1 (Fichas Escuela Nueva) y el
+  cuaderno de trabajo de Lenguaje grado 3, dividido en dos módulos, uno por período.
 
 ## Probar con un servidor local (emulador)
 

@@ -5,40 +5,46 @@
       "nombre": "Ciencias Sociales",
       "area": "Ciencias Sociales",
       "grado": 1,
-      "descripcion": "Módulo educativo de Ciencias Sociales para grado primero.",
-      "version": 1,
+      "descripcion": "Fichas de Ciencias Sociales del modelo Escuela Nueva para grado primero.",
+      "version": 2,
       "habilitado": true,
-      "contenidos": ["Mi familia", "Mi escuela", "Mi barrio"]
+      "contenidos": [
+        "Guía 1: ¿Quién soy yo?",
+        "Guía 2: La familia",
+        "Guía 3: Mis vecinos y mi región"
+      ]
     },
     {
       "id": "lg-grado-3-01",
-      "nombre": "Lenguaje - Módulo 1",
+      "nombre": "Lenguaje - Período 1",
       "area": "Lenguaje",
       "grado": 3,
-      "descripcion": "Primer módulo educativo de Lenguaje para grado tercero.",
-      "version": 1,
+      "descripcion": "Cuaderno de trabajo de Lenguaje para grado tercero, primer período.",
+      "version": 2,
       "habilitado": true,
-      "contenidos": ["El cuento", "Los personajes", "Inicio, nudo y desenlace"]
+      "contenidos": [
+        "Poemas y adjetivos",
+        "Textos de opinión e instructivos",
+        "Cuentos e historietas",
+        "Noticias y afiches",
+        "El espacio: resúmenes e infografías"
+      ]
     },
     {
       "id": "lg-grado-3-02",
-      "nombre": "Lenguaje - Módulo 2",
+      "nombre": "Lenguaje - Período 2",
       "area": "Lenguaje",
       "grado": 3,
-      "descripcion": "Segundo módulo educativo de Lenguaje para grado tercero.",
-      "version": 1,
+      "descripcion": "Cuaderno de trabajo de Lenguaje para grado tercero, segundo período.",
+      "version": 2,
       "habilitado": true,
-      "contenidos": ["El sustantivo", "El adjetivo", "El verbo"]
-    },
-    {
-      "id": "lg-grado-3-03",
-      "nombre": "Lenguaje - Módulo 3",
-      "area": "Lenguaje",
-      "grado": 3,
-      "descripcion": "Tercer módulo educativo de Lenguaje para grado tercero.",
-      "version": 1,
-      "habilitado": true,
-      "contenidos": ["La poesía", "La rima", "Escribo mi poema"]
+      "contenidos": [
+        "Poemas sobre lugares imaginados",
+        "La vida en el espacio",
+        "Dibujos animados y cronologías",
+        "Papelucho y cuentos de misterio",
+        "Cartas, cuentos y sinopsis"
+      ]
     }
   ]
 }

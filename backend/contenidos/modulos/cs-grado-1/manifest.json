@@ -1,13 +1,13 @@
 {
   "id": "cs-grado-1",
-  "version": 1,
+  "version": 2,
   "recursos": [
     {
-      "archivo": "CS_Fichas.pdf",
-      "titulo": "Ciencias Sociales - Grado 1",
+      "archivo": "CS_Grado01_Fichas.pdf",
+      "titulo": "Ciencias Sociales - Fichas grado 1",
       "tipo": "pdf",
-      "tamano": 1599,
-      "sha256": "0ac46a572140cd35503d05c9f33ad2ae82a173217c07ca6cc229f0bf18f975e4"
+      "tamano": 4072104,
+      "sha256": "016792c6c826e37cd185ec5b17636978ee19db6b038d0b5dfce0a1dae69e4eaa"
     }
   ]
 }
