@@ -4,9 +4,11 @@ import 'package:app_educativa/features/modulos/data/descarga_service.dart';
 import 'package:app_educativa/features/modulos/data/modulo_repository.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/modulo.dart';
+import 'package:app_educativa/features/modulos/domain/recurso_local.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_controller.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_scope.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/detalle_modulo_screen.dart';
+import 'package:app_educativa/features/modulos/presentation/screens/lector_modulo_screen.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/modulos_screen.dart';
 import 'package:app_educativa/features/modulos/presentation/widgets/estado_descarga_chip.dart';
 import 'package:flutter/material.dart';
@@ -274,6 +276,101 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Reintentar'), findsOneWidget);
+    });
+  });
+
+  group('acceso offline (HU04)', () {
+    final descargado = moduloDePrueba(
+      estado: EstadoDescarga.descargado,
+      rutaLocal: '/datos/modulos/lg-grado-3-01',
+    );
+
+    const leccion1 = RecursoLocal(
+      titulo: 'Lección 1',
+      tipo: 'pdf',
+      ruta: '/datos/modulos/lg-grado-3-01/l1.pdf',
+    );
+    const leccion2 = RecursoLocal(
+      titulo: 'Lección 2',
+      tipo: 'pdf',
+      ruta: '/datos/modulos/lg-grado-3-01/l2.pdf',
+    );
+
+    Widget visorFalso(RecursoLocal recurso) => Text('VISOR ${recurso.ruta}');
+
+    testWidgets('el detalle de un módulo descargado permite abrirlo',
+        (tester) async {
+      catalogo([descargado]);
+      await controller.cargarCatalogo();
+
+      await tester.pumpWidget(
+        app(const DetalleModuloScreen(moduloId: 'lg-grado-3-01')),
+      );
+
+      expect(find.text('Abrir módulo'), findsOneWidget);
+      expect(find.text('Descargar'), findsNothing);
+    });
+
+    testWidgets('con un solo documento lo abre directamente', (tester) async {
+      when(() => repositorio.obtenerRecursosLocales(any()))
+          .thenAnswer((_) async => [leccion1]);
+
+      await tester.pumpWidget(
+        app(
+          LectorModuloScreen(
+            modulo: descargado,
+            construirVisor: visorFalso,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('VISOR ${leccion1.ruta}'), findsOneWidget);
+    });
+
+    testWidgets('con varios documentos deja elegir cuál abrir',
+        (tester) async {
+      when(() => repositorio.obtenerRecursosLocales(any()))
+          .thenAnswer((_) async => [leccion1, leccion2]);
+
+      await tester.pumpWidget(
+        app(
+          LectorModuloScreen(
+            modulo: descargado,
+            construirVisor: visorFalso,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Lección 2'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('VISOR ${leccion2.ruta}'), findsOneWidget);
+    });
+
+    testWidgets('si faltan archivos muestra un mensaje claro',
+        (tester) async {
+      when(() => repositorio.obtenerRecursosLocales(any()))
+          .thenThrow(const ContenidoIncompletoException('falta'));
+      when(() => repositorio.obtenerModulo(any()))
+          .thenAnswer((_) async => null);
+
+      await tester.pumpWidget(
+        app(
+          LectorModuloScreen(
+            modulo: descargado,
+            construirVisor: visorFalso,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Faltan archivos de este módulo. Descárgalo de nuevo.'),
+        findsOneWidget,
+      );
+      expect(find.text('Volver'), findsOneWidget);
     });
   });
 }

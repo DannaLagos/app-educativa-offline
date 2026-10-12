@@ -20,18 +20,20 @@ Future<void> main() async {
   final remote = ModuloRemoteDataSource();
   final local = ModuloLocalDataSource();
   final conectividad = ConectividadService();
+  final almacenamiento = AlmacenamientoModulos();
 
   final modulosController = ModulosController(
     repositorio: ModuloRepository(
       remote: remote,
       local: local,
       conectividad: conectividad,
+      almacenamiento: almacenamiento,
     ),
     descargaService: DescargaService(
       remote: remote,
       local: local,
       conectividad: conectividad,
-      almacenamiento: AlmacenamientoModulos(),
+      almacenamiento: almacenamiento,
     ),
   );
 

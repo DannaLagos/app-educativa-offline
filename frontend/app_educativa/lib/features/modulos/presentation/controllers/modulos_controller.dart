@@ -4,6 +4,7 @@ import '../../data/descarga_service.dart';
 import '../../data/modulo_repository.dart';
 import '../../domain/estado_descarga.dart';
 import '../../domain/modulo.dart';
+import '../../domain/recurso_local.dart';
 
 /// Estado compartido de los módulos para la lista, el detalle y
 /// "Mis descargas". La interfaz solo habla con este controlador.
@@ -123,6 +124,20 @@ class ModulosController extends ChangeNotifier {
     notifyListeners();
 
     return exito;
+  }
+
+  /// Recursos del módulo descargado, leídos solo del dispositivo. Si faltan
+  /// archivos, el módulo queda en "error" para volver a descargarlo.
+  Future<List<RecursoLocal>> recursosDe(Modulo modulo) async {
+    try {
+      return await _repositorio.obtenerRecursosLocales(modulo);
+    } on ContenidoIncompletoException {
+      _errores[modulo.id] =
+          'Faltan archivos de este módulo. Descárgalo de nuevo.';
+      await _refrescarModulo(modulo.id);
+      notifyListeners();
+      rethrow;
+    }
   }
 
   void _actualizarProgreso(String moduloId, double progreso) {

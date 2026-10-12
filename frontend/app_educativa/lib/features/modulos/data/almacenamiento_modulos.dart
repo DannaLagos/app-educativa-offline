@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
+import '../domain/manifest_modulo.dart';
+import '../domain/recurso_local.dart';
 
 /// Maneja las carpetas de los módulos en el almacenamiento privado de la app:
 ///
@@ -56,6 +60,48 @@ class AlmacenamientoModulos {
     }
 
     return temporal.rename(destino.path);
+  }
+
+  /// Lee los recursos de un módulo descargado usando solo archivos locales.
+  Future<List<RecursoLocal>> leerRecursos(String rutaLocal) async {
+    final manifestArchivo = File(p.join(rutaLocal, 'manifest.json'));
+
+    if (!await manifestArchivo.exists()) {
+      throw ContenidoIncompletoException('Falta ${manifestArchivo.path}');
+    }
+
+    final ManifestModulo manifest;
+
+    try {
+      manifest = ManifestModulo.fromJson(
+        jsonDecode(await manifestArchivo.readAsString())
+            as Map<String, dynamic>,
+      );
+    } on FormatException catch (error) {
+      throw ContenidoIncompletoException('Manifest dañado: $error');
+    } on TypeError catch (error) {
+      throw ContenidoIncompletoException('Manifest dañado: $error');
+    }
+
+    final recursos = <RecursoLocal>[];
+
+    for (final recurso in manifest.recursos) {
+      final archivo = File(p.join(rutaLocal, recurso.archivo));
+
+      if (!await archivo.exists()) {
+        throw ContenidoIncompletoException('Falta ${archivo.path}');
+      }
+
+      recursos.add(
+        RecursoLocal(
+          titulo: recurso.titulo,
+          tipo: recurso.tipo,
+          ruta: archivo.path,
+        ),
+      );
+    }
+
+    return recursos;
   }
 
   Future<void> eliminar(String moduloId) async {

@@ -7,6 +7,7 @@ import '../../domain/modulo.dart';
 import '../controllers/modulos_controller.dart';
 import '../controllers/modulos_scope.dart';
 import '../widgets/estado_descarga_chip.dart';
+import 'lector_modulo_screen.dart';
 
 class DetalleModuloScreen extends StatelessWidget {
   final String moduloId;
@@ -205,8 +206,19 @@ class _SeccionDescarga extends StatelessWidget {
           ),
         ];
       case EstadoDescarga.descargado:
-        return const [
-          Text(
+        return [
+          BotonGrande(
+            texto: 'Abrir módulo',
+            icono: Icons.menu_book_rounded,
+            color: AppTheme.verde,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => LectorModuloScreen(modulo: modulo),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
             'Disponible sin conexión.',
             style: TextStyle(
               fontSize: 18,
