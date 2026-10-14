@@ -40,57 +40,209 @@ class InicioScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inicio'),
-        actions: [
-          IconButton(
-            tooltip: 'Acceso administrador',
-            icon: const Icon(Icons.admin_panel_settings_outlined),
-            onPressed: () => _abrirLoginAdmin(context),
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Hola, ${perfil.nombre} 👋',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+        child: Container(
+          color: const Color(0xFFF5F8FC),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFFFFF),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFEAF0F5),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '¡Hola, ${perfil.nombre}! 👋',
+                              style: const TextStyle(
+                                color: Color(0xFF1F2A44),
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDDF8EC),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF16845E),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Conectado',
+                                    style: TextStyle(
+                                      color: Color(0xFF16845E),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Acceso administrador',
+                        icon: const Icon(
+                          Icons.admin_panel_settings_outlined,
+                          color: Color(0xFF236EA5),
+                        ),
+                        onPressed: () => _abrirLoginAdmin(context),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 12),
-
-              const Text(
-                '¿Qué quieres aprender hoy?',
-                style: TextStyle(
-                  fontSize: 18,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFFFF),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0A1F2A44),
+                              blurRadius: 18,
+                              offset: Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE6F3FA),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'APRENDIZAJE',
+                                style: TextStyle(
+                                  color: Color(0xFF236EA5),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.7,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Continúa aprendiendo',
+                              style: TextStyle(
+                                color: Color(0xFF1F2A44),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Explora tus módulos educativos',
+                              style: TextStyle(
+                                color: Color(0xFF65758B),
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => _abrirModulos(context),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF236EA5),
+                                  foregroundColor: const Color(0xFFFFFFFF),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Continuar aprendiendo',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _OpcionInicio(
+                        icono: Icons.download_for_offline_rounded,
+                        titulo: 'Mis descargas',
+                        descripcion: 'Contenido disponible sin internet',
+                        onTap: () => _abrirMisDescargas(context),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6F3FA),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '⭐ ¡Sigue aprendiendo!',
+                              style: TextStyle(
+                                color: Color(0xFF1F2A44),
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'Cada módulo completado te ayuda a avanzar.',
+                              style: TextStyle(
+                                color: Color(0xFF65758B),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 32),
-
-              _OpcionInicio(
-                icono: Icons.menu_book_rounded,
-                titulo: 'Módulos educativos',
-                descripcion: 'Consulta los contenidos disponibles.',
-                onTap: () => _abrirModulos(context),
-              ),
-
-              const SizedBox(height: 16),
-
-              _OpcionInicio(
-                icono: Icons.download_for_offline_rounded,
-                titulo: 'Mis descargas',
-                descripcion: 'Módulos guardados para usar sin internet.',
-                onTap: () => _abrirMisDescargas(context),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -119,16 +271,30 @@ class _OpcionInicio extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: const Color(0xFF90A4AE),
-          ),
+          color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x081F2A44),
+              blurRadius: 14,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(
-              icono,
-              size: 36,
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6F3FA),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icono,
+                color: const Color(0xFF236EA5),
+                size: 28,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -138,7 +304,8 @@ class _OpcionInicio extends StatelessWidget {
                   Text(
                     titulo,
                     style: const TextStyle(
-                      fontSize: 20,
+                      color: Color(0xFF1F2A44),
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -146,7 +313,8 @@ class _OpcionInicio extends StatelessWidget {
                   Text(
                     descripcion,
                     style: const TextStyle(
-                      fontSize: 16,
+                      color: Color(0xFF65758B),
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -154,6 +322,7 @@ class _OpcionInicio extends StatelessWidget {
             ),
             const Icon(
               Icons.chevron_right_rounded,
+              color: Color(0xFF236EA5),
             ),
           ],
         ),
