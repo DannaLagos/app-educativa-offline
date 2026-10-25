@@ -94,7 +94,8 @@ class _InicioScreenState extends State<InicioScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-                            _TarjetaContinuar(
+              // Tarjeta "Continúa aprendiendo" (diseño de Karen).
+              _TarjetaContinuar(
                 onContinuar: () => _abrir(const AreasScreen()),
               ),
               const SizedBox(height: 24),
@@ -128,6 +129,9 @@ class _InicioScreenState extends State<InicioScreen> {
                 _SinAreas(onReintentar: controller.cargarCatalogo)
               else
                 _CuadriculaAreas(areas: areas),
+              const SizedBox(height: 16),
+              // Mensaje motivacional (diseño de Karen).
+              const _TarjetaMotivacion(),
             ],
           ),
         ),
@@ -136,7 +140,6 @@ class _InicioScreenState extends State<InicioScreen> {
   }
 }
 
-/// Áreas en dos columnas, como en el diseño.
 class _CuadriculaAreas extends StatelessWidget {
   final List<AreaResumen> areas;
 
@@ -202,6 +205,95 @@ class _SinAreas extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TarjetaContinuar extends StatelessWidget {
+  final VoidCallback onContinuar;
+
+  const _TarjetaContinuar({required this.onContinuar});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A1F2A44),
+            blurRadius: 18,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Etiqueta.azul('APRENDIZAJE'),
+          const SizedBox(height: 16),
+          const Text(
+            'Continúa aprendiendo',
+            style: TextStyle(
+              color: AppTheme.texto,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            '¿Qué quieres aprender hoy?',
+            style: TextStyle(
+              color: AppTheme.textoSecundario,
+              fontSize: 17,
+            ),
+          ),
+          const SizedBox(height: 20),
+          BotonGrande(
+            texto: 'Continuar aprendiendo',
+            icono: Icons.play_arrow_rounded,
+            onPressed: onContinuar,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TarjetaMotivacion extends StatelessWidget {
+  const _TarjetaMotivacion();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.azulSuave,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '⭐ ¡Sigue aprendiendo!',
+            style: TextStyle(
+              color: AppTheme.texto,
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Cada módulo completado te ayuda a avanzar.',
+            style: TextStyle(
+              color: AppTheme.textoSecundario,
+              fontSize: 15,
+            ),
+          ),
+        ],
       ),
     );
   }
