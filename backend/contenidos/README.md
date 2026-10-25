@@ -1,8 +1,10 @@
-# Contenidos (servidor estático)
+# Contenidos (Firebase Storage)
 
-La app descarga estos archivos desde la URL raw de GitHub
-(`https://raw.githubusercontent.com/DannaLagos/app-educativa-offline/main/backend/contenidos`).
-Se puede cambiar con `--dart-define=API_BASE_URL=...`.
+Los PDF ya no se guardan en el repositorio: la app los descarga desde
+**Firebase Storage** (proyecto `aplicacioneducativaoffline`). Esta carpeta solo
+conserva `catalogo.json` y los `manifest.json` como copia de referencia.
+
+Estructura en Storage (bucket `aplicacioneducativaoffline.firebasestorage.app`):
 
 ```
 contenidos/
@@ -12,17 +14,27 @@ contenidos/
     └── <archivo>.pdf
 ```
 
-- Para ocultar un módulo del catálogo, pon `"habilitado": false`. Quien ya lo
-  descargó lo sigue viendo en "Mis descargas".
-- Después de agregar o cambiar un PDF, corre `python backend/actualizar_manifests.py`.
-  Si el tamaño o el sha256 no coinciden, la app rechaza la descarga.
-- Material actual: Ciencias Sociales grado 1 (Fichas Escuela Nueva) y el
-  cuaderno de trabajo de Lenguaje grado 3, dividido en dos módulos, uno por período.
+Reglas de Storage: todos pueden leer `contenidos/`, nadie puede escribir
+desde la app (los archivos se suben desde la consola de Firebase).
 
-## Probar con un servidor local (emulador)
+## Agregar o cambiar un módulo
+
+1. Pon el archivo en `backend/contenidos/modulos/<id>/` (en tu computador;
+   los PDF están en `.gitignore`).
+2. Agrega o actualiza el módulo en `catalogo.json` (sube `version` si ya
+   estaba publicado).
+3. Corre `python backend/actualizar_manifests.py` para recalcular tamaño y
+   sha256. Si no coinciden, la app rechaza la descarga.
+4. Sube a Firebase Storage el archivo, el `manifest.json` y el `catalogo.json`
+   en las mismas rutas.
+
+Para ocultar un módulo, pon `"habilitado": false` en `catalogo.json` y súbelo.
+Quien ya lo descargó lo sigue viendo en "Mis descargas".
+
+## Probar con un servidor local (sin Firebase)
 
 ```
 cd backend/contenidos
 python -m http.server 8000
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+flutter run --dart-define=FUENTE_CONTENIDOS=http --dart-define=API_BASE_URL=http://10.0.2.2:8000
 ```
