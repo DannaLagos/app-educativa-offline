@@ -1,6 +1,6 @@
 {
   "id": "cs-grado-1",
-  "version": 2,
+  "version": 5,
   "recursos": [
     {
       "archivo": "CS_Grado01_Fichas.pdf",
@@ -8,6 +8,13 @@
       "tipo": "pdf",
       "tamano": 4072104,
       "sha256": "016792c6c826e37cd185ec5b17636978ee19db6b038d0b5dfce0a1dae69e4eaa"
+    },
+    {
+      "archivo": "actividades.json",
+      "titulo": "Juegos de Ciencias Sociales grado 1",
+      "tipo": "actividades",
+      "tamano": 29484,
+      "sha256": "265433fbd6d57ef2d5883d48f6523643b06c0985578226fb9194b9af7f66a27c"
     }
   ]
 }

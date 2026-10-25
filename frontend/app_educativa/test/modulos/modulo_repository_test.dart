@@ -274,6 +274,7 @@ void main() {
           'modulo_id': lenguaje.id,
           'porcentaje': 40,
           'ultima_actualizacion': '2026-10-12T10:00:00.000',
+          'sincronizado': 0,
         },
       ]);
       // La fila del módulo tampoco se borra.

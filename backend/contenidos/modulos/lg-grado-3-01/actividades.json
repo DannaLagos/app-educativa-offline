@@ -1,0 +1,858 @@
+{
+  "modulo": "lg-grado-3-01",
+  "niveles": [
+    {
+      "id": "n1-adjetivos",
+      "numero": 1,
+      "titulo": "Palabras que describen",
+      "emoji": "✨",
+      "objetivo": "Reconozco los adjetivos: palabras que dicen cómo son las personas, los animales y las cosas.",
+      "actividades": [
+        {
+          "id": "lg1-n1-a1-globos-adjetivos",
+          "tipo": "atrapa",
+          "titulo": "Globos de adjetivos",
+          "instruccion": "Los adjetivos dicen cómo es algo. Revienta solo los globos que tienen adjetivos.",
+          "objetivo": {
+            "emoji": "✨",
+            "texto": "palabras que dicen cómo es algo"
+          },
+          "elementos": [
+            {
+              "emoji": "🔴",
+              "texto": "rojo",
+              "correcto": true
+            },
+            {
+              "emoji": "🐭",
+              "texto": "pequeña",
+              "correcto": true
+            },
+            {
+              "emoji": "😄",
+              "texto": "alegre",
+              "correcto": true
+            },
+            {
+              "emoji": "💨",
+              "texto": "veloz",
+              "correcto": true
+            },
+            {
+              "emoji": "🔥",
+              "texto": "caliente",
+              "correcto": true
+            },
+            {
+              "emoji": "🏃",
+              "texto": "correr",
+              "correcto": false
+            },
+            {
+              "emoji": "🏫",
+              "texto": "escuela",
+              "correcto": false
+            },
+            {
+              "emoji": "🪑",
+              "texto": "mesa",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 10: «Recuerda que los adjetivos calificativos son aquellas palabras que indican una cualidad del sustantivo. Por ejemplo: La escuela pequeña».",
+            "pagina": 24
+          }
+        },
+        {
+          "id": "lg1-n1-a2-completa-adjetivos",
+          "tipo": "completa",
+          "titulo": "Completa con un adjetivo",
+          "instruccion": "Lee la oración y toca el adjetivo que la completa. También puedes arrastrarlo.",
+          "oraciones": [
+            {
+              "emoji": "🏫",
+              "texto": "La escuela del cuento era muy ___.",
+              "opciones": [
+                "pequeña",
+                "corría",
+                "pupitre"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 10: «Había una vez un pueblo que tenía una escuela tan pequeña, tan pequeña, que solo cabían la maestra y un niño no muy grande».",
+                "pagina": 23
+              }
+            },
+            {
+              "emoji": "🔴",
+              "texto": "Marte es un planeta ___.",
+              "opciones": [
+                "salta",
+                "rojo",
+                "Luna"
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 17 · Sistema solar: «MARTE ROJO: Marte es de ese color porque en su suelo hay hierro enrojecido por el aire».",
+                "pagina": 37
+              }
+            },
+            {
+              "emoji": "🏖️",
+              "texto": "Mis vacaciones fueron muy ___.",
+              "opciones": [
+                "playa",
+                "comer",
+                "divertidas"
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Desafío 2: «Mis vacaciones fueron… Aventureras, porque exploré la nueva plaza de mi barrio».",
+                "pagina": 7
+              }
+            },
+            {
+              "emoji": "☀️",
+              "texto": "El Sol es más ___ que un horno.",
+              "opciones": [
+                "caliente",
+                "brilla",
+                "cielo"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 17: «El Sol es la única estrella del Sistema Solar. Es grande como un millón de Tierras y más caliente que un horno».",
+                "pagina": 37
+              }
+            },
+            {
+              "emoji": "🍔",
+              "texto": "La hamburguesa quería ser ___.",
+              "opciones": [
+                "sabrosa",
+                "cocinar",
+                "fogón"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 8: «ella hacía todo lo posible por ser sabrosísima».",
+                "pagina": 19
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 10: «Los adjetivos calificativos […] indican una cualidad del sustantivo. Por ejemplo: La escuela pequeña».",
+            "pagina": 24
+          }
+        },
+        {
+          "id": "lg1-n1-a3-arrastra-sustantivo-adjetivo",
+          "tipo": "arrastra",
+          "titulo": "¿Nombra o describe?",
+          "instruccion": "Arrastra cada palabra a su canasta: ¿nombra algo (sustantivo) o dice cómo es (adjetivo)?",
+          "grupos": [
+            {
+              "id": "sustantivo",
+              "emoji": "🏷️",
+              "texto": "Nombra (sustantivo)"
+            },
+            {
+              "id": "adjetivo",
+              "emoji": "✨",
+              "texto": "Describe (adjetivo)"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "🏫",
+              "texto": "escuela",
+              "grupo": "sustantivo"
+            },
+            {
+              "emoji": "🐭",
+              "texto": "pequeña",
+              "grupo": "adjetivo"
+            },
+            {
+              "emoji": "🪐",
+              "texto": "planeta",
+              "grupo": "sustantivo"
+            },
+            {
+              "emoji": "🔴",
+              "texto": "rojo",
+              "grupo": "adjetivo"
+            },
+            {
+              "emoji": "🍔",
+              "texto": "hamburguesa",
+              "grupo": "sustantivo"
+            },
+            {
+              "emoji": "😋",
+              "texto": "sabrosa",
+              "grupo": "adjetivo"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 10: «Los adjetivos calificativos son aquellas palabras que indican una cualidad del sustantivo». En «La escuela pequeña», escuela es el sustantivo y pequeña es el adjetivo.",
+            "pagina": 24
+          }
+        }
+      ]
+    },
+    {
+      "id": "n2-sinonimos",
+      "numero": 2,
+      "titulo": "Sinónimos",
+      "emoji": "🔁",
+      "objetivo": "Reconozco sinónimos: palabras que se escriben distinto pero significan lo mismo.",
+      "actividades": [
+        {
+          "id": "lg1-n2-a1-memoria-sinonimos",
+          "tipo": "memoria",
+          "titulo": "Memoria de sinónimos",
+          "instruccion": "Voltea dos cartas. Busca cada palabra con su sinónimo.",
+          "pares": [
+            {
+              "izquierda": {
+                "emoji": "🎒",
+                "texto": "listo"
+              },
+              "derecha": {
+                "emoji": "✅",
+                "texto": "preparado"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🥗",
+                "texto": "saludable"
+              },
+              "derecha": {
+                "emoji": "🍎",
+                "texto": "sano"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "⏸️",
+                "texto": "receso"
+              },
+              "derecha": {
+                "emoji": "😌",
+                "texto": "descanso"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🎠",
+                "texto": "entretenido"
+              },
+              "derecha": {
+                "emoji": "😄",
+                "texto": "divertido"
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 4: «Recuerda que los sinónimos son aquellas palabras que se escriben distinto pero tienen el mismo significado».",
+            "pagina": 12
+          }
+        },
+        {
+          "id": "lg1-n2-a2-completa-sinonimos",
+          "tipo": "completa",
+          "titulo": "Cambia por un sinónimo",
+          "instruccion": "La palabra entre paréntesis tiene un sinónimo escondido. Toca el que completa la oración.",
+          "oraciones": [
+            {
+              "emoji": "⏸️",
+              "texto": "Toma diez minutos de ___ (receso) para recuperar energía.",
+              "opciones": [
+                "descanso",
+                "trabajo",
+                "tarea"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 4: «Por cada 30 minutos de estudio, toma 5 o 10 minutos de receso».",
+                "pagina": 11
+              }
+            },
+            {
+              "emoji": "🎒",
+              "texto": "¿Tienes todo ___ (listo) para el colegio?",
+              "opciones": [
+                "desordenado",
+                "preparado",
+                "dibujado"
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 6: «¿Tienes todo listo para el colegio?» Pinta el sinónimo: Desordenado – Preparado – Dibujado.",
+                "pagina": 16
+              }
+            },
+            {
+              "emoji": "🍎",
+              "texto": "Lleva un refrigerio ___ (saludable).",
+              "opciones": [
+                "peligroso",
+                "frío",
+                "sano"
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Desafío 6: «Mi refrigerio saludable…» Pinta el sinónimo: Sano – Frío – Peligroso.",
+                "pagina": 16
+              }
+            },
+            {
+              "emoji": "🚀",
+              "texto": "Los estudiantes fueron ___ (seleccionados) para viajar a la NASA.",
+              "opciones": [
+                "elegidos",
+                "olvidados",
+                "dormidos"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 19: «Los estudiantes fueron seleccionados durante las Olimpiadas Departamentales de Astronomía».",
+                "pagina": 41
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 4: «Los sinónimos son aquellas palabras que se escriben distinto pero tienen el mismo significado».",
+            "pagina": 12
+          }
+        },
+        {
+          "id": "lg1-n2-a3-elige-sinonimo",
+          "tipo": "elige",
+          "titulo": "¿Cuál es el sinónimo?",
+          "instruccion": "Escucha la palabra y toca su sinónimo.",
+          "preguntas": [
+            {
+              "enunciado": "¿Cuál es el sinónimo de alegre?",
+              "opciones": [
+                {
+                  "emoji": "😄",
+                  "texto": "feliz"
+                },
+                {
+                  "emoji": "😢",
+                  "texto": "triste"
+                },
+                {
+                  "emoji": "🐢",
+                  "texto": "lento"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "¿Cuál es el sinónimo de veloz?",
+              "opciones": [
+                {
+                  "emoji": "🐢",
+                  "texto": "lento"
+                },
+                {
+                  "emoji": "💨",
+                  "texto": "rápido"
+                },
+                {
+                  "emoji": "🥶",
+                  "texto": "frío"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "¿Cuál es el sinónimo de enorme?",
+              "opciones": [
+                {
+                  "emoji": "🐭",
+                  "texto": "pequeño"
+                },
+                {
+                  "emoji": "📏",
+                  "texto": "corto"
+                },
+                {
+                  "emoji": "🐘",
+                  "texto": "gigante"
+                }
+              ],
+              "correcta": 2
+            },
+            {
+              "enunciado": "¿Cuál es el sinónimo de bonito?",
+              "opciones": [
+                {
+                  "emoji": "🌸",
+                  "texto": "lindo"
+                },
+                {
+                  "emoji": "👹",
+                  "texto": "feo"
+                },
+                {
+                  "emoji": "👴",
+                  "texto": "viejo"
+                }
+              ],
+              "correcta": 0
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 4: «Recuerda que los sinónimos son aquellas palabras que se escriben distinto pero tienen el mismo significado».",
+            "pagina": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "n3-mayuscula-punto",
+      "numero": 3,
+      "titulo": "Mayúscula y punto",
+      "emoji": "🔠",
+      "objetivo": "Uso mayúscula al iniciar una oración y en los nombres propios, y punto al terminar.",
+      "actividades": [
+        {
+          "id": "lg1-n3-a1-globos-nombres-propios",
+          "tipo": "atrapa",
+          "titulo": "Globos de nombres propios",
+          "instruccion": "Los nombres propios se escriben con mayúscula. Revienta solo los globos con nombres propios.",
+          "objetivo": {
+            "emoji": "🔠",
+            "texto": "nombres propios (con mayúscula)"
+          },
+          "elementos": [
+            {
+              "emoji": "👧",
+              "texto": "Catalina",
+              "correcto": true
+            },
+            {
+              "emoji": "🇨🇴",
+              "texto": "Colombia",
+              "correcto": true
+            },
+            {
+              "emoji": "👨‍🚀",
+              "texto": "Neil Armstrong",
+              "correcto": true
+            },
+            {
+              "emoji": "🏙️",
+              "texto": "Pasto",
+              "correcto": true
+            },
+            {
+              "emoji": "🔴",
+              "texto": "Marte",
+              "correcto": true
+            },
+            {
+              "emoji": "🐶",
+              "texto": "perro",
+              "correcto": false
+            },
+            {
+              "emoji": "🪑",
+              "texto": "mesa",
+              "correcto": false
+            },
+            {
+              "emoji": "🚀",
+              "texto": "cohete",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 21: «Escribir con mayúscula los nombres propios». Los nombres de personas, países, ciudades y planetas son nombres propios.",
+            "pagina": 45
+          }
+        },
+        {
+          "id": "lg1-n3-a2-arma-oraciones",
+          "tipo": "arma",
+          "titulo": "Arma la oración",
+          "instruccion": "Toca las palabras en orden para armar la oración. Pista: empieza con mayúscula y termina con punto.",
+          "oraciones": [
+            {
+              "emoji": "🐶",
+              "partes": [
+                "El",
+                "perro",
+                "salvó",
+                "a",
+                "la",
+                "niña."
+              ]
+            },
+            {
+              "emoji": "📦",
+              "partes": [
+                "Catalina",
+                "creó",
+                "cajas",
+                "para",
+                "desechos."
+              ]
+            },
+            {
+              "emoji": "🌙",
+              "partes": [
+                "La",
+                "Luna",
+                "celebra",
+                "su",
+                "cumpleaños."
+              ]
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 4: «Recuerda: Iniciar cada oración con mayúscula. Poner punto al terminar cada oración».",
+            "pagina": 12
+          }
+        },
+        {
+          "id": "lg1-n3-a3-elige-bien-escrita",
+          "tipo": "elige",
+          "titulo": "¿Cuál está bien escrita?",
+          "instruccion": "Lee las oraciones y toca la que está bien escrita.",
+          "preguntas": [
+            {
+              "enunciado": "¿Cuál oración está bien escrita?",
+              "opciones": [
+                {
+                  "emoji": "✏️",
+                  "texto": "Mi amiga Ana vive en Pasto."
+                },
+                {
+                  "emoji": "✏️",
+                  "texto": "mi amiga ana vive en pasto."
+                },
+                {
+                  "emoji": "✏️",
+                  "texto": "Mi amiga ana vive en Pasto"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "¿Cuál oración está bien escrita?",
+              "opciones": [
+                {
+                  "emoji": "✏️",
+                  "texto": "los niños juegan en el bosque."
+                },
+                {
+                  "emoji": "✏️",
+                  "texto": "Los niños juegan en el bosque."
+                },
+                {
+                  "emoji": "✏️",
+                  "texto": "Los niños juegan en el bosque"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "¿Cuál oración está bien escrita?",
+              "opciones": [
+                {
+                  "emoji": "✏️",
+                  "texto": "neil armstrong llegó a la Luna."
+                },
+                {
+                  "emoji": "✏️",
+                  "texto": "Neil armstrong llegó a la luna"
+                },
+                {
+                  "emoji": "✏️",
+                  "texto": "Neil Armstrong llegó a la Luna."
+                }
+              ],
+              "correcta": 2
+            },
+            {
+              "enunciado": "¿Dónde va el punto?",
+              "opciones": [
+                {
+                  "emoji": "🔚",
+                  "texto": "Al final de la oración"
+                },
+                {
+                  "emoji": "🔝",
+                  "texto": "Al principio de la oración"
+                }
+              ],
+              "correcta": 0
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 21: «Escribir el inicio de cada párrafo con mayúscula. Escribir con mayúscula los nombres propios. Poner los puntos apartes y el punto final».",
+            "pagina": 45
+          }
+        }
+      ]
+    },
+    {
+      "id": "n4-secuencias",
+      "numero": 4,
+      "titulo": "Inicio, luego y final",
+      "emoji": "📖",
+      "objetivo": "Ordeno los hechos de una historia (inicio, desarrollo y final) e identifico personajes y lugares.",
+      "actividades": [
+        {
+          "id": "lg1-n4-a1-ordena-hamburguesa",
+          "tipo": "ordena",
+          "titulo": "El cuento de la hamburguesa",
+          "instruccion": "Ordena lo que pasó en el cuento de la hamburguesa: ¿qué pasó primero, luego y al final?",
+          "pasos": [
+            {
+              "emoji": "🍔",
+              "texto": "Había una vez una hamburguesa que quería ser sabrosísima."
+            },
+            {
+              "emoji": "📻",
+              "texto": "Un día escuchó que la llamaban comida chatarra."
+            },
+            {
+              "emoji": "😶",
+              "texto": "Decidió no tener sabor cuando la comían todos los días."
+            },
+            {
+              "emoji": "🥗",
+              "texto": "Finalmente, los clientes comieron más sano."
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 8: «Había una vez una hamburguesa que cada día se despertaba y esperaba pacientemente para ser preparada […] ella hacía todo lo posible por ser sabrosísima».",
+            "pagina": 19
+          }
+        },
+        {
+          "id": "lg1-n4-a2-arrastra-personajes-lugares",
+          "tipo": "arrastra",
+          "titulo": "¿Personaje o lugar?",
+          "instruccion": "Piensa en el cuento “La escuela pequeña”. Arrastra cada tarjeta: ¿es un personaje o un lugar?",
+          "grupos": [
+            {
+              "id": "personaje",
+              "emoji": "🧑",
+              "texto": "Personaje"
+            },
+            {
+              "id": "lugar",
+              "emoji": "🗺️",
+              "texto": "Lugar"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "👩‍🏫",
+              "texto": "La maestra",
+              "grupo": "personaje"
+            },
+            {
+              "emoji": "🏘️",
+              "texto": "El pueblo",
+              "grupo": "lugar"
+            },
+            {
+              "emoji": "🧒",
+              "texto": "Los niños",
+              "grupo": "personaje"
+            },
+            {
+              "emoji": "🌳",
+              "texto": "El bosque",
+              "grupo": "lugar"
+            },
+            {
+              "emoji": "🎩",
+              "texto": "El alcalde",
+              "grupo": "personaje"
+            },
+            {
+              "emoji": "🏫",
+              "texto": "La escuela",
+              "grupo": "lugar"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 10 · La escuela pequeña: «Había una vez un pueblo que tenía una escuela tan pequeña […] que solo cabían la maestra y un niño». Los niños jugaban en el bosque y el alcalde quería una escuela grande.",
+            "pagina": 23
+          }
+        },
+        {
+          "id": "lg1-n4-a3-completa-conectores",
+          "tipo": "completa",
+          "titulo": "Palabras para contar historias",
+          "instruccion": "Toca la palabra que mejor completa la historia.",
+          "oraciones": [
+            {
+              "emoji": "📖",
+              "texto": "___ una vez un pueblo con una escuela muy pequeña.",
+              "opciones": [
+                "Había",
+                "Finalmente",
+                "Ayer fue"
+              ],
+              "correcta": 0
+            },
+            {
+              "emoji": "🎩",
+              "texto": "___, el alcalde quiso hacer una escuela grande.",
+              "opciones": [
+                "Había una vez",
+                "Un día",
+                "Fin"
+              ],
+              "correcta": 1
+            },
+            {
+              "emoji": "🌳",
+              "texto": "___, el pueblo tuvo la escuela más grande del mundo: el bosque.",
+              "opciones": [
+                "Había una vez",
+                "Primero",
+                "Finalmente"
+              ],
+              "correcta": 2
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 9: para contar una historia usamos «Había una vez…», «Luego…» y «Finalmente…».",
+            "pagina": 21
+          }
+        }
+      ]
+    },
+    {
+      "id": "n5-tipos-texto",
+      "numero": 5,
+      "titulo": "Tipos de texto",
+      "emoji": "📰",
+      "objetivo": "Reconozco poemas, cuentos, noticias y afiches, y para qué sirve cada uno.",
+      "actividades": [
+        {
+          "id": "lg1-n5-a1-memoria-tipos-texto",
+          "tipo": "memoria",
+          "titulo": "Cada texto y su propósito",
+          "instruccion": "Voltea dos cartas. Busca cada tipo de texto con lo que hace.",
+          "pares": [
+            {
+              "izquierda": {
+                "emoji": "🌙",
+                "texto": "Poema"
+              },
+              "derecha": {
+                "emoji": "💭",
+                "texto": "Expresa sentimientos en versos"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "📰",
+                "texto": "Noticia"
+              },
+              "derecha": {
+                "emoji": "ℹ️",
+                "texto": "Informa un hecho real"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "📢",
+                "texto": "Afiche"
+              },
+              "derecha": {
+                "emoji": "🙋",
+                "texto": "Invita a participar"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "📖",
+                "texto": "Cuento"
+              },
+              "derecha": {
+                "emoji": "🐉",
+                "texto": "Narra una historia"
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 9: «Un cuento, porque narra acciones que le suceden a una hamburguesa». «Una noticia, porque informa hechos». Desafío 14: el afiche invita a participar en un concurso.",
+            "pagina": 22
+          }
+        },
+        {
+          "id": "lg1-n5-a2-ordena-noticia",
+          "tipo": "ordena",
+          "titulo": "Las partes de la noticia",
+          "instruccion": "Ordena las partes de la noticia de arriba hacia abajo.",
+          "pasos": [
+            {
+              "emoji": "🏷️",
+              "texto": "Título: Estudiantes ganan concurso"
+            },
+            {
+              "emoji": "✍️",
+              "texto": "Bajada: Dos alumnos fueron premiados por sus ideas"
+            },
+            {
+              "emoji": "📄",
+              "texto": "Cuerpo: Catalina creó cajas para desechos tecnológicos…"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 21: «Estructura de una noticia: Título, Bajada, Cuerpo de la noticia, Fotografía».",
+            "pagina": 45
+          }
+        },
+        {
+          "id": "lg1-n5-a3-sopa-textos",
+          "tipo": "sopa",
+          "titulo": "Sopa de letras de los textos",
+          "instruccion": "Encuentra en la sopa de letras los nombres de los textos que aprendiste.",
+          "tamano": 8,
+          "palabras": [
+            {
+              "emoji": "🌙",
+              "texto": "Poema"
+            },
+            {
+              "emoji": "📖",
+              "texto": "Cuento"
+            },
+            {
+              "emoji": "📰",
+              "texto": "Noticia"
+            },
+            {
+              "emoji": "📢",
+              "texto": "Afiche"
+            },
+            {
+              "emoji": "🎵",
+              "texto": "Verso"
+            }
+          ],
+          "pista": {
+            "texto": "En este período leíste poemas (escritos en versos), cuentos, noticias y afiches. Un poema es «¡Cuidado, la Luna sueña!».",
+            "pagina": 39
+          }
+        }
+      ]
+    }
+  ]
+}

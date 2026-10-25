@@ -1,0 +1,2 @@
+# Los contenidos se verifican con sha256: Git no debe cambiar sus saltos de línea.
+backend/contenidos/** -text

@@ -22,6 +22,9 @@ dependencies:
   pdfx: ^2.11.0
   firebase_core: ^5.1.0
   firebase_storage: ^14.0.1
+  cloud_firestore: ^7.1.0
+  firebase_auth: ^7.0.1
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:
