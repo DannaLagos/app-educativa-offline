@@ -5,11 +5,16 @@ import '../../../../shared/widgets/boton_grande.dart';
 import '../../../../shared/widgets/etiqueta.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../../modulos/domain/area_resumen.dart';
+import '../../../modulos/domain/modulo.dart';
 import '../../../modulos/presentation/controllers/carga_al_mostrar.dart';
 import '../../../modulos/presentation/controllers/modulos_controller.dart';
 import '../../../modulos/presentation/controllers/modulos_scope.dart';
 import '../../../modulos/presentation/screens/areas_screen.dart';
+import '../../../modulos/presentation/screens/detalle_modulo_screen.dart';
 import '../../../modulos/presentation/widgets/tarjeta_area.dart';
+import '../../../progreso/domain/progreso_modulo.dart';
+import '../../../progreso/presentation/progreso_scope.dart';
+import '../../../sincronizacion/presentation/sincronizacion_scope.dart';
 import '../../domain/perfil_estudiante.dart';
 
 class InicioScreen extends StatefulWidget {
@@ -41,6 +46,11 @@ class _InicioScreenState extends State<InicioScreen>
   Widget build(BuildContext context) {
     final controller = ModulosScope.of(context);
     final areas = AreaResumen.agrupar(controller.catalogo);
+    // HU08: el módulo donde iba el estudiante (se lee del dispositivo).
+    final progresos = ProgresoScope.maybeOf(context);
+    final ultimoId = progresos?.ultimoModuloId;
+    final ultimoModulo =
+        ultimoId == null ? null : controller.buscarModulo(ultimoId);
 
     return Scaffold(
       body: SafeArea(
@@ -56,7 +66,15 @@ class _InicioScreenState extends State<InicioScreen>
               ),
               const SizedBox(height: 24),
               _TarjetaContinuar(
-                onContinuar: () => _abrir(const AreasScreen()),
+                ultimoModulo: ultimoModulo,
+                progreso: ultimoModulo == null
+                    ? null
+                    : progresos?.progresoDe(ultimoModulo.id),
+                onContinuar: () => _abrir(
+                  ultimoModulo == null
+                      ? const AreasScreen()
+                      : DetalleModuloScreen(moduloId: ultimoModulo.id),
+                ),
               ),
               const SizedBox(height: 24),
               _EncabezadoAreas(
@@ -81,7 +99,11 @@ class _InicioScreenState extends State<InicioScreen>
       return null;
     }
 
-    if (controller.vieneDeCache) {
+    // HU10: si está disponible, se usa el estado de la red en vivo.
+    final hayConexion = SincronizacionScope.maybeOf(context)?.hayConexion ??
+        !controller.vieneDeCache;
+
+    if (!hayConexion) {
       return const Etiqueta.gris('Sin conexión', icono: Icons.wifi_off_rounded);
     }
 
@@ -263,9 +285,33 @@ class _SinAreas extends StatelessWidget {
 class _TarjetaContinuar extends StatelessWidget {
   static const Color _colorSombra = Color(0x0A1F2A44);
 
+  final Modulo? ultimoModulo;
+  final ProgresoModulo? progreso;
   final VoidCallback onContinuar;
 
-  const _TarjetaContinuar({required this.onContinuar});
+  const _TarjetaContinuar({
+    required this.ultimoModulo,
+    required this.progreso,
+    required this.onContinuar,
+  });
+
+  String get _resumen {
+    final datos = progreso;
+
+    if (datos == null) {
+      return 'Sigue donde ibas.';
+    }
+
+    final partes = [
+      if (datos.actividadesCompletadas > 0)
+        '⭐ ${datos.actividadesCompletadas} '
+            '${datos.actividadesCompletadas == 1 ? 'juego' : 'juegos'}',
+      if (datos.lecturas.isNotEmpty)
+        '📖 página ${datos.lecturas.first.ultimaPagina}',
+    ];
+
+    return partes.isEmpty ? 'Sigue donde ibas.' : partes.join(' · ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -287,22 +333,29 @@ class _TarjetaContinuar extends StatelessWidget {
         children: [
           const Etiqueta.azul('APRENDIZAJE'),
           const SizedBox(height: 16),
-          const Text(
-            'Continúa aprendiendo',
-            style: TextStyle(
+          Text(
+            ultimoModulo == null
+                ? 'Continúa aprendiendo'
+                : 'Vas en: ${ultimoModulo!.nombre}',
+            style: const TextStyle(
               color: AppTheme.texto,
               fontSize: 22,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            '¿Qué quieres aprender hoy?',
-            style: TextStyle(color: AppTheme.textoSecundario, fontSize: 17),
+          Text(
+            ultimoModulo == null ? '¿Qué quieres aprender hoy?' : _resumen,
+            style: const TextStyle(
+              color: AppTheme.textoSecundario,
+              fontSize: 17,
+            ),
           ),
           const SizedBox(height: 20),
           BotonGrande(
-            texto: 'Continuar aprendiendo',
+            texto: ultimoModulo == null
+                ? 'Continuar aprendiendo'
+                : 'Continuar donde ibas',
             icono: Icons.play_arrow_rounded,
             onPressed: onContinuar,
           ),

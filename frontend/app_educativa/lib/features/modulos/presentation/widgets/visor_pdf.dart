@@ -3,12 +3,23 @@ import 'package:pdfx/pdfx.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
+typedef AlCambiarPagina = void Function(int pagina, int totalPaginas);
+
 class VisorPdf extends StatefulWidget {
   final String ruta;
+
+  /// Página con la que se abre el documento (empieza en 1).
+  final int paginaInicial;
+
+  /// Se llama al abrir el documento y cada vez que cambia la página, para
+  /// guardar el progreso de lectura (HU06).
+  final AlCambiarPagina? onPaginaCambiada;
 
   const VisorPdf({
     super.key,
     required this.ruta,
+    this.paginaInicial = 1,
+    this.onPaginaCambiada,
   });
 
   @override
@@ -21,6 +32,7 @@ class _VisorPdfState extends State<VisorPdf> {
 
   late final PdfController _controller = PdfController(
     document: PdfDocument.openFile(widget.ruta),
+    initialPage: widget.paginaInicial < 1 ? 1 : widget.paginaInicial,
   );
 
   int _totalPaginas = 0;
@@ -48,9 +60,8 @@ class _VisorPdfState extends State<VisorPdf> {
   Widget _construirDocumento() {
     return PdfView(
       controller: _controller,
-      onDocumentLoaded: (documento) {
-        setState(() => _totalPaginas = documento.pagesCount);
-      },
+      onDocumentLoaded: _alCargarDocumento,
+      onPageChanged: _alCambiarPagina,
       backgroundDecoration: const BoxDecoration(color: AppTheme.grisSuave),
       builders: PdfViewBuilders<DefaultBuilderOptions>(
         options: const DefaultBuilderOptions(),
@@ -59,6 +70,26 @@ class _VisorPdfState extends State<VisorPdf> {
         errorBuilder: (_, __) => const _ErrorDocumento(),
       ),
     );
+  }
+
+  void _alCargarDocumento(PdfDocument documento) {
+    final total = documento.pagesCount;
+    var pagina = widget.paginaInicial < 1 ? 1 : widget.paginaInicial;
+
+    // Si el documento cambió y ahora tiene menos páginas, va a la última.
+    if (pagina > total) {
+      pagina = total;
+      _controller.jumpToPage(total);
+    }
+
+    setState(() => _totalPaginas = total);
+    widget.onPaginaCambiada?.call(pagina, total);
+  }
+
+  void _alCambiarPagina(int pagina) {
+    if (_totalPaginas > 0) {
+      widget.onPaginaCambiada?.call(pagina, _totalPaginas);
+    }
   }
 
   Widget _construirBarra(int pagina) {

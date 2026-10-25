@@ -6,12 +6,13 @@
       "area": "Ciencias Sociales",
       "grado": 1,
       "descripcion": "Fichas de Ciencias Sociales del modelo Escuela Nueva para grado primero.",
-      "version": 2,
+      "version": 5,
       "habilitado": true,
       "contenidos": [
         "Guía 1: ¿Quién soy yo?",
         "Guía 2: La familia",
-        "Guía 3: Mis vecinos y mi región"
+        "Guía 3: Mis vecinos y mi región",
+        "Juegos: 5 niveles para aprender jugando"
       ]
     },
     {
@@ -20,14 +21,15 @@
       "area": "Lenguaje",
       "grado": 3,
       "descripcion": "Cuaderno de trabajo de Lenguaje para grado tercero, primer período.",
-      "version": 2,
+      "version": 4,
       "habilitado": true,
       "contenidos": [
         "Poemas y adjetivos",
         "Textos de opinión e instructivos",
         "Cuentos e historietas",
         "Noticias y afiches",
-        "El espacio: resúmenes e infografías"
+        "El espacio: resúmenes e infografías",
+        "Juegos: 5 niveles para aprender jugando"
       ]
     },
     {
@@ -36,14 +38,15 @@
       "area": "Lenguaje",
       "grado": 3,
       "descripcion": "Cuaderno de trabajo de Lenguaje para grado tercero, segundo período.",
-      "version": 2,
+      "version": 4,
       "habilitado": true,
       "contenidos": [
         "Poemas sobre lugares imaginados",
         "La vida en el espacio",
         "Dibujos animados y cronologías",
         "Papelucho y cuentos de misterio",
-        "Cartas, cuentos y sinopsis"
+        "Cartas, cuentos y sinopsis",
+        "Juegos: 5 niveles para aprender jugando"
       ]
     }
   ]

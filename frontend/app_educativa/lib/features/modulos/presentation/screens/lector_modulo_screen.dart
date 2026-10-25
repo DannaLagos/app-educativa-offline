@@ -5,25 +5,24 @@ import '../../../../shared/widgets/mensaje_con_accion.dart';
 import '../../domain/modulo.dart';
 import '../../domain/recurso_local.dart';
 import '../controllers/modulos_scope.dart';
-import '../widgets/visor_pdf.dart';
+import '../widgets/visor_pdf_con_progreso.dart';
 
 typedef ConstructorVisor = Widget Function(RecursoLocal recurso);
+
+const String tipoRecursoDocumento = 'pdf';
 
 class LectorModuloScreen extends StatefulWidget {
   final Modulo modulo;
 
-  // Reemplazable en pruebas porque pdfx usa código nativo.
-  final ConstructorVisor construirVisor;
+  // Reemplazable en pruebas porque pdfx usa código nativo. Si es null se usa
+  // el visor de PDF que guarda la página leída (HU06).
+  final ConstructorVisor? construirVisor;
 
   const LectorModuloScreen({
     super.key,
     required this.modulo,
-    this.construirVisor = _construirVisorPdf,
+    this.construirVisor,
   });
-
-  static Widget _construirVisorPdf(RecursoLocal recurso) {
-    return VisorPdf(ruta: recurso.ruta);
-  }
 
   @override
   State<LectorModuloScreen> createState() => _LectorModuloScreenState();
@@ -38,12 +37,17 @@ class _LectorModuloScreenState extends State<LectorModuloScreen> {
     _recursos ??= ModulosScope.of(context).obtenerRecursos(widget.modulo);
   }
 
+  Widget _construirVisor(RecursoLocal recurso) {
+    return widget.construirVisor?.call(recurso) ??
+        VisorPdfConProgreso(moduloId: widget.modulo.id, recurso: recurso);
+  }
+
   void _abrirRecurso(RecursoLocal recurso) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => Scaffold(
           appBar: AppBar(title: Text(recurso.titulo)),
-          body: widget.construirVisor(recurso),
+          body: _construirVisor(recurso),
         ),
       ),
     );
@@ -70,14 +74,18 @@ class _LectorModuloScreenState extends State<LectorModuloScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final recursos = snapshot.data;
+    // El lector solo muestra documentos; los juegos se abren desde el mapa
+    // de niveles (HU07).
+    final recursos = snapshot.data
+        ?.where((recurso) => recurso.tipo == tipoRecursoDocumento)
+        .toList();
 
     if (snapshot.hasError || recursos == null || recursos.isEmpty) {
       return _construirError();
     }
 
     if (recursos.length == 1) {
-      return widget.construirVisor(recursos.single);
+      return _construirVisor(recursos.single);
     }
 
     return _construirSelectorDeRecursos(recursos);

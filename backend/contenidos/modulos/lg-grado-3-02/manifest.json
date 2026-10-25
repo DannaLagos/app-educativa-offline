@@ -1,6 +1,6 @@
 {
   "id": "lg-grado-3-02",
-  "version": 2,
+  "version": 4,
   "recursos": [
     {
       "archivo": "LG_Grado03_Periodo2.pdf",
@@ -8,6 +8,13 @@
       "tipo": "pdf",
       "tamano": 3593797,
       "sha256": "e17ebbb38578055fc479877b0ce777366ebb6b699d4ce6de1a1f7c499ca6905b"
+    },
+    {
+      "archivo": "actividades.json",
+      "titulo": "Juegos de Lenguaje grado 3 - Período 2",
+      "tipo": "actividades",
+      "tamano": 30006,
+      "sha256": "f15483981cd17a0e993db10d51030857659473d1df748d5c1ab92b549b615e5e"
     }
   ]
 }

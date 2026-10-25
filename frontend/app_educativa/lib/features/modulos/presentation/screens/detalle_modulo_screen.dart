@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/aviso_resultado.dart';
 import '../../../../shared/widgets/boton_grande.dart';
+import '../../../actividades/presentation/screens/mapa_niveles_screen.dart';
+import '../../../progreso/domain/progreso_modulo.dart';
+import '../../../progreso/presentation/progreso_scope.dart';
 import '../../domain/estado_descarga.dart';
 import '../../domain/modulo.dart';
 import '../controllers/modulos_controller.dart';
@@ -10,7 +13,7 @@ import '../controllers/modulos_scope.dart';
 import '../widgets/estado_descarga_chip.dart';
 import 'lector_modulo_screen.dart';
 
-class DetalleModuloScreen extends StatelessWidget {
+class DetalleModuloScreen extends StatefulWidget {
   final String moduloId;
 
   const DetalleModuloScreen({
@@ -19,9 +22,29 @@ class DetalleModuloScreen extends StatelessWidget {
   });
 
   @override
+  State<DetalleModuloScreen> createState() => _DetalleModuloScreenState();
+}
+
+class _DetalleModuloScreenState extends State<DetalleModuloScreen> {
+  bool _progresoSolicitado = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // HU08: se lee el avance guardado en el dispositivo (sin internet).
+    if (!_progresoSolicitado) {
+      _progresoSolicitado = true;
+      ProgresoScope.leer(context)?.cargarProgreso(widget.moduloId);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = ModulosScope.of(context);
-    final modulo = controller.buscarModulo(moduloId);
+    final modulo = controller.buscarModulo(widget.moduloId);
+    final progreso =
+        ProgresoScope.maybeOf(context)?.progresoDe(widget.moduloId);
 
     if (modulo == null) {
       return const _ModuloNoDisponible();
@@ -34,7 +57,11 @@ class DetalleModuloScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: _ContenidoDetalle(modulo: modulo, controller: controller),
+          child: _ContenidoDetalle(
+            modulo: modulo,
+            controller: controller,
+            progreso: progreso,
+          ),
         ),
       ),
     );
@@ -61,10 +88,12 @@ class _ModuloNoDisponible extends StatelessWidget {
 class _ContenidoDetalle extends StatelessWidget {
   final Modulo modulo;
   final ModulosController controller;
+  final ProgresoModulo? progreso;
 
   const _ContenidoDetalle({
     required this.modulo,
     required this.controller,
+    required this.progreso,
   });
 
   bool get _debeMostrarFechaDescarga =>
@@ -85,7 +114,11 @@ class _ContenidoDetalle extends StatelessWidget {
         const SizedBox(height: 8),
         _Dato(icono: Icons.grade_outlined, texto: 'Grado ${modulo.grado}'),
         const SizedBox(height: 24),
-        _SeccionDescarga(modulo: modulo, controller: controller),
+        _SeccionDescarga(
+          modulo: modulo,
+          controller: controller,
+          progreso: progreso,
+        ),
         if (_debeMostrarFechaDescarga) ...[
           const SizedBox(height: 8),
           _FechaDescarga(fecha: modulo.fechaDescarga!),
@@ -133,11 +166,26 @@ class _FechaDescarga extends StatelessWidget {
 class _SeccionDescarga extends StatelessWidget {
   final Modulo modulo;
   final ModulosController controller;
+  final ProgresoModulo? progreso;
 
   const _SeccionDescarga({
     required this.modulo,
     required this.controller,
+    required this.progreso,
   });
+
+  /// El documento que el estudiante leyó por última vez.
+  ProgresoLectura? get _ultimaLectura {
+    final lecturas = progreso?.lecturas ?? const <ProgresoLectura>[];
+
+    if (lecturas.isEmpty) {
+      return null;
+    }
+
+    return lecturas.reduce(
+      (a, b) => a.ultimaActualizacion.isAfter(b.ultimaActualizacion) ? a : b,
+    );
+  }
 
   Future<void> _descargar(BuildContext context) async {
     final mensajero = ScaffoldMessenger.of(context);
@@ -158,6 +206,14 @@ class _SeccionDescarga extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => LectorModuloScreen(modulo: modulo),
+      ),
+    );
+  }
+
+  void _abrirJuegos(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapaNivelesScreen(modulo: modulo),
       ),
     );
   }
@@ -226,8 +282,26 @@ class _SeccionDescarga extends StatelessWidget {
       ],
       if (modulo.tieneActualizacion)
         ..._construirOfertaDeActualizacion(context),
+      if (progreso?.estaIniciado ?? false) ...[
+        _TarjetaAvance(
+          progreso: progreso!,
+          ultimaLectura: _ultimaLectura,
+        ),
+        const SizedBox(height: 16),
+      ],
       BotonGrande(
-        texto: 'Abrir módulo',
+        texto: (progreso?.actividadesCompletadas ?? 0) > 0
+            ? 'Seguir jugando'
+            : 'Jugar y aprender',
+        icono: Icons.videogame_asset_rounded,
+        onPressed: () => _abrirJuegos(context),
+      ),
+      const SizedBox(height: 12),
+      BotonGrande(
+        // HU08: el lector abre en la página donde quedó.
+        texto: _ultimaLectura == null
+            ? 'Abrir módulo'
+            : 'Seguir leyendo (página ${_ultimaLectura!.ultimaPagina})',
         icono: Icons.menu_book_rounded,
         color: AppTheme.verde,
         onPressed: () => _abrirLector(context),
@@ -258,6 +332,55 @@ class _SeccionDescarga extends StatelessWidget {
       ),
       const SizedBox(height: 12),
     ];
+  }
+}
+
+/// Resumen de lo que el estudiante ya avanzó en el módulo (HU08).
+class _TarjetaAvance extends StatelessWidget {
+  final ProgresoModulo progreso;
+  final ProgresoLectura? ultimaLectura;
+
+  const _TarjetaAvance({required this.progreso, required this.ultimaLectura});
+
+  @override
+  Widget build(BuildContext context) {
+    final lectura = ultimaLectura;
+    final juegos = progreso.actividadesCompletadas;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.verdeSuave,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.verde, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '📌 Tu avance',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          if (juegos > 0)
+            Text(
+              '⭐ ${juegos == 1 ? '1 juego terminado' : '$juegos juegos terminados'}',
+              style: const TextStyle(fontSize: 18),
+            ),
+          if (lectura != null)
+            Text(
+              '📖 Vas en la página ${lectura.ultimaPagina} de '
+              '${lectura.totalPaginas}',
+              style: const TextStyle(fontSize: 18),
+            ),
+          const SizedBox(height: 4),
+          const Text(
+            'Puedes seguir donde ibas, aunque no tengas internet.',
+            style: TextStyle(fontSize: 16, color: AppTheme.verde),
+          ),
+        ],
+      ),
+    );
   }
 }
 
