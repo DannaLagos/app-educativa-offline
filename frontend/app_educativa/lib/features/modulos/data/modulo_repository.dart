@@ -1,24 +1,15 @@
+import 'dart:developer';
+
 import '../../../core/network/conectividad_service.dart';
 import '../../../core/network/servidor_exception.dart';
+import '../domain/contenido_incompleto_exception.dart';
 import '../domain/estado_descarga.dart';
 import '../domain/modulo.dart';
 import '../domain/recurso_local.dart';
+import '../domain/resultado_catalogo.dart';
 import 'almacenamiento_modulos.dart';
 import 'modulo_local_datasource.dart';
 import 'modulo_remote_datasource.dart';
-
-class ResultadoCatalogo {
-  final List<Modulo> modulos;
-
-  /// true cuando no se pudo consultar el servidor y los módulos vienen
-  /// de la copia guardada en el dispositivo.
-  final bool desdeCache;
-
-  const ResultadoCatalogo({
-    required this.modulos,
-    required this.desdeCache,
-  });
-}
 
 class ModuloRepository {
   final ModuloRemoteDataSource _remote;
@@ -36,44 +27,23 @@ class ModuloRepository {
         _conectividad = conectividad,
         _almacenamiento = almacenamiento;
 
-  /// Intenta actualizar el catálogo desde el servidor; si no hay conexión o
-  /// el servidor falla, devuelve el catálogo guardado en SQLite.
   Future<ResultadoCatalogo> obtenerCatalogo() async {
-    if (await _conectividad.hayConexion()) {
-      try {
-        final remotos = await _remote.obtenerCatalogo();
-        await _local.guardarCatalogo(remotos);
-
-        return ResultadoCatalogo(
-          modulos: await _local.obtenerCatalogo(),
-          desdeCache: false,
-        );
-      } on ServidorException {
-        // Se usa la caché local.
-      }
-    }
+    final seActualizoDesdeServidor = await _actualizarCatalogoDesdeServidor();
 
     return ResultadoCatalogo(
       modulos: await _local.obtenerCatalogo(),
-      desdeCache: true,
+      vieneDeCache: !seActualizoDesdeServidor,
     );
   }
 
   Future<Modulo?> obtenerModulo(String id) => _local.obtenerModulo(id);
 
-  /// Módulos guardados en el dispositivo, aunque ya no estén habilitados en
-  /// el catálogo (se pueden seguir usando hasta que se eliminen).
   Future<List<Modulo>> obtenerDescargados() {
     return _local.obtenerPorEstado(EstadoDescarga.descargado);
   }
 
-  /// Borra los archivos del módulo y lo deja como "no descargado". El módulo
-  /// sigue en el catálogo y el progreso del estudiante (tabla
-  /// progreso_modulo) no se toca.
+  // Primero la base: si falla el borrado, la carpeta huérfana se limpia al iniciar.
   Future<void> eliminarDescarga(Modulo modulo) async {
-    // Primero la base de datos: si luego falla el borrado, la carpeta queda
-    // huérfana y se limpia al próximo inicio; nunca queda un módulo
-    // "descargado" sin archivos.
     await _local.actualizarEstadoDescarga(
       modulo.id,
       EstadoDescarga.noDescargado,
@@ -81,11 +51,6 @@ class ModuloRepository {
     await _almacenamiento.eliminar(modulo.id);
   }
 
-  /// Recursos de un módulo descargado. Solo lee archivos del dispositivo:
-  /// no consulta la conexión ni el servidor, así que funciona sin internet.
-  ///
-  /// Si faltan archivos, el módulo pasa a "error" para que se pueda volver
-  /// a descargar.
   Future<List<RecursoLocal>> obtenerRecursosLocales(Modulo modulo) async {
     final rutaLocal = modulo.rutaLocal;
 
@@ -100,6 +65,24 @@ class ModuloRepository {
     } on ContenidoIncompletoException {
       await _local.actualizarEstadoDescarga(modulo.id, EstadoDescarga.error);
       rethrow;
+    }
+  }
+
+  Future<bool> _actualizarCatalogoDesdeServidor() async {
+    if (!await _conectividad.hayConexion()) {
+      return false;
+    }
+
+    try {
+      final modulosRemotos = await _remote.obtenerCatalogo();
+      await _local.guardarCatalogo(modulosRemotos);
+      return true;
+    } on ServidorException catch (error) {
+      log(
+        'Se usa el catálogo guardado: $error',
+        name: 'ModuloRepository',
+      );
+      return false;
     }
   }
 }

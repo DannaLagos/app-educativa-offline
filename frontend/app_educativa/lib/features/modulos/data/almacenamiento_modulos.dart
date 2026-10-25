@@ -4,140 +4,134 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../domain/contenido_incompleto_exception.dart';
 import '../domain/manifest_modulo.dart';
 import '../domain/recurso_local.dart';
 
-/// Maneja las carpetas de los módulos en el almacenamiento privado de la app:
-///
-///   modulos/.tmp_<id>/  descarga en curso (nunca se lee desde la interfaz)
-///   modulos/<id>/       módulo completo y verificado
+// Estructura: modulos/.tmp_<id>/ (descarga en curso) y modulos/<id>/ (módulo verificado).
 class AlmacenamientoModulos {
   static const String _prefijoTemporal = '.tmp_';
+  static const String _nombreCarpetaModulos = 'modulos';
+  static const String _nombreManifest = 'manifest.json';
 
-  final Future<Directory> Function() _directorioBase;
+  final Future<Directory> Function() _obtenerDirectorioBase;
 
   AlmacenamientoModulos({
     Future<Directory> Function()? directorioBase,
-  }) : _directorioBase = directorioBase ?? getApplicationSupportDirectory;
-
-  Future<Directory> _carpetaModulos() async {
-    final base = await _directorioBase();
-    final carpeta = Directory(p.join(base.path, 'modulos'));
-    await carpeta.create(recursive: true);
-
-    return carpeta;
-  }
+  }) : _obtenerDirectorioBase =
+            directorioBase ?? getApplicationSupportDirectory;
 
   Future<Directory> carpetaFinal(String moduloId) async {
     return Directory(p.join((await _carpetaModulos()).path, moduloId));
   }
 
-  /// Crea una carpeta temporal vacía para descargar el módulo.
   Future<Directory> crearCarpetaTemporal(String moduloId) async {
-    final temporal = Directory(
-      p.join((await _carpetaModulos()).path, '$_prefijoTemporal$moduloId'),
-    );
-
-    if (await temporal.exists()) {
-      await temporal.delete(recursive: true);
-    }
+    final temporal = await _carpetaTemporal(moduloId);
+    await _eliminarSiExiste(temporal);
 
     return temporal.create(recursive: true);
   }
 
-  /// Reemplaza la carpeta final por la temporal con un renombrado, que en el
-  /// mismo sistema de archivos es atómico: o queda el módulo completo o no
-  /// queda nada.
+  // El renombrado es atómico en el mismo sistema de archivos: queda todo o nada.
   Future<Directory> confirmar(String moduloId) async {
-    final carpetaModulos = await _carpetaModulos();
-    final temporal = Directory(
-      p.join(carpetaModulos.path, '$_prefijoTemporal$moduloId'),
-    );
-    final destino = Directory(p.join(carpetaModulos.path, moduloId));
-
-    if (await destino.exists()) {
-      await destino.delete(recursive: true);
-    }
+    final temporal = await _carpetaTemporal(moduloId);
+    final destino = await carpetaFinal(moduloId);
+    await _eliminarSiExiste(destino);
 
     return temporal.rename(destino.path);
   }
 
-  /// Lee los recursos de un módulo descargado usando solo archivos locales.
   Future<List<RecursoLocal>> leerRecursos(String rutaLocal) async {
-    final manifestArchivo = File(p.join(rutaLocal, 'manifest.json'));
+    final manifest = await _leerManifest(rutaLocal);
 
-    if (!await manifestArchivo.exists()) {
-      throw ContenidoIncompletoException('Falta ${manifestArchivo.path}');
+    return [
+      for (final recurso in manifest.recursos)
+        await _ubicarRecurso(rutaLocal, recurso),
+    ];
+  }
+
+  Future<void> eliminar(String moduloId) async {
+    await _eliminarSiExiste(await carpetaFinal(moduloId));
+  }
+
+  Future<void> eliminarTemporal(String moduloId) async {
+    await _eliminarSiExiste(await _carpetaTemporal(moduloId));
+  }
+
+  Future<void> limpiar({required Set<String> idsDescargados}) async {
+    final carpetaModulos = await _carpetaModulos();
+
+    await for (final entrada in carpetaModulos.list()) {
+      if (entrada is Directory &&
+          _esCarpetaSobrante(entrada, idsDescargados)) {
+        await entrada.delete(recursive: true);
+      }
+    }
+  }
+
+  bool _esCarpetaSobrante(Directory carpeta, Set<String> idsDescargados) {
+    final nombre = p.basename(carpeta.path);
+
+    return nombre.startsWith(_prefijoTemporal) ||
+        !idsDescargados.contains(nombre);
+  }
+
+  Future<ManifestModulo> _leerManifest(String rutaLocal) async {
+    final archivoManifest = File(p.join(rutaLocal, _nombreManifest));
+
+    if (!await archivoManifest.exists()) {
+      throw ContenidoIncompletoException('Falta ${archivoManifest.path}');
     }
 
-    final ManifestModulo manifest;
+    final contenido = await archivoManifest.readAsString();
 
     try {
-      manifest = ManifestModulo.fromJson(
-        jsonDecode(await manifestArchivo.readAsString())
-            as Map<String, dynamic>,
+      return ManifestModulo.fromJson(
+        jsonDecode(contenido) as Map<String, dynamic>,
       );
     } on FormatException catch (error) {
       throw ContenidoIncompletoException('Manifest dañado: $error');
     } on TypeError catch (error) {
       throw ContenidoIncompletoException('Manifest dañado: $error');
     }
-
-    final recursos = <RecursoLocal>[];
-
-    for (final recurso in manifest.recursos) {
-      final archivo = File(p.join(rutaLocal, recurso.archivo));
-
-      if (!await archivo.exists()) {
-        throw ContenidoIncompletoException('Falta ${archivo.path}');
-      }
-
-      recursos.add(
-        RecursoLocal(
-          titulo: recurso.titulo,
-          tipo: recurso.tipo,
-          ruta: archivo.path,
-        ),
-      );
-    }
-
-    return recursos;
   }
 
-  Future<void> eliminar(String moduloId) async {
-    final carpeta = await carpetaFinal(moduloId);
+  Future<RecursoLocal> _ubicarRecurso(
+    String rutaLocal,
+    RecursoModulo recurso,
+  ) async {
+    final archivo = File(p.join(rutaLocal, recurso.archivo));
 
-    if (await carpeta.exists()) {
-      await carpeta.delete(recursive: true);
+    if (!await archivo.exists()) {
+      throw ContenidoIncompletoException('Falta ${archivo.path}');
     }
-  }
 
-  Future<void> eliminarTemporal(String moduloId) async {
-    final temporal = Directory(
-      p.join((await _carpetaModulos()).path, '$_prefijoTemporal$moduloId'),
+    return RecursoLocal(
+      titulo: recurso.titulo,
+      tipo: recurso.tipo,
+      ruta: archivo.path,
     );
-
-    if (await temporal.exists()) {
-      await temporal.delete(recursive: true);
-    }
   }
 
-  /// Borra descargas que quedaron a medias (por ejemplo, si se cerró la app)
-  /// y carpetas de módulos que la base de datos no reconoce como descargados.
-  Future<void> limpiar({required Set<String> idsDescargados}) async {
+  Future<Directory> _carpetaModulos() async {
+    final base = await _obtenerDirectorioBase();
+    final carpeta = Directory(p.join(base.path, _nombreCarpetaModulos));
+    await carpeta.create(recursive: true);
+
+    return carpeta;
+  }
+
+  Future<Directory> _carpetaTemporal(String moduloId) async {
     final carpetaModulos = await _carpetaModulos();
 
-    await for (final entrada in carpetaModulos.list()) {
-      if (entrada is! Directory) {
-        continue;
-      }
+    return Directory(
+      p.join(carpetaModulos.path, '$_prefijoTemporal$moduloId'),
+    );
+  }
 
-      final nombre = p.basename(entrada.path);
-
-      if (nombre.startsWith(_prefijoTemporal) ||
-          !idsDescargados.contains(nombre)) {
-        await entrada.delete(recursive: true);
-      }
+  Future<void> _eliminarSiExiste(Directory carpeta) async {
+    if (await carpeta.exists()) {
+      await carpeta.delete(recursive: true);
     }
   }
 }

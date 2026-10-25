@@ -1,8 +1,4 @@
-// Credenciales iniciales del superadministrador.
-// Solo se usan la primera vez que se crea la base de datos; después la
-// contraseña queda guardada como hash en SQLite.
-// Para no usar la contraseña por defecto, compila con:
-//   flutter run --dart-define=ADMIN_PASSWORD=<tu_contraseña>
+// Solo se usan al crear la base; cámbialas con --dart-define=ADMIN_USUARIO=... y ADMIN_PASSWORD=...
 class AdminConfig {
   AdminConfig._();
 

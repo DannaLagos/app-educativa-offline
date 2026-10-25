@@ -5,8 +5,6 @@ import '../../../modulos/presentation/screens/mis_descargas_screen.dart';
 import '../../domain/perfil_estudiante.dart';
 import 'inicio_screen.dart';
 
-/// Pantallas principales del estudiante con la barra inferior del diseño.
-/// La pestaña "Progreso" se agregará en el Sprint 2.
 class EstudianteShell extends StatefulWidget {
   final PerfilEstudiante perfil;
 
@@ -20,30 +18,32 @@ class EstudianteShell extends StatefulWidget {
 }
 
 class _EstudianteShellState extends State<EstudianteShell> {
-  int _pestana = 0;
+  static const int _indiceInicio = 0;
+  static const int _indiceDescargas = 1;
 
-  void _seleccionar(int indice) {
-    if (indice == 1) {
-      // Las descargas pueden haber cambiado desde otra pantalla.
+  int _pestanaSeleccionada = _indiceInicio;
+
+  void _seleccionarPestana(int indice) {
+    if (indice == _indiceDescargas) {
       ModulosScope.of(context).cargarDescargados();
     }
 
-    setState(() => _pestana = indice);
+    setState(() => _pestanaSeleccionada = indice);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: _pestana,
+        index: _pestanaSeleccionada,
         children: [
           InicioScreen(perfil: widget.perfil),
           const MisDescargasScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _pestana,
-        onDestinationSelected: _seleccionar,
+        selectedIndex: _pestanaSeleccionada,
+        onDestinationSelected: _seleccionarPestana,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),

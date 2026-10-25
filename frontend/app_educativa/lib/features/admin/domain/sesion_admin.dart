@@ -1,7 +1,6 @@
 import 'superadministrador.dart';
 
-// La sesión vive solo en memoria: al cerrar sesión o cerrar la app,
-// el superadministrador debe autenticarse de nuevo.
+// Vive solo en memoria: al cerrar sesión o la app hay que autenticarse de nuevo.
 class SesionAdmin {
   SesionAdmin._();
 

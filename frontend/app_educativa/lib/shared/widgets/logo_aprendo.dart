@@ -1,48 +1,33 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import 'icono_en_cuadro.dart';
 
-/// Logo de la app: libro sobre un cuadro azul claro y, opcionalmente, el
-/// nombre "Aprendo".
 class LogoAprendo extends StatelessWidget {
-  final double tamano;
-  final bool conNombre;
+  static const double _tamano = 72;
+  static const double _proporcionTexto = 0.5;
 
-  const LogoAprendo({
-    super.key,
-    this.tamano = 72,
-    this.conNombre = true,
-  });
+  const LogoAprendo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: tamano,
-          height: tamano,
-          decoration: BoxDecoration(
-            color: AppTheme.azulClaro,
-            borderRadius: BorderRadius.circular(tamano * 0.28),
-          ),
-          child: Icon(
-            Icons.menu_book_rounded,
-            size: tamano * 0.55,
+        IconoEnCuadro(
+          icono: Icons.menu_book_rounded,
+          colores: (icono: AppTheme.azul, fondo: AppTheme.azulClaro),
+          tamano: _tamano,
+        ),
+        SizedBox(height: 12),
+        Text(
+          'Aprendo',
+          style: TextStyle(
+            fontSize: _tamano * _proporcionTexto,
+            fontWeight: FontWeight.w800,
             color: AppTheme.azul,
           ),
         ),
-        if (conNombre) ...[
-          const SizedBox(height: 12),
-          Text(
-            'Aprendo',
-            style: TextStyle(
-              fontSize: tamano * 0.5,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.azul,
-            ),
-          ),
-        ],
       ],
     );
   }

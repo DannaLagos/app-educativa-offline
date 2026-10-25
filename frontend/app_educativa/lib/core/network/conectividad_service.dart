@@ -1,7 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-/// Indica si el dispositivo tiene alguna red activa. No garantiza que haya
-/// internet: quien llame al servidor debe manejar también los errores de red.
+// Una red activa no garantiza internet: quien llame al servidor maneja sus errores.
 class ConectividadService {
   final Connectivity _connectivity;
 

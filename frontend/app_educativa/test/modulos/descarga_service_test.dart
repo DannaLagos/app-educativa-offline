@@ -7,6 +7,8 @@ import 'package:app_educativa/features/modulos/data/almacenamiento_modulos.dart'
 import 'package:app_educativa/features/modulos/data/descarga_service.dart';
 import 'package:app_educativa/features/modulos/data/modulo_local_datasource.dart';
 import 'package:app_educativa/features/modulos/data/modulo_remote_datasource.dart';
+import 'package:app_educativa/features/modulos/domain/archivo_por_descargar.dart';
+import 'package:app_educativa/features/modulos/domain/descarga_exception.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/manifest_modulo.dart';
 import 'package:crypto/crypto.dart';
@@ -31,7 +33,12 @@ void main() {
   final modulo = moduloDePrueba();
   final fecha = DateTime(2026, 10, 12, 9, 30);
 
-  // Contenido "del servidor" de cada archivo.
+  setUpAll(
+    () => registerFallbackValue(
+      const ArchivoPorDescargar(moduloId: '', nombre: '', rutaDestino: ''),
+    ),
+  );
+
   final archivos = <String, List<int>>{
     'parte1.pdf': List<int>.generate(300, (i) => i % 256),
     'parte2.pdf': List<int>.generate(700, (i) => (i * 7) % 256),
@@ -58,32 +65,30 @@ void main() {
         ],
       );
 
-  /// Simula dio.download: escribe el archivo en bloques y reporta progreso.
-  /// Si [fallarEn] coincide, escribe la mitad y lanza un error de red.
+  // Simula dio.download por bloques; si el archivo es [fallarEn], escribe la mitad y falla.
   void servidorResponde({String? fallarEn}) {
     when(
       () => remote.descargarArchivo(
-        moduloId: any(named: 'moduloId'),
-        archivo: any(named: 'archivo'),
-        destino: any(named: 'destino'),
+        any(),
         onRecibido: any(named: 'onRecibido'),
       ),
     ).thenAnswer((invocacion) async {
-      final archivo = invocacion.namedArguments[#archivo] as String;
-      final destino = invocacion.namedArguments[#destino] as String;
+      final archivo =
+          invocacion.positionalArguments.first as ArchivoPorDescargar;
       final onRecibido =
           invocacion.namedArguments[#onRecibido] as void Function(int)?;
-      final bytes = archivos[archivo]!;
+      final bytes = archivos[archivo.nombre]!;
+      final destino = File(archivo.rutaDestino);
 
-      if (archivo == fallarEn) {
-        await File(destino).writeAsBytes(bytes.sublist(0, bytes.length ~/ 2));
+      if (archivo.nombre == fallarEn) {
+        await destino.writeAsBytes(bytes.sublist(0, bytes.length ~/ 2));
         throw const ServidorException('Se interrumpió la descarga.');
       }
 
-      final salida = File(destino).openWrite();
-      for (var i = 0; i < bytes.length; i += 100) {
-        final fin = (i + 100).clamp(0, bytes.length);
-        salida.add(bytes.sublist(i, fin));
+      final salida = destino.openWrite();
+      for (var inicio = 0; inicio < bytes.length; inicio += 100) {
+        final fin = (inicio + 100).clamp(0, bytes.length);
+        salida.add(bytes.sublist(inicio, fin));
         onRecibido?.call(fin);
       }
       await salida.close();

@@ -6,27 +6,30 @@ import '../../../perfil/domain/perfil_estudiante.dart';
 import '../../domain/sesion_admin.dart';
 
 class PanelAdminScreen extends StatefulWidget {
-  const PanelAdminScreen({super.key});
+  final PerfilLocalDataSource? perfilLocalDataSource;
+
+  const PanelAdminScreen({
+    super.key,
+    this.perfilLocalDataSource,
+  });
 
   @override
   State<PanelAdminScreen> createState() => _PanelAdminScreenState();
 }
 
 class _PanelAdminScreenState extends State<PanelAdminScreen> {
-  final PerfilLocalDataSource _perfilLocalDataSource =
-      PerfilLocalDataSource();
-
-  late Future<PerfilEstudiante?> _perfilFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _perfilFuture = _perfilLocalDataSource.obtenerPerfil();
-  }
+  late final Future<PerfilEstudiante?> _perfilFuture =
+      (widget.perfilLocalDataSource ?? PerfilLocalDataSource()).obtenerPerfil();
 
   void _cerrarSesion() {
     SesionAdmin.instance.cerrar();
     Navigator.of(context).pop();
+  }
+
+  void _cerrarSesionAlSalir(bool didPop, Object? _) {
+    if (didPop) {
+      SesionAdmin.instance.cerrar();
+    }
   }
 
   void _abrirModulos() {
@@ -39,14 +42,8 @@ class _PanelAdminScreenState extends State<PanelAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final admin = SesionAdmin.instance.actual;
-
     return PopScope(
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          SesionAdmin.instance.cerrar();
-        }
-      },
+      onPopInvokedWithResult: _cerrarSesionAlSalir,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Panel de administración'),
@@ -62,71 +59,15 @@ class _PanelAdminScreenState extends State<PanelAdminScreen> {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text(
-                'Hola, ${admin?.usuario ?? ''}',
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Desde aquí puedes consultar la información de la aplicación.',
-                style: TextStyle(fontSize: 16),
-              ),
+              _Bienvenida(usuario: SesionAdmin.instance.actual?.usuario ?? ''),
               const SizedBox(height: 28),
-              const Text(
-                'Estudiante registrado',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              const _TituloSeccion('Estudiante registrado'),
               const SizedBox(height: 10),
-              FutureBuilder<PerfilEstudiante?>(
-                future: _perfilFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  final perfil = snapshot.data;
-
-                  return Card(
-                    margin: EdgeInsets.zero,
-                    child: ListTile(
-                      leading: const Icon(Icons.person_outline),
-                      title: Text(
-                        perfil?.nombre ?? 'Aún no hay un perfil creado.',
-                      ),
-                      subtitle: perfil == null
-                          ? null
-                          : Text('ID: ${perfil.id}'),
-                    ),
-                  );
-                },
-              ),
+              _TarjetaEstudiante(perfilFuture: _perfilFuture),
               const SizedBox(height: 28),
-              const Text(
-                'Contenidos',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              const _TituloSeccion('Contenidos'),
               const SizedBox(height: 10),
-              Card(
-                margin: EdgeInsets.zero,
-                child: ListTile(
-                  leading: const Icon(Icons.menu_book_rounded),
-                  title: const Text('Módulos educativos'),
-                  subtitle: const Text('Consulta los módulos disponibles.'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: _abrirModulos,
-                ),
-              ),
+              _TarjetaModulos(onTap: _abrirModulos),
               const SizedBox(height: 32),
               OutlinedButton.icon(
                 onPressed: _cerrarSesion,
@@ -136,6 +77,93 @@ class _PanelAdminScreenState extends State<PanelAdminScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _Bienvenida extends StatelessWidget {
+  final String usuario;
+
+  const _Bienvenida({required this.usuario});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Hola, $usuario',
+          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Desde aquí puedes consultar la información de la aplicación.',
+          style: TextStyle(fontSize: 16),
+        ),
+      ],
+    );
+  }
+}
+
+class _TituloSeccion extends StatelessWidget {
+  final String texto;
+
+  const _TituloSeccion(this.texto);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      texto,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    );
+  }
+}
+
+class _TarjetaEstudiante extends StatelessWidget {
+  final Future<PerfilEstudiante?> perfilFuture;
+
+  const _TarjetaEstudiante({required this.perfilFuture});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PerfilEstudiante?>(
+      future: perfilFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final perfil = snapshot.data;
+
+        return Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: Text(perfil?.nombre ?? 'Aún no hay un perfil creado.'),
+            subtitle: perfil == null ? null : Text('ID: ${perfil.id}'),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TarjetaModulos extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _TarjetaModulos({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.menu_book_rounded),
+        title: const Text('Módulos educativos'),
+        subtitle: const Text('Consulta los módulos disponibles.'),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: onTap,
       ),
     );
   }

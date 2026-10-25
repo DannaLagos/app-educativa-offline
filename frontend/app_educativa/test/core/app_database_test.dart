@@ -47,7 +47,7 @@ void main() {
     final base = AppDatabase.conRuta(ruta);
     final db = await base.database;
 
-    expect(await db.getVersion(), AppDatabase.version);
+    expect(await db.getVersion(), AppDatabase.versionEsquema);
     expect(await db.query('perfil_estudiante'), [
       {'id': 'p1', 'nombre': 'Ana'},
     ]);

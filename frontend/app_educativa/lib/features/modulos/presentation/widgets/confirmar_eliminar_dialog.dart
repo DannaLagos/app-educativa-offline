@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
-/// Pregunta antes de borrar un módulo del dispositivo. Devuelve true solo si
-/// el estudiante confirma.
 class ConfirmarEliminarDialog extends StatelessWidget {
   final String nombreModulo;
 
@@ -13,12 +11,12 @@ class ConfirmarEliminarDialog extends StatelessWidget {
   });
 
   static Future<bool> mostrar(BuildContext context, String nombreModulo) async {
-    final confirmado = await showDialog<bool>(
+    final fueConfirmado = await showDialog<bool>(
       context: context,
       builder: (_) => ConfirmarEliminarDialog(nombreModulo: nombreModulo),
     );
 
-    return confirmado ?? false;
+    return fueConfirmado ?? false;
   }
 
   @override

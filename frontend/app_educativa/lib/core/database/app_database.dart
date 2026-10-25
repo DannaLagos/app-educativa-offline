@@ -8,88 +8,75 @@ import '../security/password_hasher.dart';
 class AppDatabase {
   AppDatabase._() : _ruta = null;
 
-  /// Abre la base en [ruta]. Pensado para pruebas (por ejemplo,
-  /// `inMemoryDatabasePath` con sqflite_common_ffi).
   AppDatabase.conRuta(String ruta) : _ruta = ruta;
 
   static final AppDatabase instance = AppDatabase._();
 
-  static const int version = 4;
+  static const int versionEsquema = 4;
+  static const String _nombreArchivo = 'app_educativa.db';
 
   final String? _ruta;
 
-  Database? _database;
+  Database? _baseDatos;
 
   Future<Database> get database async {
-    if (_database != null) {
-      return _database!;
-    }
-
-    _database = await _initDatabase();
-    return _database!;
+    return _baseDatos ??= await _abrirBaseDatos();
   }
 
-  Future<Database> _initDatabase() async {
-    final path = _ruta ??
-        join(
-          await getDatabasesPath(),
-          'app_educativa.db',
-        );
+  Future<Database> _abrirBaseDatos() async {
+    final ruta = _ruta ?? join(await getDatabasesPath(), _nombreArchivo);
 
     return openDatabase(
-      path,
-      version: version,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      ruta,
+      version: versionEsquema,
+      onCreate: _crearEsquema,
+      onUpgrade: _migrarEsquema,
     );
   }
 
-  Future<void> _onCreate(
-    Database db,
-    int version,
+  Future<void> _crearEsquema(Database baseDatos, int version) async {
+    await _crearTablaPerfilEstudiante(baseDatos);
+    await _crearTablaSuperadministrador(baseDatos);
+    await _crearTablasModulos(baseDatos);
+    await _agregarVersionDescargada(baseDatos);
+  }
+
+  Future<void> _migrarEsquema(
+    Database baseDatos,
+    int versionAnterior,
+    int versionNueva,
   ) async {
-    await db.execute('''
+    if (versionAnterior < 2) {
+      await _crearTablaSuperadministrador(baseDatos);
+    }
+
+    if (versionAnterior < 3) {
+      await _crearTablasModulos(baseDatos);
+    }
+
+    if (versionAnterior < 4) {
+      await _agregarVersionDescargada(baseDatos);
+    }
+  }
+
+  Future<void> _crearTablaPerfilEstudiante(Database baseDatos) async {
+    await baseDatos.execute('''
       CREATE TABLE perfil_estudiante (
         id TEXT PRIMARY KEY,
         nombre TEXT NOT NULL
       )
     ''');
-
-    await _crearTablaSuperadministrador(db);
-    await _crearTablasModulos(db);
-    await _agregarVersionDescargada(db);
   }
 
-  Future<void> _onUpgrade(
-    Database db,
-    int oldVersion,
-    int newVersion,
-  ) async {
-    if (oldVersion < 2) {
-      await _crearTablaSuperadministrador(db);
-    }
-
-    if (oldVersion < 3) {
-      await _crearTablasModulos(db);
-    }
-
-    if (oldVersion < 4) {
-      await _agregarVersionDescargada(db);
-    }
-  }
-
-  /// Versión del contenido que está guardado en el dispositivo, para avisar
-  /// cuando el catálogo trae una más nueva. Los módulos descargados antes de
-  /// esta migración quedan en NULL y se tratan como desactualizados.
-  Future<void> _agregarVersionDescargada(Database db) async {
-    await db.execute(
+  // Los módulos descargados antes de esta migración quedan en NULL (desactualizados).
+  Future<void> _agregarVersionDescargada(Database baseDatos) async {
+    await baseDatos.execute(
       'ALTER TABLE modulo ADD COLUMN version_descargada INTEGER',
     );
   }
 
-  Future<void> _crearTablasModulos(Database db) async {
-    // Caché del catálogo y estado de descarga de cada módulo.
-    await db.execute('''
+  Future<void> _crearTablasModulos(Database baseDatos) async {
+    await baseDatos.execute('''
       CREATE TABLE modulo (
         id TEXT PRIMARY KEY,
         nombre TEXT NOT NULL,
@@ -105,10 +92,8 @@ class AppDatabase {
       )
     ''');
 
-    // Progreso del estudiante. Va separado de modulo y sin clave foránea
-    // en cascada: eliminar la descarga de un módulo nunca debe borrarlo.
-    // Se llena a partir del Sprint 2.
-    await db.execute('''
+    // Sin clave foránea en cascada: eliminar una descarga nunca borra el progreso.
+    await baseDatos.execute('''
       CREATE TABLE progreso_modulo (
         id TEXT PRIMARY KEY,
         perfil_id TEXT NOT NULL,
@@ -120,8 +105,8 @@ class AppDatabase {
     ''');
   }
 
-  Future<void> _crearTablaSuperadministrador(Database db) async {
-    await db.execute('''
+  Future<void> _crearTablaSuperadministrador(Database baseDatos) async {
+    await baseDatos.execute('''
       CREATE TABLE superadministrador (
         id TEXT PRIMARY KEY,
         usuario TEXT NOT NULL UNIQUE,
@@ -130,9 +115,13 @@ class AppDatabase {
       )
     ''');
 
+    await _insertarSuperadministradorInicial(baseDatos);
+  }
+
+  Future<void> _insertarSuperadministradorInicial(Database baseDatos) async {
     final sal = PasswordHasher.generarSal();
 
-    await db.insert(
+    await baseDatos.insert(
       'superadministrador',
       {
         'id': const Uuid().v4(),

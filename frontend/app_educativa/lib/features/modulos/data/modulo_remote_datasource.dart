@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/config/api_config.dart';
 import '../../../core/network/servidor_exception.dart';
+import '../domain/archivo_por_descargar.dart';
 import '../domain/manifest_modulo.dart';
 import '../domain/modulo.dart';
 
@@ -26,69 +27,79 @@ class ModuloRemoteDataSource {
   Future<List<Modulo>> obtenerCatalogo() async {
     final json = await _obtenerJson('$_baseUrl/catalogo.json');
 
-    try {
-      return (json['modulos'] as List)
+    return _interpretar(
+      () => (json['modulos'] as List)
           .map(
             (entrada) => Modulo.desdeCatalogo(
               entrada as Map<String, dynamic>,
             ),
           )
-          .toList();
-    } on TypeError catch (error) {
-      throw ServidorException('El catálogo no tiene el formato esperado.', error);
-    }
+          .toList(),
+      mensajeError: 'El catálogo no tiene el formato esperado.',
+    );
   }
 
   Future<ManifestModulo> obtenerManifest(String moduloId) async {
     final json = await _obtenerJson(
-      '$_baseUrl/modulos/${Uri.encodeComponent(moduloId)}/manifest.json',
+      '${_urlModulo(moduloId)}/manifest.json',
     );
 
-    try {
-      return ManifestModulo.fromJson(json);
-    } on FormatException catch (error) {
-      throw ServidorException('El manifest no es válido.', error);
-    } on TypeError catch (error) {
-      throw ServidorException('El manifest no tiene el formato esperado.', error);
-    }
+    return _interpretar(
+      () => ManifestModulo.fromJson(json),
+      mensajeError: 'El manifest del módulo $moduloId no es válido.',
+    );
   }
 
-  /// Descarga un recurso del módulo en [destino]. [onRecibido] informa los
-  /// bytes recibidos de ese archivo.
-  Future<void> descargarArchivo({
-    required String moduloId,
-    required String archivo,
-    required String destino,
-    void Function(int recibidos)? onRecibido,
+  Future<void> descargarArchivo(
+    ArchivoPorDescargar archivo, {
+    void Function(int bytesRecibidos)? onRecibido,
   }) async {
     try {
       await _dio.download(
-        '$_baseUrl/modulos/${Uri.encodeComponent(moduloId)}/'
-        '${Uri.encodeComponent(archivo)}',
-        destino,
-        onReceiveProgress: (recibidos, _) => onRecibido?.call(recibidos),
+        '${_urlModulo(archivo.moduloId)}/'
+        '${Uri.encodeComponent(archivo.nombre)}',
+        archivo.rutaDestino,
+        onReceiveProgress: (bytesRecibidos, _) =>
+            onRecibido?.call(bytesRecibidos),
       );
     } on DioException catch (error) {
-      throw ServidorException('Se interrumpió la descarga.', error);
+      throw ServidorException(
+        'Se interrumpió la descarga de ${archivo.nombre}.',
+        error,
+      );
     }
   }
 
+  String _urlModulo(String moduloId) {
+    return '$_baseUrl/modulos/${Uri.encodeComponent(moduloId)}';
+  }
+
   Future<Map<String, dynamic>> _obtenerJson(String url) async {
+    final Response<String> respuesta;
+
     try {
-      // GitHub raw sirve los .json como texto plano, así que se decodifica
-      // a mano en lugar de confiar en el Content-Type.
-      final respuesta = await _dio.get<String>(
+      // GitHub raw sirve los .json como texto plano, así que se decodifica a mano.
+      respuesta = await _dio.get<String>(
         url,
         options: Options(responseType: ResponseType.plain),
       );
-
-      return jsonDecode(respuesta.data ?? '') as Map<String, dynamic>;
     } on DioException catch (error) {
-      throw ServidorException('No fue posible conectar con el servidor.', error);
+      throw ServidorException('No fue posible conectar con $url.', error);
+    }
+
+    return _interpretar(
+      () => jsonDecode(respuesta.data ?? '') as Map<String, dynamic>,
+      mensajeError: 'El servidor respondió algo inválido en $url.',
+    );
+  }
+
+  T _interpretar<T>(T Function() interpretar, {required String mensajeError}) {
+    try {
+      return interpretar();
     } on FormatException catch (error) {
-      throw ServidorException('El servidor respondió algo inválido.', error);
+      throw ServidorException(mensajeError, error);
     } on TypeError catch (error) {
-      throw ServidorException('El servidor respondió algo inválido.', error);
+      throw ServidorException(mensajeError, error);
     }
   }
 }

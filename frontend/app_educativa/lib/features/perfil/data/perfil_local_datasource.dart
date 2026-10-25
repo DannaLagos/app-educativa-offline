@@ -1,6 +1,7 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../core/database/app_database.dart';
 import '../domain/perfil_estudiante.dart';
-import 'package:sqflite/sqflite.dart';
 
 class PerfilLocalDataSource {
   final AppDatabase _appDatabase;
@@ -10,9 +11,9 @@ class PerfilLocalDataSource {
   }) : _appDatabase = appDatabase ?? AppDatabase.instance;
 
   Future<void> guardarPerfil(PerfilEstudiante perfil) async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    await db.insert(
+    await baseDatos.insert(
       'perfil_estudiante',
       perfil.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -20,29 +21,17 @@ class PerfilLocalDataSource {
   }
 
   Future<PerfilEstudiante?> obtenerPerfil() async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    final resultado = await db.query(
+    final filas = await baseDatos.query(
       'perfil_estudiante',
       limit: 1,
     );
 
-    if (resultado.isEmpty) {
+    if (filas.isEmpty) {
       return null;
     }
 
-    return PerfilEstudiante.fromMap(resultado.first);
-  }
-
-  Future<bool> existePerfil() async {
-    final perfil = await obtenerPerfil();
-
-    return perfil != null;
-  }
-
-  Future<void> eliminarPerfil() async {
-    final db = await _appDatabase.database;
-
-    await db.delete('perfil_estudiante');
+    return PerfilEstudiante.fromMap(filas.first);
   }
 }

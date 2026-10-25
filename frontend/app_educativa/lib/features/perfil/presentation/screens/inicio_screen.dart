@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/boton_grande.dart';
 import '../../../../shared/widgets/etiqueta.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../../modulos/domain/area_resumen.dart';
+import '../../../modulos/presentation/controllers/carga_al_mostrar.dart';
+import '../../../modulos/presentation/controllers/modulos_controller.dart';
 import '../../../modulos/presentation/controllers/modulos_scope.dart';
 import '../../../modulos/presentation/screens/areas_screen.dart';
+import '../../../modulos/presentation/widgets/tarjeta_area.dart';
 import '../../domain/perfil_estudiante.dart';
 
 class InicioScreen extends StatefulWidget {
@@ -21,20 +24,11 @@ class InicioScreen extends StatefulWidget {
   State<InicioScreen> createState() => _InicioScreenState();
 }
 
-class _InicioScreenState extends State<InicioScreen> {
-  bool _cargaIniciada = false;
-
+class _InicioScreenState extends State<InicioScreen>
+    with CargaAlMostrar<InicioScreen> {
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!_cargaIniciada) {
-      _cargaIniciada = true;
-      final controller = ModulosScope.of(context);
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => controller.cargarCatalogo(),
-      );
-    }
+  Future<void> cargarAlMostrar(ModulosController controller) {
+    return controller.cargarCatalogo();
   }
 
   void _abrir(Widget pantalla) {
@@ -55,82 +49,22 @@ class _InicioScreenState extends State<InicioScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '¡Hola, ${widget.perfil.nombre}! 👋',
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (!controller.cargando || areas.isNotEmpty)
-                          controller.desdeCache
-                              ? const Etiqueta.gris(
-                                  'Sin conexión',
-                                  icono: Icons.wifi_off_rounded,
-                                )
-                              : const Etiqueta(
-                                  texto: 'Conectado',
-                                  color: AppTheme.verde,
-                                  fondo: AppTheme.verdeSuave,
-                                  icono: Icons.wifi_rounded,
-                                ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Acceso administrador',
-                    iconSize: 28,
-                    icon: const Icon(Icons.admin_panel_settings_outlined),
-                    onPressed: () => _abrir(const LoginAdminScreen()),
-                  ),
-                ],
+              _Saludo(
+                nombre: widget.perfil.nombre,
+                estadoConexion: _construirEstadoConexion(controller, areas),
+                onAbrirAdmin: () => _abrir(const LoginAdminScreen()),
               ),
               const SizedBox(height: 24),
-              // Tarjeta "Continúa aprendiendo" (diseño de Karen).
               _TarjetaContinuar(
                 onContinuar: () => _abrir(const AreasScreen()),
               ),
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: const Text(
-                        'Tus áreas educativas',
-                        style: TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _abrir(const AreasScreen()),
-                    child: const Text('Ver todas'),
-                  ),
-                ],
+              _EncabezadoAreas(
+                onVerTodas: () => _abrir(const AreasScreen()),
               ),
               const SizedBox(height: 8),
-              if (controller.cargando && areas.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (areas.isEmpty)
-                _SinAreas(onReintentar: controller.cargarCatalogo)
-              else
-                _CuadriculaAreas(areas: areas),
+              _construirAreas(controller, areas),
               const SizedBox(height: 16),
-              // Mensaje motivacional (diseño de Karen).
               const _TarjetaMotivacion(),
             ],
           ),
@@ -138,9 +72,118 @@ class _InicioScreenState extends State<InicioScreen> {
       ),
     );
   }
+
+  Widget? _construirEstadoConexion(
+    ModulosController controller,
+    List<AreaResumen> areas,
+  ) {
+    if (controller.estaCargando && areas.isEmpty) {
+      return null;
+    }
+
+    if (controller.vieneDeCache) {
+      return const Etiqueta.gris('Sin conexión', icono: Icons.wifi_off_rounded);
+    }
+
+    return const Etiqueta(
+      texto: 'Conectado',
+      color: AppTheme.verde,
+      fondo: AppTheme.verdeSuave,
+      icono: Icons.wifi_rounded,
+    );
+  }
+
+  Widget _construirAreas(ModulosController controller, List<AreaResumen> areas) {
+    if (controller.estaCargando && areas.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (areas.isEmpty) {
+      return _SinAreas(onReintentar: controller.cargarCatalogo);
+    }
+
+    return _CuadriculaAreas(areas: areas);
+  }
+}
+
+class _Saludo extends StatelessWidget {
+  final String nombre;
+  final Widget? estadoConexion;
+  final VoidCallback onAbrirAdmin;
+
+  const _Saludo({
+    required this.nombre,
+    required this.estadoConexion,
+    required this.onAbrirAdmin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = estadoConexion;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¡Hola, $nombre! 👋',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (estado != null) estado,
+            ],
+          ),
+        ),
+        IconButton(
+          tooltip: 'Acceso administrador',
+          iconSize: 28,
+          icon: const Icon(Icons.admin_panel_settings_outlined),
+          onPressed: onAbrirAdmin,
+        ),
+      ],
+    );
+  }
+}
+
+class _EncabezadoAreas extends StatelessWidget {
+  final VoidCallback onVerTodas;
+
+  const _EncabezadoAreas({required this.onVerTodas});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: const Text(
+              'Tus áreas educativas',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: onVerTodas,
+          child: const Text('Ver todas'),
+        ),
+      ],
+    );
+  }
 }
 
 class _CuadriculaAreas extends StatelessWidget {
+  static const int _areasPorFila = 2;
+
   final List<AreaResumen> areas;
 
   const _CuadriculaAreas({required this.areas});
@@ -149,27 +192,34 @@ class _CuadriculaAreas extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (var i = 0; i < areas.length; i += 2)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: TarjetaArea(area: areas[i], compacta: true),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: i + 1 < areas.length
-                        ? TarjetaArea(area: areas[i + 1], compacta: true)
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        for (var indice = 0; indice < areas.length; indice += _areasPorFila)
+          _construirFila(indice),
       ],
+    );
+  }
+
+  Widget _construirFila(int indicePrimera) {
+    final indiceSegunda = indicePrimera + 1;
+    final haySegunda = indiceSegunda < areas.length;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: TarjetaArea(area: areas[indicePrimera], esCompacta: true),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: haySegunda
+                  ? TarjetaArea(area: areas[indiceSegunda], esCompacta: true)
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -211,6 +261,8 @@ class _SinAreas extends StatelessWidget {
 }
 
 class _TarjetaContinuar extends StatelessWidget {
+  static const Color _colorSombra = Color(0x0A1F2A44);
+
   final VoidCallback onContinuar;
 
   const _TarjetaContinuar({required this.onContinuar});
@@ -224,7 +276,7 @@ class _TarjetaContinuar extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A1F2A44),
+            color: _colorSombra,
             blurRadius: 18,
             offset: Offset(0, 6),
           ),
@@ -246,10 +298,7 @@ class _TarjetaContinuar extends StatelessWidget {
           const SizedBox(height: 6),
           const Text(
             '¿Qué quieres aprender hoy?',
-            style: TextStyle(
-              color: AppTheme.textoSecundario,
-              fontSize: 17,
-            ),
+            style: TextStyle(color: AppTheme.textoSecundario, fontSize: 17),
           ),
           const SizedBox(height: 20),
           BotonGrande(
@@ -288,10 +337,7 @@ class _TarjetaMotivacion extends StatelessWidget {
           SizedBox(height: 6),
           Text(
             'Cada módulo completado te ayuda a avanzar.',
-            style: TextStyle(
-              color: AppTheme.textoSecundario,
-              fontSize: 15,
-            ),
+            style: TextStyle(color: AppTheme.textoSecundario, fontSize: 15),
           ),
         ],
       ),

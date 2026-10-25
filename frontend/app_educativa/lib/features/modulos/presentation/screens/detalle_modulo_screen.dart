@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/aviso_resultado.dart';
+import '../../../../shared/widgets/boton_grande.dart';
 import '../../domain/estado_descarga.dart';
 import '../../domain/modulo.dart';
 import '../controllers/modulos_controller.dart';
@@ -20,18 +21,10 @@ class DetalleModuloScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = ModulosScope.of(context);
-    final modulo = controller.modulo(moduloId);
+    final modulo = controller.buscarModulo(moduloId);
 
     if (modulo == null) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: const Center(
-          child: Text(
-            'Este módulo ya no está disponible.',
-            style: TextStyle(fontSize: 20),
-          ),
-        ),
-      );
+      return const _ModuloNoDisponible();
     }
 
     return Scaffold(
@@ -41,83 +34,99 @@ class DetalleModuloScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                modulo.nombre,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              _Dato(
-                icono: Icons.school_outlined,
-                texto: modulo.area,
-              ),
-
-              const SizedBox(height: 8),
-
-              _Dato(
-                icono: Icons.grade_outlined,
-                texto: 'Grado ${modulo.grado}',
-              ),
-
-              const SizedBox(height: 24),
-
-              _SeccionDescarga(
-                modulo: modulo,
-                controller: controller,
-              ),
-
-              if (modulo.fechaDescarga != null &&
-                  controller.estadoDe(modulo) ==
-                      EstadoDescarga.descargado) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Descargado el ${_formatearFecha(modulo.fechaDescarga!)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textoSecundario,
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 28),
-
-              const _Titulo('Descripción'),
-
-              const SizedBox(height: 10),
-
-              Text(
-                modulo.descripcion,
-                style: const TextStyle(
-                  fontSize: 18,
-                  height: 1.5,
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              const _Titulo('Contenidos'),
-
-              const SizedBox(height: 10),
-
-              _ListaContenidos(modulo: modulo),
-            ],
-          ),
+          child: _ContenidoDetalle(modulo: modulo, controller: controller),
         ),
       ),
     );
   }
+}
 
-  static String _formatearFecha(DateTime fecha) {
-    String dosDigitos(int valor) => valor.toString().padLeft(2, '0');
+class _ModuloNoDisponible extends StatelessWidget {
+  const _ModuloNoDisponible();
 
-    return '${dosDigitos(fecha.day)}/${dosDigitos(fecha.month)}/${fecha.year}';
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: const Center(
+        child: Text(
+          'Este módulo ya no está disponible.',
+          style: TextStyle(fontSize: 20),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContenidoDetalle extends StatelessWidget {
+  final Modulo modulo;
+  final ModulosController controller;
+
+  const _ContenidoDetalle({
+    required this.modulo,
+    required this.controller,
+  });
+
+  bool get _debeMostrarFechaDescarga =>
+      modulo.fechaDescarga != null &&
+      controller.obtenerEstado(modulo) == EstadoDescarga.descargado;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          modulo.nombre,
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        _Dato(icono: Icons.school_outlined, texto: modulo.area),
+        const SizedBox(height: 8),
+        _Dato(icono: Icons.grade_outlined, texto: 'Grado ${modulo.grado}'),
+        const SizedBox(height: 24),
+        _SeccionDescarga(modulo: modulo, controller: controller),
+        if (_debeMostrarFechaDescarga) ...[
+          const SizedBox(height: 8),
+          _FechaDescarga(fecha: modulo.fechaDescarga!),
+        ],
+        const SizedBox(height: 28),
+        const _Titulo('Descripción'),
+        const SizedBox(height: 10),
+        Text(
+          modulo.descripcion,
+          style: const TextStyle(fontSize: 18, height: 1.5),
+        ),
+        const SizedBox(height: 28),
+        const _Titulo('Contenidos'),
+        const SizedBox(height: 10),
+        _ListaContenidos(contenidos: modulo.contenidos),
+      ],
+    );
+  }
+}
+
+class _FechaDescarga extends StatelessWidget {
+  final DateTime fecha;
+
+  const _FechaDescarga({required this.fecha});
+
+  static String _formatear(DateTime fecha) {
+    String completarDosDigitos(int valor) => valor.toString().padLeft(2, '0');
+
+    return '${completarDosDigitos(fecha.day)}/'
+        '${completarDosDigitos(fecha.month)}/${fecha.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Descargado el ${_formatear(fecha)}',
+      style: const TextStyle(
+        fontSize: 16,
+        color: AppTheme.textoSecundario,
+      ),
+    );
   }
 }
 
@@ -132,40 +141,46 @@ class _SeccionDescarga extends StatelessWidget {
 
   Future<void> _descargar(BuildContext context) async {
     final mensajero = ScaffoldMessenger.of(context);
-    final exito = await controller.descargar(modulo);
+    final fueDescargado = await controller.descargar(modulo);
 
-    if (exito) {
-      mensajero.showSnackBar(
-        const SnackBar(
-          backgroundColor: AppTheme.verde,
-          content: Text(
-            '¡Listo! Ya puedes usar este módulo sin internet.',
-            style: TextStyle(fontSize: 18),
-          ),
-        ),
-      );
+    if (!fueDescargado) {
+      return;
     }
+
+    mostrarAvisoResultado(
+      mensajero,
+      fueExitoso: true,
+      mensaje: '¡Listo! Ya puedes usar este módulo sin internet.',
+    );
+  }
+
+  void _abrirLector(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LectorModuloScreen(modulo: modulo),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final estado = controller.estadoDe(modulo);
+    final estado = controller.obtenerEstado(modulo);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         EstadoDescargaChip(
           estado: estado,
-          progreso: controller.progresoDe(modulo.id),
-          grande: true,
+          progreso: controller.obtenerProgreso(modulo.id),
+          esGrande: true,
         ),
         const SizedBox(height: 16),
-        ..._acciones(context, estado),
+        ..._construirAcciones(context, estado),
       ],
     );
   }
 
-  List<Widget> _acciones(BuildContext context, EstadoDescarga estado) {
+  List<Widget> _construirAcciones(BuildContext context, EstadoDescarga estado) {
     switch (estado) {
       case EstadoDescarga.noDescargado:
         return [
@@ -183,57 +198,66 @@ class _SeccionDescarga extends StatelessWidget {
           ),
         ];
       case EstadoDescarga.error:
-        return [
-          _Aviso.error(controller.errorDe(modulo) ?? ''),
-          const SizedBox(height: 16),
-          BotonGrande(
-            texto: 'Reintentar',
-            icono: Icons.refresh_rounded,
-            onPressed: () => _descargar(context),
-          ),
-        ];
+        return _construirAccionesDeError(context);
       case EstadoDescarga.descargado:
-        final error = controller.errorDe(modulo);
-
-        return [
-          if (error != null) ...[
-            _Aviso.error(error),
-            const SizedBox(height: 16),
-          ],
-          if (modulo.tieneActualizacion) ...[
-            const _Aviso.informacion(
-              'Hay una versión nueva de este módulo. '
-              'Actualízalo cuando tengas internet.',
-            ),
-            const SizedBox(height: 16),
-            BotonGrande(
-              texto: 'Actualizar',
-              icono: Icons.system_update_rounded,
-              onPressed: () => _descargar(context),
-            ),
-            const SizedBox(height: 12),
-          ],
-          BotonGrande(
-            texto: 'Abrir módulo',
-            icono: Icons.menu_book_rounded,
-            color: AppTheme.verde,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => LectorModuloScreen(modulo: modulo),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Disponible sin conexión.',
-            style: TextStyle(
-              fontSize: 18,
-              color: AppTheme.verde,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ];
+        return _construirAccionesDeDescargado(context);
     }
+  }
+
+  List<Widget> _construirAccionesDeError(BuildContext context) {
+    return [
+      _Aviso.error(controller.obtenerMensajeError(modulo) ?? ''),
+      const SizedBox(height: 16),
+      BotonGrande(
+        texto: 'Reintentar',
+        icono: Icons.refresh_rounded,
+        onPressed: () => _descargar(context),
+      ),
+    ];
+  }
+
+  List<Widget> _construirAccionesDeDescargado(BuildContext context) {
+    final mensajeError = controller.obtenerMensajeError(modulo);
+
+    return [
+      if (mensajeError != null) ...[
+        _Aviso.error(mensajeError),
+        const SizedBox(height: 16),
+      ],
+      if (modulo.tieneActualizacion)
+        ..._construirOfertaDeActualizacion(context),
+      BotonGrande(
+        texto: 'Abrir módulo',
+        icono: Icons.menu_book_rounded,
+        color: AppTheme.verde,
+        onPressed: () => _abrirLector(context),
+      ),
+      const SizedBox(height: 12),
+      const Text(
+        'Disponible sin conexión.',
+        style: TextStyle(
+          fontSize: 18,
+          color: AppTheme.verde,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _construirOfertaDeActualizacion(BuildContext context) {
+    return [
+      const _Aviso.informacion(
+        'Hay una versión nueva de este módulo. '
+        'Actualízalo cuando tengas internet.',
+      ),
+      const SizedBox(height: 16),
+      BotonGrande(
+        texto: 'Actualizar',
+        icono: Icons.system_update_rounded,
+        onPressed: () => _descargar(context),
+      ),
+      const SizedBox(height: 12),
+    ];
   }
 }
 
@@ -318,13 +342,13 @@ class _Dato extends StatelessWidget {
 }
 
 class _ListaContenidos extends StatelessWidget {
-  final Modulo modulo;
+  final List<String> contenidos;
 
-  const _ListaContenidos({required this.modulo});
+  const _ListaContenidos({required this.contenidos});
 
   @override
   Widget build(BuildContext context) {
-    if (modulo.contenidos.isEmpty) {
+    if (contenidos.isEmpty) {
       return const Text(
         'Este módulo aún no tiene contenidos.',
         style: TextStyle(fontSize: 18),
@@ -333,38 +357,53 @@ class _ListaContenidos extends StatelessWidget {
 
     return Column(
       children: [
-        for (var i = 0; i < modulo.contenidos.length; i++)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.superficie,
-              border: Border.all(color: AppTheme.borde),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppTheme.azul,
-                  foregroundColor: Colors.white,
-                  child: Text(
-                    '${i + 1}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    modulo.contenidos[i],
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
-              ],
+        for (var indice = 0; indice < contenidos.length; indice++)
+          _ElementoContenido(numero: indice + 1, titulo: contenidos[indice]),
+      ],
+    );
+  }
+}
+
+class _ElementoContenido extends StatelessWidget {
+  final int numero;
+  final String titulo;
+
+  const _ElementoContenido({
+    required this.numero,
+    required this.titulo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        border: Border.all(color: AppTheme.borde),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: AppTheme.azul,
+            foregroundColor: Colors.white,
+            child: Text(
+              '$numero',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-      ],
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              titulo,
+              style: const TextStyle(fontSize: 18),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

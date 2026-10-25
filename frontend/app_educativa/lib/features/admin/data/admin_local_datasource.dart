@@ -13,31 +13,33 @@ class AdminLocalDataSource {
     String usuario,
     String password,
   ) async {
-    final db = await _appDatabase.database;
+    final fila = await _buscarPorUsuario(usuario);
 
-    final resultado = await db.query(
+    if (fila == null || !_esPasswordValida(fila, password)) {
+      return null;
+    }
+
+    return Superadministrador.fromMap(fila);
+  }
+
+  Future<Map<String, Object?>?> _buscarPorUsuario(String usuario) async {
+    final baseDatos = await _appDatabase.database;
+
+    final filas = await baseDatos.query(
       'superadministrador',
       where: 'usuario = ?',
       whereArgs: [usuario],
       limit: 1,
     );
 
-    if (resultado.isEmpty) {
-      return null;
-    }
+    return filas.isEmpty ? null : filas.first;
+  }
 
-    final fila = resultado.first;
-
-    final esValida = PasswordHasher.verificar(
+  bool _esPasswordValida(Map<String, Object?> fila, String password) {
+    return PasswordHasher.verificar(
       password,
       fila['sal'] as String,
       fila['password_hash'] as String,
     );
-
-    if (!esValida) {
-      return null;
-    }
-
-    return Superadministrador.fromMap(fila);
   }
 }

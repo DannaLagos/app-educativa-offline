@@ -2,8 +2,6 @@ import 'package:flutter/widgets.dart';
 
 import 'modulos_controller.dart';
 
-/// Hace disponible el [ModulosController] a todas las pantallas y las
-/// reconstruye cuando cambia.
 class ModulosScope extends InheritedNotifier<ModulosController> {
   const ModulosScope({
     super.key,
