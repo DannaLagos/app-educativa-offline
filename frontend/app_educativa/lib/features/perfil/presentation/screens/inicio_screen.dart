@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/etiqueta.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
-import '../../../modulos/presentation/screens/mis_descargas_screen.dart';
-import '../../../modulos/presentation/screens/modulos_screen.dart';
+import '../../../modulos/domain/area_resumen.dart';
+import '../../../modulos/presentation/controllers/modulos_scope.dart';
+import '../../../modulos/presentation/screens/areas_screen.dart';
 import '../../domain/perfil_estudiante.dart';
 
-class InicioScreen extends StatelessWidget {
+class InicioScreen extends StatefulWidget {
   final PerfilEstudiante perfil;
 
   const InicioScreen({
@@ -13,236 +17,118 @@ class InicioScreen extends StatelessWidget {
     required this.perfil,
   });
 
-  void _abrirModulos(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const ModulosScreen(),
-      ),
-    );
+  @override
+  State<InicioScreen> createState() => _InicioScreenState();
+}
+
+class _InicioScreenState extends State<InicioScreen> {
+  bool _cargaIniciada = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_cargaIniciada) {
+      _cargaIniciada = true;
+      final controller = ModulosScope.of(context);
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => controller.cargarCatalogo(),
+      );
+    }
   }
 
-  void _abrirMisDescargas(BuildContext context) {
+  void _abrir(Widget pantalla) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const MisDescargasScreen(),
-      ),
-    );
-  }
-
-  void _abrirLoginAdmin(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const LoginAdminScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => pantalla),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = ModulosScope.of(context);
+    final areas = AreaResumen.agrupar(controller.catalogo);
+
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          color: const Color(0xFFF5F8FC),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFFFFF),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color(0xFFEAF0F5),
+        child: RefreshIndicator(
+          onRefresh: controller.cargarCatalogo,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '¡Hola, ${widget.perfil.nombre}! 👋',
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (!controller.cargando || areas.isNotEmpty)
+                          controller.desdeCache
+                              ? const Etiqueta.gris(
+                                  'Sin conexión',
+                                  icono: Icons.wifi_off_rounded,
+                                )
+                              : const Etiqueta(
+                                  texto: 'Conectado',
+                                  color: AppTheme.verde,
+                                  fondo: AppTheme.verdeSuave,
+                                  icono: Icons.wifi_rounded,
+                                ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Acceso administrador',
+                    iconSize: 28,
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    onPressed: () => _abrir(const LoginAdminScreen()),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+                            _TarjetaContinuar(
+                onContinuar: () => _abrir(const AreasScreen()),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: const Text(
+                        'Tus áreas educativas',
+                        style: TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '¡Hola, ${perfil.nombre}! 👋',
-                              style: const TextStyle(
-                                color: Color(0xFF1F2A44),
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFDDF8EC),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 7,
-                                    height: 7,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF16845E),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'Conectado',
-                                    style: TextStyle(
-                                      color: Color(0xFF16845E),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Acceso administrador',
-                        icon: const Icon(
-                          Icons.admin_panel_settings_outlined,
-                          color: Color(0xFF236EA5),
-                        ),
-                        onPressed: () => _abrirLoginAdmin(context),
-                      ),
-                    ],
+                  TextButton(
+                    onPressed: () => _abrir(const AreasScreen()),
+                    child: const Text('Ver todas'),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x0A1F2A44),
-                              blurRadius: 18,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE6F3FA),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                'APRENDIZAJE',
-                                style: TextStyle(
-                                  color: Color(0xFF236EA5),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.7,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Continúa aprendiendo',
-                              style: TextStyle(
-                                color: Color(0xFF1F2A44),
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Explora tus módulos educativos',
-                              style: TextStyle(
-                                color: Color(0xFF65758B),
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () => _abrirModulos(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF236EA5),
-                                  foregroundColor: const Color(0xFFFFFFFF),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Continuar aprendiendo',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _OpcionInicio(
-                        icono: Icons.download_for_offline_rounded,
-                        titulo: 'Mis descargas',
-                        descripcion: 'Contenido disponible sin internet',
-                        onTap: () => _abrirMisDescargas(context),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE6F3FA),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '⭐ ¡Sigue aprendiendo!',
-                              style: TextStyle(
-                                color: Color(0xFF1F2A44),
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 6),
-                            Text(
-                              'Cada módulo completado te ayuda a avanzar.',
-                              style: TextStyle(
-                                color: Color(0xFF65758B),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (controller.cargando && areas.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (areas.isEmpty)
+                _SinAreas(onReintentar: controller.cargarCatalogo)
+              else
+                _CuadriculaAreas(areas: areas),
+            ],
           ),
         ),
       ),
@@ -250,79 +136,69 @@ class InicioScreen extends StatelessWidget {
   }
 }
 
-class _OpcionInicio extends StatelessWidget {
-  final IconData icono;
-  final String titulo;
-  final String descripcion;
-  final VoidCallback onTap;
+/// Áreas en dos columnas, como en el diseño.
+class _CuadriculaAreas extends StatelessWidget {
+  final List<AreaResumen> areas;
 
-  const _OpcionInicio({
-    required this.icono,
-    required this.titulo,
-    required this.descripcion,
-    required this.onTap,
-  });
+  const _CuadriculaAreas({required this.areas});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x081F2A44),
-              blurRadius: 14,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE6F3FA),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                icono,
-                color: const Color(0xFF236EA5),
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        for (var i = 0; i < areas.length; i += 2)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      color: Color(0xFF1F2A44),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Expanded(
+                    child: TarjetaArea(area: areas[i], compacta: true),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    descripcion,
-                    style: const TextStyle(
-                      color: Color(0xFF65758B),
-                      fontSize: 14,
-                    ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: i + 1 < areas.length
+                        ? TarjetaArea(area: areas[i + 1], compacta: true)
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ),
             ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SinAreas extends StatelessWidget {
+  final Future<void> Function() onReintentar;
+
+  const _SinAreas({required this.onReintentar});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
             const Icon(
-              Icons.chevron_right_rounded,
-              color: Color(0xFF236EA5),
+              Icons.cloud_off_rounded,
+              size: 56,
+              color: AppTheme.gris,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Conéctate a internet una vez para ver los módulos.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 16),
+            BotonGrande(
+              texto: 'Intentar de nuevo',
+              icono: Icons.refresh_rounded,
+              onPressed: onReintentar,
             ),
           ],
         ),

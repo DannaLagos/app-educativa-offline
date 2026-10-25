@@ -43,7 +43,7 @@ class _VisorPdfState extends State<VisorPdf> {
               setState(() => _totalPaginas = documento.pagesCount);
             },
             backgroundDecoration: const BoxDecoration(
-              color: Color(0xFFECEFF1),
+              color: AppTheme.grisSuave,
             ),
             builders: PdfViewBuilders<DefaultBuilderOptions>(
               options: const DefaultBuilderOptions(),

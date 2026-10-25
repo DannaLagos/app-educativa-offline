@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/etiqueta.dart';
 import '../../domain/estado_descarga.dart';
 
-/// Muestra el estado de descarga de un módulo con color, ícono y texto,
-/// para que no dependa solo del color.
+/// Muestra el estado de descarga de un módulo como etiqueta con color,
+/// ícono y texto, para que no dependa solo del color.
 class EstadoDescargaChip extends StatelessWidget {
   final EstadoDescarga estado;
 
@@ -61,40 +62,27 @@ class EstadoDescargaChip extends StatelessWidget {
     }
   }
 
+  static Color fondo(EstadoDescarga estado) {
+    switch (estado) {
+      case EstadoDescarga.noDescargado:
+        return AppTheme.grisSuave;
+      case EstadoDescarga.descargando:
+        return AppTheme.azulClaro;
+      case EstadoDescarga.descargado:
+        return AppTheme.verdeSuave;
+      case EstadoDescarga.error:
+        return AppTheme.rojoSuave;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final fondo = color(estado);
-
-    final etiqueta = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: grande ? 16 : 10,
-        vertical: grande ? 12 : 6,
-      ),
-      decoration: BoxDecoration(
-        color: fondo,
-        borderRadius: BorderRadius.circular(grande ? 16 : 12),
-      ),
-      child: Row(
-        mainAxisSize: grande ? MainAxisSize.max : MainAxisSize.min,
-        children: [
-          Icon(
-            icono(estado),
-            color: Colors.white,
-            size: grande ? 30 : 20,
-          ),
-          SizedBox(width: grande ? 12 : 6),
-          Flexible(
-            child: Text(
-              texto(estado, progreso),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: grande ? 20 : 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final etiqueta = Etiqueta(
+      texto: texto(estado, progreso),
+      color: color(estado),
+      fondo: fondo(estado),
+      icono: icono(estado),
+      grande: grande,
     );
 
     if (!grande || estado != EstadoDescarga.descargando) {
@@ -110,9 +98,7 @@ class EstadoDescargaChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           child: LinearProgressIndicator(
             value: progreso,
-            minHeight: 16,
-            color: AppTheme.azul,
-            backgroundColor: const Color(0xFFBBDEFB),
+            minHeight: 14,
           ),
         ),
       ],

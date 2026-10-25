@@ -2,7 +2,7 @@
     <!-- Necesario para consultar el catálogo y descargar módulos. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="app_educativa"
+        android:label="Aprendo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -36,9 +36,10 @@ class Modulo {
 
   bool get estaDescargado => estadoDescarga == EstadoDescarga.descargado;
 
-  /// El catálogo tiene una versión más nueva que la guardada.
+  /// El catálogo tiene una versión más nueva que la guardada. Un módulo
+  /// deshabilitado no se puede volver a descargar, así que no se avisa.
   bool get tieneActualizacion =>
-      estaDescargado && (versionDescargada ?? 0) < version;
+      habilitado && estaDescargado && (versionDescargada ?? 0) < version;
 
   /// Construye el módulo a partir de una entrada de catalogo.json.
   factory Modulo.desdeCatalogo(Map<String, dynamic> json) {

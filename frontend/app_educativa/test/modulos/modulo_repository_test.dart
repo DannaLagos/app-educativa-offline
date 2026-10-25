@@ -356,4 +356,20 @@ void main() {
       expect(modulo.tieneActualizacion, isTrue);
     });
   });
+
+  test('un módulo deshabilitado no muestra aviso de versión nueva', () async {
+    await local.guardarCatalogo([lenguaje]);
+    await local.actualizarEstadoDescarga(
+      lenguaje.id,
+      EstadoDescarga.descargado,
+      rutaLocal: '/datos/modulos/${lenguaje.id}',
+    );
+    // El servidor lo retira del catálogo.
+    await local.guardarCatalogo([sociales]);
+
+    final descargado = (await repositorio.obtenerDescargados()).single;
+
+    expect(descargado.habilitado, isFalse);
+    expect(descargado.tieneActualizacion, isFalse);
+  });
 }

@@ -244,11 +244,11 @@ class _Aviso extends StatelessWidget {
 
   const _Aviso.error(this.texto)
       : color = AppTheme.rojo,
-        fondo = const Color(0xFFFFEBEE);
+        fondo = AppTheme.rojoSuave;
 
   const _Aviso.informacion(this.texto)
       : color = AppTheme.azul,
-        fondo = const Color(0xFFE3F2FD);
+        fondo = AppTheme.azulSuave;
 
   @override
   Widget build(BuildContext context) {
@@ -339,7 +339,8 @@ class _ListaContenidos extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF90A4AE)),
+              color: AppTheme.superficie,
+              border: Border.all(color: AppTheme.borde),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
