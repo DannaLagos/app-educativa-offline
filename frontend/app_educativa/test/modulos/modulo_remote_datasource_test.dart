@@ -1,5 +1,5 @@
 import 'package:app_educativa/core/network/servidor_exception.dart';
-import 'package:app_educativa/features/modulos/data/modulo_remote_datasource.dart';
+import 'package:app_educativa/features/modulos/data/http_modulo_remote_datasource.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -8,13 +8,13 @@ class MockDio extends Mock implements Dio {}
 
 void main() {
   late MockDio dio;
-  late ModuloRemoteDataSource remote;
+  late HttpModuloRemoteDataSource remote;
 
   setUpAll(() => registerFallbackValue(Options()));
 
   setUp(() {
     dio = MockDio();
-    remote = ModuloRemoteDataSource(dio: dio, baseUrl: 'https://servidor');
+    remote = HttpModuloRemoteDataSource(dio: dio, baseUrl: 'https://servidor');
   });
 
   void responder(String cuerpo) {

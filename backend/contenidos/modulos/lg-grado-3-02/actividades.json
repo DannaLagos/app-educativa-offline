@@ -1,0 +1,919 @@
+{
+  "modulo": "lg-grado-3-02",
+  "niveles": [
+    {
+      "id": "n1-espacio",
+      "numero": 1,
+      "titulo": "Viaje al espacio",
+      "emoji": "🚀",
+      "objetivo": "Aprendo palabras nuevas sobre las naves y la vida en el espacio.",
+      "actividades": [
+        {
+          "id": "lg2-n1-a1-sopa-espacio",
+          "tipo": "sopa",
+          "titulo": "Sopa de letras del espacio",
+          "instruccion": "Encuentra en la sopa de letras las palabras del espacio.",
+          "tamano": 10,
+          "palabras": [
+            {
+              "emoji": "🛸",
+              "texto": "Nave"
+            },
+            {
+              "emoji": "🌙",
+              "texto": "Luna"
+            },
+            {
+              "emoji": "🚀",
+              "texto": "Cohete"
+            },
+            {
+              "emoji": "🔄",
+              "texto": "Órbita"
+            },
+            {
+              "emoji": "👨‍🚀",
+              "texto": "Astronauta"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 25: «La estación espacial está en órbita, es decir, gira sin parar alrededor de la Tierra». Los astronautas y el material se trasladan en naves espaciales.",
+            "pagina": 9
+          }
+        },
+        {
+          "id": "lg2-n1-a2-memoria-palabras-espacio",
+          "tipo": "memoria",
+          "titulo": "¿Qué significa?",
+          "instruccion": "Voltea dos cartas. Busca cada palabra con su significado.",
+          "pares": [
+            {
+              "izquierda": {
+                "emoji": "🔄",
+                "texto": "Órbita"
+              },
+              "derecha": {
+                "emoji": "🌍",
+                "texto": "Girar alrededor de la Tierra"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "👩‍🚀",
+                "texto": "Tripulada"
+              },
+              "derecha": {
+                "emoji": "🧑‍🤝‍🧑",
+                "texto": "Lleva personas"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🤖",
+                "texto": "Automática"
+              },
+              "derecha": {
+                "emoji": "🚫",
+                "texto": "No tiene piloto"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🧪",
+                "texto": "Módulos"
+              },
+              "derecha": {
+                "emoji": "🏠",
+                "texto": "Tubos donde viven los astronautas"
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 25: «Los astronautas viven en grandes tubos unidos entre sí que se llaman módulos». La HTV «es automática, o sea, no tiene piloto».",
+            "pagina": 9
+          }
+        },
+        {
+          "id": "lg2-n1-a3-arrastra-naves",
+          "tipo": "arrastra",
+          "titulo": "¿Tripulada o robótica?",
+          "instruccion": "Arrastra cada nave a su canasta: ¿lleva astronautas (tripulada) o se maneja desde la Tierra (robótica)?",
+          "grupos": [
+            {
+              "id": "tripulada",
+              "emoji": "👨‍🚀",
+              "texto": "Tripulada"
+            },
+            {
+              "id": "robotica",
+              "emoji": "🤖",
+              "texto": "Robótica"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "🚀",
+              "texto": "Soyuz, con tres astronautas",
+              "grupo": "tripulada"
+            },
+            {
+              "emoji": "📦",
+              "texto": "ATV, nave automática",
+              "grupo": "robotica"
+            },
+            {
+              "emoji": "🛰️",
+              "texto": "Satélite artificial",
+              "grupo": "robotica"
+            },
+            {
+              "emoji": "🔥",
+              "texto": "Saturno 5, con tres tripulantes",
+              "grupo": "tripulada"
+            },
+            {
+              "emoji": "🇯🇵",
+              "texto": "HTV, no tiene piloto",
+              "grupo": "robotica"
+            },
+            {
+              "emoji": "👩‍🚀",
+              "texto": "Nave con siete astronautas",
+              "grupo": "tripulada"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 24: «Las naves tripuladas transportan personas y son conducidas por astronautas». «Las naves robóticas no tienen tripulación y son manejadas por controles remoto desde la tierra».",
+            "pagina": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": "n2-vida-espacio",
+      "numero": 2,
+      "titulo": "La vida en el espacio",
+      "emoji": "👩‍🚀",
+      "objetivo": "Comprendo textos informativos sobre la vida de los astronautas y uso diminutivos.",
+      "actividades": [
+        {
+          "id": "lg2-n2-a1-elige-vida-espacio",
+          "tipo": "elige",
+          "titulo": "La vida en la estación espacial",
+          "instruccion": "Recuerda las lecturas sobre el espacio y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "En la estación espacial, ¿por qué las cosas tienen que estar atadas?",
+              "opciones": [
+                {
+                  "emoji": "🎈",
+                  "texto": "Porque si no, flotan"
+                },
+                {
+                  "emoji": "🥇",
+                  "texto": "Porque son de oro"
+                },
+                {
+                  "emoji": "🥶",
+                  "texto": "Porque hace frío"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 26: «En la estación, las cosas tienen que estar atadas, si no, flotan».",
+                "pagina": 11
+              }
+            },
+            {
+              "enunciado": "¿Para qué sirve el agua que corre dentro del traje espacial?",
+              "opciones": [
+                {
+                  "emoji": "🥤",
+                  "texto": "Para tomarla"
+                },
+                {
+                  "emoji": "🌡️",
+                  "texto": "Para mantener la temperatura del cuerpo"
+                },
+                {
+                  "emoji": "🧼",
+                  "texto": "Para lavar el traje"
+                }
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 27: «Dentro del traje espacial corre agua por unos pequeños tubos. Esta agua mantiene la temperatura del astronauta».",
+                "pagina": 13
+              }
+            },
+            {
+              "enunciado": "¿Para qué sirve la película de oro del casco?",
+              "opciones": [
+                {
+                  "emoji": "💎",
+                  "texto": "Para que se vea bonito"
+                },
+                {
+                  "emoji": "📻",
+                  "texto": "Para escuchar música"
+                },
+                {
+                  "emoji": "😎",
+                  "texto": "Para proteger los ojos del Sol"
+                }
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Desafío 27: «la pantalla del casco está cubierta con una película de oro, que evita que el astronauta se queme los ojos con los rayos del Sol».",
+                "pagina": 13
+              }
+            },
+            {
+              "enunciado": "¿Por qué los astronautas hacen deporte en la estación?",
+              "opciones": [
+                {
+                  "emoji": "💪",
+                  "texto": "Para mantenerse en forma"
+                },
+                {
+                  "emoji": "🏆",
+                  "texto": "Para ganar medallas"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 26: «Este astronauta hace deporte para mantenerse en forma».",
+                "pagina": 11
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafíos 26 y 27: La vida en el espacio y ¿Cómo funciona un traje espacial?",
+            "pagina": 11
+          }
+        },
+        {
+          "id": "lg2-n2-a2-globos-diminutivos",
+          "tipo": "atrapa",
+          "titulo": "Globos de diminutivos",
+          "instruccion": "Los diminutivos hacen las palabras más pequeñas, como navecita. Revienta solo los globos con diminutivos.",
+          "objetivo": {
+            "emoji": "🤏",
+            "texto": "diminutivos (terminan en -cito o -cita)"
+          },
+          "elementos": [
+            {
+              "emoji": "🚀",
+              "texto": "navecita",
+              "correcto": true
+            },
+            {
+              "emoji": "👕",
+              "texto": "trajecito",
+              "correcto": true
+            },
+            {
+              "emoji": "💡",
+              "texto": "lucecita",
+              "correcto": true
+            },
+            {
+              "emoji": "🌸",
+              "texto": "florecita",
+              "correcto": true
+            },
+            {
+              "emoji": "🌬️",
+              "texto": "airecito",
+              "correcto": true
+            },
+            {
+              "emoji": "🛸",
+              "texto": "nave",
+              "correcto": false
+            },
+            {
+              "emoji": "👔",
+              "texto": "traje",
+              "correcto": false
+            },
+            {
+              "emoji": "☀️",
+              "texto": "luz",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 28: «Escribe junto a cada sustantivo, un diminutivo terminado en cito o cita»: nave, traje, lugar, luz, aire, cuerpo.",
+            "pagina": 16
+          }
+        },
+        {
+          "id": "lg2-n2-a3-completa-espacio",
+          "tipo": "completa",
+          "titulo": "Completa sobre el espacio",
+          "instruccion": "Toca la palabra que completa cada oración sobre el espacio.",
+          "oraciones": [
+            {
+              "emoji": "💨",
+              "texto": "En el espacio no hay ___ para respirar.",
+              "opciones": [
+                "oxígeno",
+                "música",
+                "chocolate"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 27: «En el espacio: no hay oxígeno para respirar».",
+                "pagina": 13
+              }
+            },
+            {
+              "emoji": "🧪",
+              "texto": "Los astronautas viven en tubos llamados ___.",
+              "opciones": [
+                "cohetes",
+                "módulos",
+                "planetas"
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 25: «Los astronautas viven en grandes tubos unidos entre sí que se llaman módulos».",
+                "pagina": 9
+              }
+            },
+            {
+              "emoji": "🌍",
+              "texto": "La estación espacial gira sin parar alrededor de la ___.",
+              "opciones": [
+                "Luna",
+                "Sol",
+                "Tierra"
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Desafío 25: «La estación espacial está en órbita, es decir, gira sin parar alrededor de la Tierra».",
+                "pagina": 9
+              }
+            },
+            {
+              "emoji": "👨‍🚀",
+              "texto": "Para salir al espacio se necesita un ___ especial.",
+              "opciones": [
+                "traje",
+                "sombrero",
+                "zapato"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 26: «Para salir al espacio se necesita un traje especial, porque no hay aire».",
+                "pagina": 11
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafíos 25 a 27: La estación espacial, la vida en el espacio y el traje espacial.",
+            "pagina": 13
+          }
+        }
+      ]
+    },
+    {
+      "id": "n3-animados-cronologia",
+      "numero": 3,
+      "titulo": "Dibujos animados y cronologías",
+      "emoji": "🎬",
+      "objetivo": "Ordeno hechos por fecha, sigo instrucciones y uso los pronombres personales.",
+      "actividades": [
+        {
+          "id": "lg2-n3-a1-ordena-walt-disney",
+          "tipo": "ordena",
+          "titulo": "La cronología de Walt Disney",
+          "instruccion": "Una cronología ordena los hechos por fecha. Ordena la vida de Walt Disney, del más antiguo al más reciente.",
+          "pasos": [
+            {
+              "emoji": "👶",
+              "texto": "1901: Nació en Chicago."
+            },
+            {
+              "emoji": "🐭",
+              "texto": "1928: Tuvo éxito con el ratón Mickey."
+            },
+            {
+              "emoji": "🍎",
+              "texto": "1937: Hizo Blancanieves, el primer largometraje animado."
+            },
+            {
+              "emoji": "🎡",
+              "texto": "1955: Inauguró el parque Disneyland."
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 31 · Cronología de Walt Disney: «1901: Nació en Chicago […] 1928: Obtuvo un gran éxito con el ratón Mickey […] 1937: […] Blancanieves […] 1955: Inauguró el parque de atracciones Disneyland».",
+            "pagina": 21
+          }
+        },
+        {
+          "id": "lg2-n3-a2-completa-pronombres",
+          "tipo": "completa",
+          "titulo": "¿Qué pronombre va?",
+          "instruccion": "Los pronombres reemplazan a los nombres. Toca el pronombre que completa la oración.",
+          "oraciones": [
+            {
+              "emoji": "🎨",
+              "texto": "Walt Disney nació en 1901. ___ estudió dibujo en Kansas City.",
+              "opciones": [
+                "Él",
+                "Nosotros",
+                "Ellas"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 31: «Walt Disney nació en Chicago el año 1901. Luego, ingresó al instituto de Arte en Kansas City». Para hablar de un hombre usamos él.",
+                "pagina": 22
+              }
+            },
+            {
+              "emoji": "🤝",
+              "texto": "Walt y su hermano Roy crearon un estudio. ___ trabajaron juntos.",
+              "opciones": [
+                "Yo",
+                "Ellos",
+                "Tú"
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 31: «1923: […] Creó con su hermano Roy el estudio Disney Brothers». Para hablar de varias personas usamos ellos o ellas.",
+                "pagina": 21
+              }
+            },
+            {
+              "emoji": "🐠",
+              "texto": "Mi amiga y yo vimos Buscando a Nemo. ___ nos reímos mucho.",
+              "opciones": [
+                "Ellos",
+                "Él",
+                "Nosotras"
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Cuando hablo de mí y de otra persona, usamos nosotros o nosotras.",
+                "pagina": 22
+              }
+            },
+            {
+              "emoji": "📓",
+              "texto": "Papelucho escribió: «___ tengo un secreto terrible».",
+              "opciones": [
+                "Yo",
+                "Ustedes",
+                "Ellas"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 34 · Papelucho: «Y yo sé que mientras no la haya contado no podré dormir».",
+                "pagina": 27
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 31: «Completa con los pronombres yo - tú - él o ella - nosotros o nosotras - ustedes - ellos o ellas, según corresponda».",
+            "pagina": 22
+          }
+        },
+        {
+          "id": "lg2-n3-a3-arma-folioscopio",
+          "tipo": "arma",
+          "titulo": "Arma las instrucciones",
+          "instruccion": "Arma las instrucciones para hacer un folioscopio. Toca las palabras en orden.",
+          "oraciones": [
+            {
+              "emoji": "📒",
+              "partes": [
+                "Dibuja",
+                "en",
+                "la",
+                "última",
+                "página."
+              ]
+            },
+            {
+              "emoji": "✏️",
+              "partes": [
+                "Calca",
+                "el",
+                "dibujo",
+                "con",
+                "un",
+                "cambio."
+              ]
+            },
+            {
+              "emoji": "👆",
+              "partes": [
+                "Pasa",
+                "las",
+                "hojas",
+                "muy",
+                "rápido."
+              ]
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 30 · Cómo hacer un folioscopio: «Abre la última página y haz el primer dibujo […] calca tu dibujo inicial […] Pasa rápidamente todas las hojas con tus dedos».",
+            "pagina": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "n4-sinonimos-antonimos",
+      "numero": 4,
+      "titulo": "Sinónimos y antónimos",
+      "emoji": "↔️",
+      "objetivo": "Diferencio sinónimos (igual significado) de antónimos (significado contrario).",
+      "actividades": [
+        {
+          "id": "lg2-n4-a1-arrastra-sinonimo-antonimo",
+          "tipo": "arrastra",
+          "titulo": "¿Sinónimo o antónimo?",
+          "instruccion": "Arrastra cada pareja de palabras: ¿significan lo mismo (sinónimos) o lo contrario (antónimos)?",
+          "grupos": [
+            {
+              "id": "sinonimo",
+              "emoji": "🔁",
+              "texto": "Sinónimos"
+            },
+            {
+              "id": "antonimo",
+              "emoji": "↔️",
+              "texto": "Antónimos"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "🐠",
+              "texto": "pequeño – diminuto",
+              "grupo": "sinonimo"
+            },
+            {
+              "emoji": "🐋",
+              "texto": "pequeño – grande",
+              "grupo": "antonimo"
+            },
+            {
+              "emoji": "🙈",
+              "texto": "tímido – vergonzoso",
+              "grupo": "sinonimo"
+            },
+            {
+              "emoji": "🦁",
+              "texto": "tímido – atrevido",
+              "grupo": "antonimo"
+            },
+            {
+              "emoji": "🦊",
+              "texto": "astuto – sagaz",
+              "grupo": "sinonimo"
+            },
+            {
+              "emoji": "✅",
+              "texto": "peligrosa – segura",
+              "grupo": "antonimo"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 32: «Subraya los adjetivos […] y luego escribe un sinónimo y un antónimo para cada uno»: «El pequeño Nemo», «El tímido padre», «un astuto plan».",
+            "pagina": 24
+          }
+        },
+        {
+          "id": "lg2-n4-a2-memoria-antonimos",
+          "tipo": "memoria",
+          "titulo": "Memoria de antónimos",
+          "instruccion": "Voltea dos cartas. Busca cada palabra con su antónimo, la que significa lo contrario.",
+          "pares": [
+            {
+              "izquierda": {
+                "emoji": "✨",
+                "texto": "nuevo"
+              },
+              "derecha": {
+                "emoji": "🏚️",
+                "texto": "viejo"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🙈",
+                "texto": "tímido"
+              },
+              "derecha": {
+                "emoji": "🦁",
+                "texto": "atrevido"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🐋",
+                "texto": "grande"
+              },
+              "derecha": {
+                "emoji": "🐭",
+                "texto": "pequeño"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "🥶",
+                "texto": "frío"
+              },
+              "derecha": {
+                "emoji": "🔥",
+                "texto": "caliente"
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 32: un antónimo es una palabra con «diferente significado y diferente palabra»; por ejemplo, el antónimo de pequeño es grande.",
+            "pagina": 24
+          }
+        },
+        {
+          "id": "lg2-n4-a3-globos-sinonimos-astuto",
+          "tipo": "atrapa",
+          "titulo": "Globos del ratón sagaz",
+          "instruccion": "El ratón detective era sagaz. Revienta solo los globos con palabras que significan lo mismo que sagaz.",
+          "objetivo": {
+            "emoji": "🐭",
+            "texto": "sinónimos de sagaz"
+          },
+          "elementos": [
+            {
+              "emoji": "🦊",
+              "texto": "astuto",
+              "correcto": true
+            },
+            {
+              "emoji": "🧠",
+              "texto": "inteligente",
+              "correcto": true
+            },
+            {
+              "emoji": "💡",
+              "texto": "listo",
+              "correcto": true
+            },
+            {
+              "emoji": "🔍",
+              "texto": "ingenioso",
+              "correcto": true
+            },
+            {
+              "emoji": "🐌",
+              "texto": "lento",
+              "correcto": false
+            },
+            {
+              "emoji": "😢",
+              "texto": "triste",
+              "correcto": false
+            },
+            {
+              "emoji": "😴",
+              "texto": "dormido",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 37: «El ratón era buen detective, algo más listo y sagaz que la liebre».",
+            "pagina": 33
+          }
+        }
+      ]
+    },
+    {
+      "id": "n5-cuentos-cartas",
+      "numero": 5,
+      "titulo": "Cuentos, misterio y cartas",
+      "emoji": "✉️",
+      "objetivo": "Comprendo cuentos de misterio, aprendo palabras nuevas y conozco las partes de una carta.",
+      "actividades": [
+        {
+          "id": "lg2-n5-a1-ordena-carta",
+          "tipo": "ordena",
+          "titulo": "Las partes de una carta",
+          "instruccion": "Ordena las partes de una carta, de arriba hacia abajo.",
+          "pasos": [
+            {
+              "emoji": "📅",
+              "texto": "Lugar y fecha"
+            },
+            {
+              "emoji": "👋",
+              "texto": "Saludo"
+            },
+            {
+              "emoji": "📝",
+              "texto": "Cuerpo de la carta"
+            },
+            {
+              "emoji": "🤗",
+              "texto": "Despedida"
+            },
+            {
+              "emoji": "✍️",
+              "texto": "Nombre o firma"
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 40: «Recuerda la estructura de una carta»: Lugar y fecha, Saludo, Cuerpo de la carta, Despedida, Nombre o firma.",
+            "pagina": 39
+          }
+        },
+        {
+          "id": "lg2-n5-a2-elige-misterio",
+          "tipo": "elige",
+          "titulo": "El misterio de la moneda",
+          "instruccion": "Recuerda el cuento “El misterio de la moneda desaparecida” y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "¿Qué perdió la urraca?",
+              "opciones": [
+                {
+                  "emoji": "💰",
+                  "texto": "Una moneda que le regaló su padre"
+                },
+                {
+                  "emoji": "🔑",
+                  "texto": "Una llave"
+                },
+                {
+                  "emoji": "🧀",
+                  "texto": "Un queso"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 37: «La urraca se dio cuenta de que le faltaba una de sus monedas más preciadas […] se la había regalado su padre».",
+                "pagina": 33
+              }
+            },
+            {
+              "enunciado": "¿Quién tenía la moneda en su casa?",
+              "opciones": [
+                {
+                  "emoji": "🐰",
+                  "texto": "La liebre"
+                },
+                {
+                  "emoji": "🐭",
+                  "texto": "El ratón"
+                },
+                {
+                  "emoji": "🐹",
+                  "texto": "El topo"
+                }
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Desafío 37: «El topo resultó estar encantado de guiarle porque la moneda llevaba tiempo molestándole en su casa».",
+                "pagina": 33
+              }
+            },
+            {
+              "enunciado": "¿Por qué el ratón no le preguntó nada al topo?",
+              "opciones": [
+                {
+                  "emoji": "🙈",
+                  "texto": "Porque era muy tímido"
+                },
+                {
+                  "emoji": "😴",
+                  "texto": "Porque tenía sueño"
+                },
+                {
+                  "emoji": "🏃",
+                  "texto": "Porque tenía prisa"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 37: «como el ratón era muy tímido, no se atrevió a decirle nada».",
+                "pagina": 33
+              }
+            },
+            {
+              "enunciado": "¿Qué aprendió el ratón?",
+              "opciones": [
+                {
+                  "emoji": "💪",
+                  "texto": "A no dejar que la timidez estropee su trabajo"
+                },
+                {
+                  "emoji": "💰",
+                  "texto": "A guardar monedas"
+                },
+                {
+                  "emoji": "🕳️",
+                  "texto": "A cavar túneles"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 37: «desde entonces nunca dejó que la timidez le estropeara su buen trabajo».",
+                "pagina": 33
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 37 · El misterio de la moneda desaparecida, de Pedro Pablo Sacristán.",
+            "pagina": 33
+          }
+        },
+        {
+          "id": "lg2-n5-a3-completa-vocabulario",
+          "tipo": "completa",
+          "titulo": "Palabras nuevas de los cuentos",
+          "instruccion": "Toca la palabra nueva que completa la oración.",
+          "oraciones": [
+            {
+              "emoji": "💰",
+              "texto": "La moneda era muy ___ para la urraca porque se la regaló su padre.",
+              "opciones": [
+                "preciada",
+                "fea",
+                "mojada"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 37: «le faltaba una de sus monedas más preciadas […] para ella tenía gran valor porque se la había regalado su padre».",
+                "pagina": 33
+              }
+            },
+            {
+              "emoji": "🐭",
+              "texto": "El ratón era un detective listo y ___.",
+              "opciones": [
+                "dormido",
+                "sagaz",
+                "lento"
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 37: «El ratón era buen detective, algo más listo y sagaz que la liebre».",
+                "pagina": 33
+              }
+            },
+            {
+              "emoji": "🕳️",
+              "texto": "Los túneles bajo el bosque formaban un gran ___.",
+              "opciones": [
+                "río",
+                "cohete",
+                "laberinto"
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Desafío 37: «sus pistas y razonamientos le llevaron pronto al gran laberinto de túneles bajo el bosque».",
+                "pagina": 33
+              }
+            },
+            {
+              "emoji": "🏆",
+              "texto": "La liebre encontró la moneda y se llevó la ___.",
+              "opciones": [
+                "recompensa",
+                "lluvia",
+                "mochila"
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Desafío 37: «finalmente la liebre se llevó la recompensa».",
+                "pagina": 33
+              }
+            },
+            {
+              "emoji": "🌙",
+              "texto": "«De cuando en cuando» la Luna se tiñe de rojo, es decir, ___.",
+              "opciones": [
+                "nunca",
+                "ocasionalmente",
+                "siempre"
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "Desafío 41 · La Luna roja: «de cuando en cuando, cuando las flores se abren, durante algunos minutos la Luna se tiñe de un rojo suave».",
+                "pagina": 41
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Desafío 37 · El misterio de la moneda desaparecida, y Desafío 41 · La Luna roja.",
+            "pagina": 33
+          }
+        }
+      ]
+    }
+  ]
+}

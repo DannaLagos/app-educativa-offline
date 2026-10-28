@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:app_educativa/features/modulos/data/descarga_service.dart';
 import 'package:app_educativa/features/modulos/data/modulo_repository.dart';
+import 'package:app_educativa/features/modulos/domain/contenido_incompleto_exception.dart';
+import 'package:app_educativa/features/modulos/domain/descarga_exception.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/modulo.dart';
 import 'package:app_educativa/features/modulos/domain/recurso_local.dart';
+import 'package:app_educativa/features/modulos/domain/resultado_catalogo.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_controller.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_scope.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/detalle_modulo_screen.dart';
@@ -39,11 +42,11 @@ void main() {
     );
   });
 
-  void catalogo(List<Modulo> modulos, {bool desdeCache = false}) {
+  void catalogo(List<Modulo> modulos, {bool vieneDeCache = false}) {
     when(() => repositorio.obtenerCatalogo()).thenAnswer(
       (_) async => ResultadoCatalogo(
         modulos: modulos,
-        desdeCache: desdeCache,
+        vieneDeCache: vieneDeCache,
       ),
     );
   }
@@ -67,7 +70,7 @@ void main() {
             body: EstadoDescargaChip(
               estado: estado,
               progreso: progreso,
-              grande: true,
+              esGrande: true,
             ),
           ),
         ),
@@ -140,7 +143,7 @@ void main() {
 
   testWidgets('sin conexión avisa que los módulos vienen de la caché',
       (tester) async {
-    catalogo([moduloDePrueba()], desdeCache: true);
+    catalogo([moduloDePrueba()], vieneDeCache: true);
 
     await tester.pumpWidget(app(const ModulosScreen()));
     await tester.pumpAndSettle();
@@ -465,7 +468,6 @@ void main() {
 
       await tester.tap(find.text('Eliminar'));
       await tester.pumpAndSettle();
-      // Botón "Eliminar" del diálogo.
       await tester.tap(
         find.descendant(
           of: find.byType(AlertDialog),

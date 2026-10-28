@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Reglas de Cloud Firestore para el progreso de los estudiantes (HU10/HU11).
+// Se copian en Firebase Console > Firestore Database > Reglas > Publicar.
+//
+// - La app inicia una sesión anónima de Firebase y escribe su uid en cada
+//   documento: solo ese usuario puede crearlo o actualizarlo.
+// - Nadie puede leer ni borrar el progreso desde la app. El docente lo
+//   consulta desde la consola de Firebase.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Quien escribe tiene sesión, pone su propio uid y, si el documento ya
+    // existía, es el mismo dueño. Los documentos de pruebas anteriores (sin
+    // uid) los toma el primero que los vuelva a enviar.
+    function esDelUsuario() {
+      return request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && (resource == null
+            || !('uid' in resource.data)
+            || resource.data.uid == request.auth.uid);
+    }
+
+    // estudiantes/{perfil}: datos básicos del estudiante.
+    match /estudiantes/{perfil} {
+      allow read, delete: if false;
+      allow create, update: if esDelUsuario()
+        && request.resource.data.perfil_id == perfil
+        && request.resource.data.size() <= 6;
+
+      // estudiantes/{perfil}/{modulos|lecturas|actividades}/{registro}
+      match /{coleccion}/{registro} {
+        allow read, delete: if false;
+        allow create, update: if esDelUsuario()
+          && coleccion in ['modulos', 'lecturas', 'actividades']
+          && request.resource.data.perfil_id == perfil
+          && request.resource.data.size() <= 15;
+      }
+    }
+
+    // Todo lo demás está cerrado.
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

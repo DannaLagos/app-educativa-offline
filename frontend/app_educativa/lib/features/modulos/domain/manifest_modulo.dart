@@ -18,9 +18,7 @@ class RecursoModulo {
   factory RecursoModulo.fromJson(Map<String, dynamic> json) {
     final archivo = json['archivo'] as String;
 
-    // Evita que un manifest malicioso escriba fuera de la carpeta del módulo
-    // (por ejemplo, "../../base.db").
-    if (archivo.isEmpty || p.basename(archivo) != archivo || archivo == '..') {
+    if (!_estaDentroDeLaCarpeta(archivo)) {
       throw FormatException('Nombre de archivo no permitido: $archivo');
     }
 
@@ -31,6 +29,12 @@ class RecursoModulo {
       tamano: json['tamano'] as int,
       sha256: json['sha256'] as String,
     );
+  }
+
+  static bool _estaDentroDeLaCarpeta(String archivo) {
+    return archivo.isNotEmpty &&
+        archivo != '..' &&
+        p.basename(archivo) == archivo;
   }
 
   Map<String, dynamic> toJson() {
@@ -44,7 +48,6 @@ class RecursoModulo {
   }
 }
 
-/// Describe los recursos de un módulo (manifest.json).
 class ManifestModulo {
   final String id;
   final int version;

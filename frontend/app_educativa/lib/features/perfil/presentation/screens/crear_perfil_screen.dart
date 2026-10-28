@@ -8,55 +8,75 @@ import '../../domain/perfil_estudiante.dart';
 import 'estudiante_shell.dart';
 
 class CrearPerfilScreen extends StatefulWidget {
-  const CrearPerfilScreen({super.key});
+  final PerfilLocalDataSource? perfilLocalDataSource;
+
+  const CrearPerfilScreen({
+    super.key,
+    this.perfilLocalDataSource,
+  });
 
   @override
   State<CrearPerfilScreen> createState() => _CrearPerfilScreenState();
 }
 
 class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
-  final TextEditingController _nombreController = TextEditingController();
-  final PerfilLocalDataSource _perfilLocalDataSource =
-      PerfilLocalDataSource();
+  static const double _alturaBotonContinuar = 60;
 
-  bool _guardando = false;
-  String? _error;
+  final TextEditingController _nombreController = TextEditingController();
+  late final PerfilLocalDataSource _perfilLocalDataSource =
+      widget.perfilLocalDataSource ?? PerfilLocalDataSource();
+
+  bool _estaGuardando = false;
+  String? _mensajeError;
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    super.dispose();
+  }
 
   Future<void> _crearPerfil() async {
     final nombre = _nombreController.text.trim();
 
     if (nombre.isEmpty) {
-      setState(() {
-        _error = 'Ingresa tu nombre para continuar.';
-      });
+      setState(() => _mensajeError = 'Ingresa tu nombre para continuar.');
       return;
     }
 
     setState(() {
-      _guardando = true;
-      _error = null;
+      _estaGuardando = true;
+      _mensajeError = null;
     });
 
-    final perfil = PerfilEstudiante(
-      id: const Uuid().v4(),
-      nombre: nombre,
-    );
+    final perfil = PerfilEstudiante(id: const Uuid().v4(), nombre: nombre);
+    final fueGuardado = await _intentarGuardar(perfil);
 
-    try {
-      await _perfilLocalDataSource.guardarPerfil(perfil);
-    } catch (_) {
-      if (!mounted) return;
-
-      setState(() {
-        _guardando = false;
-        _error = 'No fue posible guardar tu perfil. Intenta de nuevo.';
-      });
+    if (!mounted || !fueGuardado) {
       return;
     }
 
-    if (!mounted) return;
+    _irAlInicio(perfil);
+  }
 
-    // Se quita la bienvenida de la pila: desde el inicio no se vuelve atrás.
+  Future<bool> _intentarGuardar(PerfilEstudiante perfil) async {
+    try {
+      await _perfilLocalDataSource.guardarPerfil(perfil);
+      return true;
+    } catch (error, stack) {
+      debugPrint('Error al guardar el perfil: $error\n$stack');
+
+      if (mounted) {
+        setState(() {
+          _estaGuardando = false;
+          _mensajeError = 'No fue posible guardar tu perfil. Intenta de nuevo.';
+        });
+      }
+      return false;
+    }
+  }
+
+  // Se quita la bienvenida de la pila: desde el inicio no se vuelve atrás.
+  void _irAlInicio(PerfilEstudiante perfil) {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (_) => EstudianteShell(perfil: perfil),
@@ -74,12 +94,6 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
   }
 
   @override
-  void dispose() {
-    _nombreController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
@@ -87,29 +101,7 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           children: [
-            const Text(
-              'Crea tu perfil',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              '¡Comencemos tu nuevo viaje educativo!',
-              style: TextStyle(
-                fontSize: 18,
-                color: AppTheme.textoSecundario,
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              '¿Cómo te llamas?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            const _Encabezado(),
             const SizedBox(height: 10),
             TextField(
               controller: _nombreController,
@@ -117,16 +109,16 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
               style: const TextStyle(fontSize: 19),
               decoration: InputDecoration(
                 hintText: 'Por ejemplo, Valentina',
-                errorText: _error,
+                errorText: _mensajeError,
               ),
               onSubmitted: (_) => _crearPerfil(),
             ),
             const SizedBox(height: 32),
             SizedBox(
-              height: 60,
+              height: _alturaBotonContinuar,
               child: ElevatedButton(
-                onPressed: _guardando ? null : _crearPerfil,
-                child: _guardando
+                onPressed: _estaGuardando ? null : _crearPerfil,
+                child: _estaGuardando
                     ? const CircularProgressIndicator()
                     : const Text('¡Listos, continuar!'),
               ),
@@ -140,6 +132,33 @@ class _CrearPerfilScreenState extends State<CrearPerfilScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _Encabezado extends StatelessWidget {
+  const _Encabezado();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Crea tu perfil',
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+        ),
+        SizedBox(height: 6),
+        Text(
+          '¡Comencemos tu nuevo viaje educativo!',
+          style: TextStyle(fontSize: 18, color: AppTheme.textoSecundario),
+        ),
+        SizedBox(height: 32),
+        Text(
+          '¿Cómo te llamas?',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+      ],
     );
   }
 }

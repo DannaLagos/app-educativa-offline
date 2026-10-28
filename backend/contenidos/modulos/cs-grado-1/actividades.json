@@ -1,0 +1,933 @@
+{
+  "modulo": "cs-grado-1",
+  "niveles": [
+    {
+      "id": "n1-yo-soy-unico",
+      "numero": 1,
+      "titulo": "Yo soy único",
+      "emoji": "🧒",
+      "objetivo": "Identifico características físicas y emocionales que hacen de mí un ser único.",
+      "actividades": [
+        {
+          "id": "n1-a1-globos-cuerpo",
+          "tipo": "atrapa",
+          "titulo": "Globos de mi cuerpo",
+          "instruccion": "Revienta solo los globos que tienen partes del cuerpo. ¡Tócalos antes de que se escapen!",
+          "objetivo": {
+            "emoji": "🧍",
+            "texto": "partes del cuerpo"
+          },
+          "elementos": [
+            {
+              "emoji": "✋",
+              "texto": "Mano",
+              "correcto": true
+            },
+            {
+              "emoji": "👂",
+              "texto": "Oreja",
+              "correcto": true
+            },
+            {
+              "emoji": "👃",
+              "texto": "Nariz",
+              "correcto": true
+            },
+            {
+              "emoji": "👀",
+              "texto": "Ojos",
+              "correcto": true
+            },
+            {
+              "emoji": "🦶",
+              "texto": "Pie",
+              "correcto": true
+            },
+            {
+              "emoji": "🍎",
+              "texto": "Manzana",
+              "correcto": false
+            },
+            {
+              "emoji": "🚗",
+              "texto": "Carro",
+              "correcto": false
+            },
+            {
+              "emoji": "⚽",
+              "texto": "Balón",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Guía 1 · ¿Cómo es mi cuerpo?: «¿Puedes señalar y nombrar cada parte de tu cuerpo?»",
+            "pagina": 9
+          }
+        },
+        {
+          "id": "n1-a2-memoria-emociones",
+          "tipo": "memoria",
+          "titulo": "Memoria de emociones",
+          "instruccion": "Voltea dos cartas. Busca cada carita con lo que hace sentir así.",
+          "pares": [
+            {
+              "izquierda": {
+                "emoji": "😀",
+                "texto": "Alegre"
+              },
+              "derecha": {
+                "emoji": "🎁",
+                "texto": "Me dieron un regalo"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "😢",
+                "texto": "Triste"
+              },
+              "derecha": {
+                "emoji": "🐶",
+                "texto": "Se perdió mi perrito"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "😠",
+                "texto": "Enojado"
+              },
+              "derecha": {
+                "emoji": "🧸",
+                "texto": "Me rompieron el juguete"
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Guía 1 · ¿Cómo es mi forma de ser?: «Todos los hombres y las mujeres, niños y niñas, sentimos amor, rabia, tristeza y felicidad, pero lo expresamos diferente».",
+            "pagina": 11
+          }
+        },
+        {
+          "id": "n1-a3-soy-especial",
+          "tipo": "elige",
+          "titulo": "Soy especial y me cuido",
+          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "¿Todos los niños y niñas somos iguales?",
+              "opciones": [
+                {
+                  "emoji": "🌈",
+                  "texto": "No, cada uno es único y especial"
+                },
+                {
+                  "emoji": "👥",
+                  "texto": "Sí, todos somos iguales"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "¿Qué me hace único?",
+              "opciones": [
+                {
+                  "emoji": "👕",
+                  "texto": "Mi ropa nueva"
+                },
+                {
+                  "emoji": "🧒",
+                  "texto": "Mi nombre, mi cara y mi forma de ser"
+                },
+                {
+                  "emoji": "🚫",
+                  "texto": "Nada"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "Cuando estoy triste, puedo…",
+              "opciones": [
+                {
+                  "emoji": "💥",
+                  "texto": "Romper cosas"
+                },
+                {
+                  "emoji": "🙈",
+                  "texto": "Esconderme siempre"
+                },
+                {
+                  "emoji": "🗣️",
+                  "texto": "Contarle a alguien cómo me siento"
+                }
+              ],
+              "correcta": 2
+            },
+            {
+              "enunciado": "Mi cuerpo me pertenece. Si alguien me toca y no me gusta, ¿qué hago?",
+              "opciones": [
+                {
+                  "emoji": "✋",
+                  "texto": "Digo NO y le cuento a un adulto de confianza"
+                },
+                {
+                  "emoji": "🤫",
+                  "texto": "Lo guardo en secreto"
+                },
+                {
+                  "emoji": "😶",
+                  "texto": "Me quedo callado"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Guía 1: «Tu cuerpo te pertenece, nadie tiene derecho a tocarlo sin tu permiso».",
+                "pagina": 9
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Guía 1 · ¿Quién soy yo?: «Tú y yo somos personas parecidas y diferentes. Todos tenemos un cuerpo y unos sentimientos. Pero cada uno tiene […] una forma de ser única».",
+            "pagina": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "n2-mi-familia",
+      "numero": 2,
+      "titulo": "Mi familia",
+      "emoji": "👨‍👩‍👧‍👦",
+      "objetivo": "Reconozco a mi familia, cómo nos cuidamos y que hay muchos tipos de familia.",
+      "actividades": [
+        {
+          "id": "n2-a1-globos-familia",
+          "tipo": "atrapa",
+          "titulo": "Globos de la familia",
+          "instruccion": "Revienta solo los globos que tienen personas de la familia.",
+          "objetivo": {
+            "emoji": "👨‍👩‍👧‍👦",
+            "texto": "personas de la familia"
+          },
+          "elementos": [
+            {
+              "emoji": "👶",
+              "texto": "Bebé",
+              "correcto": true
+            },
+            {
+              "emoji": "👵",
+              "texto": "Abuela",
+              "correcto": true
+            },
+            {
+              "emoji": "👴",
+              "texto": "Abuelo",
+              "correcto": true
+            },
+            {
+              "emoji": "👩",
+              "texto": "Mamá",
+              "correcto": true
+            },
+            {
+              "emoji": "👨",
+              "texto": "Papá",
+              "correcto": true
+            },
+            {
+              "emoji": "🚀",
+              "texto": "Cohete",
+              "correcto": false
+            },
+            {
+              "emoji": "🍕",
+              "texto": "Pizza",
+              "correcto": false
+            },
+            {
+              "emoji": "🌵",
+              "texto": "Cactus",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Guía 2 · ¿Qué es la familia?: «La familia debe proteger a los niños y niñas, darles afecto, educarlos, acompañarlos y apoyarlos».",
+            "pagina": 12
+          }
+        },
+        {
+          "id": "n2-a2-arrastra-cuidamos",
+          "tipo": "arrastra",
+          "titulo": "Así nos cuidamos en familia",
+          "instruccion": "Arrastra cada dibujo a su canasta: ¿cuida a la familia o no la cuida?",
+          "grupos": [
+            {
+              "id": "cuida",
+              "emoji": "💚",
+              "texto": "Cuida a la familia"
+            },
+            {
+              "id": "no-cuida",
+              "emoji": "🚫",
+              "texto": "No cuida"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "🤗",
+              "texto": "Dar un abrazo",
+              "grupo": "cuida"
+            },
+            {
+              "emoji": "🧹",
+              "texto": "Ayudar a limpiar la casa",
+              "grupo": "cuida"
+            },
+            {
+              "emoji": "😡",
+              "texto": "Gritar y pelear",
+              "grupo": "no-cuida"
+            },
+            {
+              "emoji": "🍲",
+              "texto": "Cocinar juntos",
+              "grupo": "cuida"
+            },
+            {
+              "emoji": "👊",
+              "texto": "Pegarle a alguien",
+              "grupo": "no-cuida"
+            },
+            {
+              "emoji": "🙉",
+              "texto": "No escuchar a los demás",
+              "grupo": "no-cuida"
+            }
+          ],
+          "pista": {
+            "texto": "Guía 2 · ¿Cómo debe ser la familia?: «Dentro de la familia no debe haber maltrato físico ni verbal». Cada miembro debe cumplir con tareas y deberes para que en el hogar haya armonía.",
+            "pagina": 14
+          }
+        },
+        {
+          "id": "n2-a3-tipos-de-familia",
+          "tipo": "elige",
+          "titulo": "Hay muchos tipos de familia",
+          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "¿Cómo son las familias?",
+              "opciones": [
+                {
+                  "emoji": "👥",
+                  "texto": "Todas son iguales"
+                },
+                {
+                  "emoji": "🌈",
+                  "texto": "Son diferentes y todas son valiosas"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "En una casa viven los abuelos, los tíos y los primos. Es una familia…",
+              "opciones": [
+                {
+                  "emoji": "🏘️",
+                  "texto": "Grande"
+                },
+                {
+                  "emoji": "🔹",
+                  "texto": "Pequeña"
+                },
+                {
+                  "emoji": "🚫",
+                  "texto": "No es una familia"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "Sofía vive solo con su mamá. ¿Sofía tiene una familia?",
+              "opciones": [
+                {
+                  "emoji": "👩‍👧",
+                  "texto": "Sí, es su familia"
+                },
+                {
+                  "emoji": "🚫",
+                  "texto": "No tiene familia"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "¿Qué tipo de familia es mejor?",
+              "opciones": [
+                {
+                  "emoji": "🏘️",
+                  "texto": "Solo las familias grandes"
+                },
+                {
+                  "emoji": "💛",
+                  "texto": "Ninguna es mejor: todas merecen respeto"
+                },
+                {
+                  "emoji": "🔹",
+                  "texto": "Solo las familias pequeñas"
+                }
+              ],
+              "correcta": 1
+            }
+          ],
+          "pista": {
+            "texto": "Guía 2 · ¿Cómo debe ser la familia?: «Existen diferentes tipos de familia» (grandes, de un hijo, con papá, mamá e hijos…). «Ningún tipo de familia es mejor que los demás».",
+            "pagina": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": "n3-mis-vecinos",
+      "numero": 3,
+      "titulo": "Mis vecinos y sus oficios",
+      "emoji": "🏘️",
+      "objetivo": "Reconozco los oficios de las personas de mi entorno y cómo ayudan a la comunidad.",
+      "actividades": [
+        {
+          "id": "n3-a1-memoria-oficios",
+          "tipo": "memoria",
+          "titulo": "Memoria de los oficios",
+          "instruccion": "Voltea dos cartas. Busca a cada persona con lo que usa en su trabajo.",
+          "pares": [
+            {
+              "izquierda": {
+                "emoji": "👩‍🌾",
+                "texto": "Agricultora"
+              },
+              "derecha": {
+                "emoji": "🌽",
+                "texto": "Maíz"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "👨‍🍳",
+                "texto": "Cocinero"
+              },
+              "derecha": {
+                "emoji": "🍳",
+                "texto": "Sartén"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "👩‍⚕️",
+                "texto": "Doctora"
+              },
+              "derecha": {
+                "emoji": "💊",
+                "texto": "Medicinas"
+              }
+            },
+            {
+              "izquierda": {
+                "emoji": "👨‍🏫",
+                "texto": "Profesor"
+              },
+              "derecha": {
+                "emoji": "📚",
+                "texto": "Libros"
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3 · ¿Qué hacen mis vecinos?: «Los seres humanos se dedican a muchos oficios, ocupaciones, profesiones. Todas son igual de valiosas».",
+            "pagina": 18
+          }
+        },
+        {
+          "id": "n3-a2-buenos-vecinos",
+          "tipo": "elige",
+          "titulo": "Todos los oficios son valiosos",
+          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "¿Quién puede ser policía?",
+              "opciones": [
+                {
+                  "emoji": "👮‍♂️",
+                  "texto": "Solo los hombres"
+                },
+                {
+                  "emoji": "👮‍♀️",
+                  "texto": "Solo las mujeres"
+                },
+                {
+                  "emoji": "👮",
+                  "texto": "Hombres y mujeres"
+                }
+              ],
+              "correcta": 2
+            },
+            {
+              "enunciado": "¿Qué trabajo es más importante?",
+              "opciones": [
+                {
+                  "emoji": "💰",
+                  "texto": "El que gana más dinero"
+                },
+                {
+                  "emoji": "🤝",
+                  "texto": "Todos los trabajos son valiosos"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "Cuidar la casa y a los hijos, ¿es un trabajo valioso?",
+              "opciones": [
+                {
+                  "emoji": "🏠",
+                  "texto": "Sí, es muy valioso"
+                },
+                {
+                  "emoji": "🚫",
+                  "texto": "No es un trabajo"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Guía 3: «Las labores domésticas, como el cuidado de la casa y de los hijos, aunque no sean actividades remuneradas con dinero, son de gran valor para la familia y la comunidad».",
+                "pagina": 18
+              }
+            },
+            {
+              "enunciado": "Tu vecina está muy enferma y necesita un médico. ¿Qué hacemos?",
+              "opciones": [
+                {
+                  "emoji": "🚪",
+                  "texto": "Cerramos la puerta"
+                },
+                {
+                  "emoji": "🤷",
+                  "texto": "No hacemos nada"
+                },
+                {
+                  "emoji": "🤝",
+                  "texto": "La ayudamos a buscar un médico"
+                }
+              ],
+              "correcta": 2,
+              "pista": {
+                "texto": "Guía 3 · ¿Quiénes son mis vecinos?: «Los vecinos al compartir el mismo espacio van formando relaciones de amistad y solidaridad».",
+                "pagina": 17
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3 · ¿Las ocupaciones son cosas de hombres y mujeres?: «En la actualidad hombres y mujeres pueden dedicarse casi a cualquier oficio».",
+            "pagina": 19
+          }
+        },
+        {
+          "id": "n3-a3-dia-del-agricultor",
+          "tipo": "ordena",
+          "titulo": "El trabajo del agricultor",
+          "instruccion": "Toca los dibujos en orden: ¿qué pasa primero, qué pasa después y qué pasa al final?",
+          "pasos": [
+            {
+              "emoji": "🌱",
+              "texto": "Siembra la semilla"
+            },
+            {
+              "emoji": "💧",
+              "texto": "Riega las plantas"
+            },
+            {
+              "emoji": "🌽",
+              "texto": "Recoge la cosecha"
+            },
+            {
+              "emoji": "🛒",
+              "texto": "La vende en el mercado"
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3: «El agricultor aporta a la producción de alimentos de la región que se destinan al consumo de la comunidad o al comercio de los mismos».",
+            "pagina": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "n4-mi-region",
+      "numero": 4,
+      "titulo": "Mi región y la naturaleza",
+      "emoji": "🏞️",
+      "objetivo": "Relaciono paisajes naturales y culturales, y sé que los recursos naturales se deben cuidar.",
+      "actividades": [
+        {
+          "id": "n4-a1-globos-naturaleza",
+          "tipo": "atrapa",
+          "titulo": "Globos de la naturaleza",
+          "instruccion": "Revienta solo los globos con cosas que hizo la naturaleza. Las que hicieron las personas, déjalas volar.",
+          "objetivo": {
+            "emoji": "🌳",
+            "texto": "lo que hizo la naturaleza"
+          },
+          "elementos": [
+            {
+              "emoji": "⛰️",
+              "texto": "Montaña",
+              "correcto": true
+            },
+            {
+              "emoji": "🌳",
+              "texto": "Árbol",
+              "correcto": true
+            },
+            {
+              "emoji": "🌊",
+              "texto": "Mar",
+              "correcto": true
+            },
+            {
+              "emoji": "☀️",
+              "texto": "Sol",
+              "correcto": true
+            },
+            {
+              "emoji": "🌸",
+              "texto": "Flor",
+              "correcto": true
+            },
+            {
+              "emoji": "🏠",
+              "texto": "Casa",
+              "correcto": false
+            },
+            {
+              "emoji": "🌉",
+              "texto": "Puente",
+              "correcto": false
+            },
+            {
+              "emoji": "🚌",
+              "texto": "Bus",
+              "correcto": false
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3 · ¿Cómo es mi región?: «Tu región tiene animales, vegetales y frutas y climas diferentes». Piensa: ¿qué existe sin que las personas lo construyan?",
+            "pagina": 20
+          }
+        },
+        {
+          "id": "n4-a2-arrastra-naturaleza",
+          "tipo": "arrastra",
+          "titulo": "¿Cuida o daña la naturaleza?",
+          "instruccion": "Arrastra cada dibujo a su canasta: ¿cuida la naturaleza o la daña?",
+          "grupos": [
+            {
+              "id": "cuida",
+              "emoji": "💚",
+              "texto": "La cuida"
+            },
+            {
+              "id": "dana",
+              "emoji": "💔",
+              "texto": "La daña"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "🚰",
+              "texto": "Cerrar la llave del agua",
+              "grupo": "cuida"
+            },
+            {
+              "emoji": "🔥",
+              "texto": "Quemar el bosque",
+              "grupo": "dana"
+            },
+            {
+              "emoji": "🌱",
+              "texto": "Sembrar un árbol",
+              "grupo": "cuida"
+            },
+            {
+              "emoji": "🥤",
+              "texto": "Tirar basura al río",
+              "grupo": "dana"
+            },
+            {
+              "emoji": "🗑️",
+              "texto": "Botar la basura en la caneca",
+              "grupo": "cuida"
+            },
+            {
+              "emoji": "🪓",
+              "texto": "Cortar todos los árboles",
+              "grupo": "dana"
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3 · ¿Por qué es importante cuidar la naturaleza?: «Es importante cuidar la naturaleza para que nuestros hijos puedan disfrutarla».",
+            "pagina": 21
+          }
+        },
+        {
+          "id": "n4-a3-regalos-naturaleza",
+          "tipo": "elige",
+          "titulo": "Los regalos de la naturaleza",
+          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "¿Qué nos regala la naturaleza?",
+              "opciones": [
+                {
+                  "emoji": "📱",
+                  "texto": "Celulares y juguetes"
+                },
+                {
+                  "emoji": "🍎",
+                  "texto": "Agua, frutas y aire"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "¿Qué pasaría si no hubiera agua?",
+              "opciones": [
+                {
+                  "emoji": "🥀",
+                  "texto": "Las plantas, los animales y las personas no podrían vivir"
+                },
+                {
+                  "emoji": "🤷",
+                  "texto": "No pasaría nada"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "El agua se puede acabar. ¿Qué hacemos?",
+              "opciones": [
+                {
+                  "emoji": "🚿",
+                  "texto": "Dejar la llave abierta"
+                },
+                {
+                  "emoji": "🚰",
+                  "texto": "Cuidarla y no desperdiciarla"
+                },
+                {
+                  "emoji": "🥤",
+                  "texto": "Echarle basura"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "¿Por qué cuidamos la naturaleza?",
+              "opciones": [
+                {
+                  "emoji": "🌍",
+                  "texto": "Para que todos podamos disfrutarla siempre"
+                },
+                {
+                  "emoji": "🙅",
+                  "texto": "No hay que cuidarla"
+                }
+              ],
+              "correcta": 0
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3: «¿Qué crees que sucedería si no hubiera agua en el lugar donde vives?» «Es importante cuidar la naturaleza para que nuestros hijos puedan disfrutarla».",
+            "pagina": 21
+          }
+        }
+      ]
+    },
+    {
+      "id": "n5-colombia-diversa",
+      "numero": 5,
+      "titulo": "Colombia diversa",
+      "emoji": "🇨🇴",
+      "objetivo": "Reconozco la diversidad étnica y cultural de Colombia y respeto a las personas diferentes a mí.",
+      "actividades": [
+        {
+          "id": "n5-a1-muchas-culturas",
+          "tipo": "elige",
+          "titulo": "Colombia tiene muchas culturas",
+          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "preguntas": [
+            {
+              "enunciado": "En Colombia viven pueblos indígenas, afrocolombianos, campesinos y mestizos. Eso quiere decir que Colombia…",
+              "opciones": [
+                {
+                  "emoji": "🌈",
+                  "texto": "Tiene muchas culturas"
+                },
+                {
+                  "emoji": "1️⃣",
+                  "texto": "Tiene una sola cultura"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "Un compañero habla, se viste o come diferente a mí. Yo…",
+              "opciones": [
+                {
+                  "emoji": "😝",
+                  "texto": "Me burlo de él"
+                },
+                {
+                  "emoji": "🤝",
+                  "texto": "Lo respeto y aprendo de él"
+                },
+                {
+                  "emoji": "🙅",
+                  "texto": "No juego con él"
+                }
+              ],
+              "correcta": 1
+            },
+            {
+              "enunciado": "¿Las personas indígenas usan siempre su ropa tradicional?",
+              "opciones": [
+                {
+                  "emoji": "👕",
+                  "texto": "No, también usan otra ropa"
+                },
+                {
+                  "emoji": "🔁",
+                  "texto": "Sí, siempre la misma"
+                }
+              ],
+              "correcta": 0,
+              "pista": {
+                "texto": "Guía 3: «¿Crees que los indígenas siempre se visten así?»",
+                "pagina": 22
+              }
+            },
+            {
+              "enunciado": "¿Cómo se llama la fiesta más famosa de Nariño?",
+              "opciones": [
+                {
+                  "emoji": "🌸",
+                  "texto": "Feria de las Flores"
+                },
+                {
+                  "emoji": "🎭",
+                  "texto": "Carnaval de Negros y Blancos"
+                },
+                {
+                  "emoji": "🐎",
+                  "texto": "Festival del Joropo"
+                }
+              ],
+              "correcta": 1,
+              "pista": {
+                "texto": "El Carnaval de Negros y Blancos se celebra cada enero en Pasto, Nariño. Es la fiesta más famosa del departamento."
+              }
+            }
+          ],
+          "pista": {
+            "texto": "Guía 3 · ¿Cómo es la gente de mi región?: «Cada región del país tiene fiestas y comidas diferentes. Esta diversidad hace que Colombia sea muy rica en las costumbres de sus gentes».",
+            "pagina": 22
+          }
+        },
+        {
+          "id": "n5-a2-arrastra-respeto",
+          "tipo": "arrastra",
+          "titulo": "Respeto a todos",
+          "instruccion": "Arrastra cada dibujo a su canasta: ¿es respetar a los demás o no?",
+          "grupos": [
+            {
+              "id": "respeto",
+              "emoji": "🤝",
+              "texto": "Es respetar"
+            },
+            {
+              "id": "no-respeto",
+              "emoji": "🚫",
+              "texto": "No es respetar"
+            }
+          ],
+          "tarjetas": [
+            {
+              "emoji": "🧒",
+              "texto": "Jugar con todos los niños",
+              "grupo": "respeto"
+            },
+            {
+              "emoji": "😝",
+              "texto": "Burlarse de cómo habla alguien",
+              "grupo": "no-respeto"
+            },
+            {
+              "emoji": "👂",
+              "texto": "Escuchar a los demás",
+              "grupo": "respeto"
+            },
+            {
+              "emoji": "🙅",
+              "texto": "No dejar jugar a un niño diferente",
+              "grupo": "no-respeto"
+            },
+            {
+              "emoji": "🎶",
+              "texto": "Aprender la música de otra región",
+              "grupo": "respeto"
+            },
+            {
+              "emoji": "🤭",
+              "texto": "Reírse de la ropa de otro",
+              "grupo": "no-respeto"
+            }
+          ],
+          "pista": {
+            "texto": "Guía 2: «Las familias indígenas, afrocolombianas, mestizas y campesinas son tipos de familias diferentes en sus integrantes y costumbres». Respetar es aceptar a los demás como son.",
+            "pagina": 15
+          }
+        },
+        {
+          "id": "n5-a3-de-cerca-a-lejos",
+          "tipo": "ordena",
+          "titulo": "De lo más cercano a lo más lejano",
+          "instruccion": "Toca los dibujos en orden, desde lo más cercano a ti hasta lo más lejano.",
+          "pasos": [
+            {
+              "emoji": "🧒",
+              "texto": "Yo"
+            },
+            {
+              "emoji": "👨‍👩‍👧",
+              "texto": "Mi familia"
+            },
+            {
+              "emoji": "🏘️",
+              "texto": "Mi barrio o mi vereda"
+            },
+            {
+              "emoji": "🏙️",
+              "texto": "Mi municipio"
+            },
+            {
+              "emoji": "🇨🇴",
+              "texto": "Colombia"
+            }
+          ],
+          "pista": {
+            "texto": "Estándares de la cartilla: «Hago preguntas sobre mí, y sobre las organizaciones sociales a las que pertenezco (mi familia, curso, colegio, barrio…)».",
+            "pagina": 4
+          }
+        }
+      ]
+    }
+  ]
+}

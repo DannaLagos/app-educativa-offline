@@ -10,7 +10,7 @@ import 'package:app_educativa/features/modulos/data/modulo_remote_datasource.dar
 import 'package:app_educativa/features/modulos/data/modulo_repository.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/modulo.dart';
-import 'package:app_educativa/features/modulos/domain/recurso_local.dart';
+import 'package:app_educativa/features/modulos/domain/contenido_incompleto_exception.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -63,8 +63,7 @@ void main() {
 
     final resultado = await repositorio.obtenerCatalogo();
 
-    expect(resultado.desdeCache, isFalse);
-    // Ordenado por área y grado.
+    expect(resultado.vieneDeCache, isFalse);
     expect(
       resultado.modulos.map((m) => m.id),
       ['cs-grado-1', 'lg-grado-3-01'],
@@ -79,7 +78,7 @@ void main() {
 
     final resultado = await repositorio.obtenerCatalogo();
 
-    expect(resultado.desdeCache, isTrue);
+    expect(resultado.vieneDeCache, isTrue);
     expect(resultado.modulos, hasLength(2));
     verifyNever(() => remote.obtenerCatalogo());
   });
@@ -92,7 +91,7 @@ void main() {
 
     final resultado = await repositorio.obtenerCatalogo();
 
-    expect(resultado.desdeCache, isTrue);
+    expect(resultado.vieneDeCache, isTrue);
     expect(resultado.modulos.single.id, 'cs-grado-1');
   });
 
@@ -125,7 +124,7 @@ void main() {
     when(() => remote.obtenerCatalogo()).thenAnswer(
       (_) async => [
         sociales,
-        moduloDePrueba(habilitado: false),
+        moduloDePrueba(estaHabilitado: false),
       ],
     );
 
@@ -145,7 +144,7 @@ void main() {
     expect(resultado.modulos.map((m) => m.id), ['cs-grado-1']);
     final guardado = await local.obtenerModulo('lg-grado-3-01');
     expect(guardado, isNotNull);
-    expect(guardado!.habilitado, isFalse);
+    expect(guardado!.estaHabilitado, isFalse);
   });
 
   group('acceso offline (HU04)', () {
@@ -275,6 +274,7 @@ void main() {
           'modulo_id': lenguaje.id,
           'porcentaje': 40,
           'ultima_actualizacion': '2026-10-12T10:00:00.000',
+          'sincronizado': 0,
         },
       ]);
       // La fila del módulo tampoco se borra.
@@ -291,7 +291,7 @@ void main() {
       final descargados = await repositorio.obtenerDescargados();
 
       expect(descargados.single.id, lenguaje.id);
-      expect(descargados.single.habilitado, isFalse);
+      expect(descargados.single.estaHabilitado, isFalse);
     });
 
     test('Mis descargas solo lista los módulos descargados', () async {
@@ -369,7 +369,7 @@ void main() {
 
     final descargado = (await repositorio.obtenerDescargados()).single;
 
-    expect(descargado.habilitado, isFalse);
+    expect(descargado.estaHabilitado, isFalse);
     expect(descargado.tieneActualizacion, isFalse);
   });
 }

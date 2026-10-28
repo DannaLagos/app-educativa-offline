@@ -3,8 +3,7 @@ import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/modulo.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// Base SQLite real en memoria (vía ffi) con el mismo esquema de la app.
-/// Recuerda cerrarla en tearDown con [cerrarBase].
+// Base SQLite real en memoria (vía ffi); ciérrala en tearDown con cerrarBase.
 AppDatabase crearBaseEnMemoria() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
@@ -21,7 +20,7 @@ Modulo moduloDePrueba({
   String nombre = 'Lenguaje - Módulo 1',
   String area = 'Lenguaje',
   int grado = 3,
-  bool habilitado = true,
+  bool estaHabilitado = true,
   EstadoDescarga estado = EstadoDescarga.noDescargado,
   String? rutaLocal,
   DateTime? fechaDescarga,
@@ -35,7 +34,7 @@ Modulo moduloDePrueba({
     grado: grado,
     descripcion: 'Descripción de $nombre',
     version: version,
-    habilitado: habilitado,
+    estaHabilitado: estaHabilitado,
     contenidos: const ['El cuento', 'Los personajes'],
     estadoDescarga: estado,
     rutaLocal: rutaLocal,

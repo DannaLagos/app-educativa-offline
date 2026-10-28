@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/boton_grande.dart';
 import '../../../../shared/widgets/etiqueta.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
 import '../../../modulos/domain/area_resumen.dart';
+import '../../../modulos/domain/modulo.dart';
+import '../../../modulos/presentation/controllers/carga_al_mostrar.dart';
+import '../../../modulos/presentation/controllers/modulos_controller.dart';
 import '../../../modulos/presentation/controllers/modulos_scope.dart';
 import '../../../modulos/presentation/screens/areas_screen.dart';
+import '../../../modulos/presentation/screens/detalle_modulo_screen.dart';
+import '../../../modulos/presentation/widgets/tarjeta_area.dart';
+import '../../../progreso/domain/progreso_modulo.dart';
+import '../../../progreso/presentation/progreso_scope.dart';
+import '../../../sincronizacion/presentation/sincronizacion_scope.dart';
 import '../../domain/perfil_estudiante.dart';
 
 class InicioScreen extends StatefulWidget {
@@ -21,20 +29,11 @@ class InicioScreen extends StatefulWidget {
   State<InicioScreen> createState() => _InicioScreenState();
 }
 
-class _InicioScreenState extends State<InicioScreen> {
-  bool _cargaIniciada = false;
-
+class _InicioScreenState extends State<InicioScreen>
+    with CargaAlMostrar<InicioScreen> {
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!_cargaIniciada) {
-      _cargaIniciada = true;
-      final controller = ModulosScope.of(context);
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => controller.cargarCatalogo(),
-      );
-    }
+  Future<void> cargarAlMostrar(ModulosController controller) {
+    return controller.cargarCatalogo();
   }
 
   void _abrir(Widget pantalla) {
@@ -47,6 +46,11 @@ class _InicioScreenState extends State<InicioScreen> {
   Widget build(BuildContext context) {
     final controller = ModulosScope.of(context);
     final areas = AreaResumen.agrupar(controller.catalogo);
+    // HU08: el módulo donde iba el estudiante (se lee del dispositivo).
+    final progresos = ProgresoScope.maybeOf(context);
+    final ultimoId = progresos?.ultimoModuloId;
+    final ultimoModulo =
+        ultimoId == null ? null : controller.buscarModulo(ultimoId);
 
     return Scaffold(
       body: SafeArea(
@@ -55,90 +59,153 @@ class _InicioScreenState extends State<InicioScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '¡Hola, ${widget.perfil.nombre}! 👋',
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (!controller.cargando || areas.isNotEmpty)
-                          controller.desdeCache
-                              ? const Etiqueta.gris(
-                                  'Sin conexión',
-                                  icono: Icons.wifi_off_rounded,
-                                )
-                              : const Etiqueta(
-                                  texto: 'Conectado',
-                                  color: AppTheme.verde,
-                                  fondo: AppTheme.verdeSuave,
-                                  icono: Icons.wifi_rounded,
-                                ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Acceso administrador',
-                    iconSize: 28,
-                    icon: const Icon(Icons.admin_panel_settings_outlined),
-                    onPressed: () => _abrir(const LoginAdminScreen()),
-                  ),
-                ],
+              _Saludo(
+                nombre: widget.perfil.nombre,
+                estadoConexion: _construirEstadoConexion(controller, areas),
+                onAbrirAdmin: () => _abrir(const LoginAdminScreen()),
               ),
               const SizedBox(height: 24),
-              const Text(
-                '¿Qué quieres aprender hoy?',
-                style: TextStyle(fontSize: 19),
+              _TarjetaContinuar(
+                ultimoModulo: ultimoModulo,
+                progreso: ultimoModulo == null
+                    ? null
+                    : progresos?.progresoDe(ultimoModulo.id),
+                onContinuar: () => _abrir(
+                  ultimoModulo == null
+                      ? const AreasScreen()
+                      : DetalleModuloScreen(moduloId: ultimoModulo.id),
+                ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: const Text(
-                        'Tus áreas educativas',
-                        style: TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _abrir(const AreasScreen()),
-                    child: const Text('Ver todas'),
-                  ),
-                ],
+              const SizedBox(height: 24),
+              _EncabezadoAreas(
+                onVerTodas: () => _abrir(const AreasScreen()),
               ),
               const SizedBox(height: 8),
-              if (controller.cargando && areas.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (areas.isEmpty)
-                _SinAreas(onReintentar: controller.cargarCatalogo)
-              else
-                _CuadriculaAreas(areas: areas),
+              _construirAreas(controller, areas),
+              const SizedBox(height: 16),
+              const _TarjetaMotivacion(),
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget? _construirEstadoConexion(
+    ModulosController controller,
+    List<AreaResumen> areas,
+  ) {
+    if (controller.estaCargando && areas.isEmpty) {
+      return null;
+    }
+
+    // HU10: si está disponible, se usa el estado de la red en vivo.
+    final hayConexion = SincronizacionScope.maybeOf(context)?.hayConexion ??
+        !controller.vieneDeCache;
+
+    if (!hayConexion) {
+      return const Etiqueta.gris('Sin conexión', icono: Icons.wifi_off_rounded);
+    }
+
+    return const Etiqueta(
+      texto: 'Conectado',
+      color: AppTheme.verde,
+      fondo: AppTheme.verdeSuave,
+      icono: Icons.wifi_rounded,
+    );
+  }
+
+  Widget _construirAreas(ModulosController controller, List<AreaResumen> areas) {
+    if (controller.estaCargando && areas.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (areas.isEmpty) {
+      return _SinAreas(onReintentar: controller.cargarCatalogo);
+    }
+
+    return _CuadriculaAreas(areas: areas);
+  }
 }
 
-/// Áreas en dos columnas, como en el diseño.
+class _Saludo extends StatelessWidget {
+  final String nombre;
+  final Widget? estadoConexion;
+  final VoidCallback onAbrirAdmin;
+
+  const _Saludo({
+    required this.nombre,
+    required this.estadoConexion,
+    required this.onAbrirAdmin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final estado = estadoConexion;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¡Hola, $nombre! 👋',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (estado != null) estado,
+            ],
+          ),
+        ),
+        IconButton(
+          tooltip: 'Acceso administrador',
+          iconSize: 28,
+          icon: const Icon(Icons.admin_panel_settings_outlined),
+          onPressed: onAbrirAdmin,
+        ),
+      ],
+    );
+  }
+}
+
+class _EncabezadoAreas extends StatelessWidget {
+  final VoidCallback onVerTodas;
+
+  const _EncabezadoAreas({required this.onVerTodas});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: const Text(
+              'Tus áreas educativas',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: onVerTodas,
+          child: const Text('Ver todas'),
+        ),
+      ],
+    );
+  }
+}
+
 class _CuadriculaAreas extends StatelessWidget {
+  static const int _areasPorFila = 2;
+
   final List<AreaResumen> areas;
 
   const _CuadriculaAreas({required this.areas});
@@ -147,27 +214,34 @@ class _CuadriculaAreas extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (var i = 0; i < areas.length; i += 2)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: TarjetaArea(area: areas[i], compacta: true),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: i + 1 < areas.length
-                        ? TarjetaArea(area: areas[i + 1], compacta: true)
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        for (var indice = 0; indice < areas.length; indice += _areasPorFila)
+          _construirFila(indice),
       ],
+    );
+  }
+
+  Widget _construirFila(int indicePrimera) {
+    final indiceSegunda = indicePrimera + 1;
+    final haySegunda = indiceSegunda < areas.length;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: TarjetaArea(area: areas[indicePrimera], esCompacta: true),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: haySegunda
+                  ? TarjetaArea(area: areas[indiceSegunda], esCompacta: true)
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -203,6 +277,122 @@ class _SinAreas extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TarjetaContinuar extends StatelessWidget {
+  static const Color _colorSombra = Color(0x0A1F2A44);
+
+  final Modulo? ultimoModulo;
+  final ProgresoModulo? progreso;
+  final VoidCallback onContinuar;
+
+  const _TarjetaContinuar({
+    required this.ultimoModulo,
+    required this.progreso,
+    required this.onContinuar,
+  });
+
+  String get _resumen {
+    final datos = progreso;
+
+    if (datos == null) {
+      return 'Sigue donde ibas.';
+    }
+
+    final partes = [
+      if (datos.actividadesCompletadas > 0)
+        '⭐ ${datos.actividadesCompletadas} '
+            '${datos.actividadesCompletadas == 1 ? 'juego' : 'juegos'}',
+      if (datos.lecturas.isNotEmpty)
+        '📖 página ${datos.lecturas.first.ultimaPagina}',
+    ];
+
+    return partes.isEmpty ? 'Sigue donde ibas.' : partes.join(' · ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: _colorSombra,
+            blurRadius: 18,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Etiqueta.azul('APRENDIZAJE'),
+          const SizedBox(height: 16),
+          Text(
+            ultimoModulo == null
+                ? 'Continúa aprendiendo'
+                : 'Vas en: ${ultimoModulo!.nombre}',
+            style: const TextStyle(
+              color: AppTheme.texto,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            ultimoModulo == null ? '¿Qué quieres aprender hoy?' : _resumen,
+            style: const TextStyle(
+              color: AppTheme.textoSecundario,
+              fontSize: 17,
+            ),
+          ),
+          const SizedBox(height: 20),
+          BotonGrande(
+            texto: ultimoModulo == null
+                ? 'Continuar aprendiendo'
+                : 'Continuar donde ibas',
+            icono: Icons.play_arrow_rounded,
+            onPressed: onContinuar,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TarjetaMotivacion extends StatelessWidget {
+  const _TarjetaMotivacion();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.azulSuave,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '⭐ ¡Sigue aprendiendo!',
+            style: TextStyle(
+              color: AppTheme.texto,
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Cada módulo completado te ayuda a avanzar.',
+            style: TextStyle(color: AppTheme.textoSecundario, fontSize: 15),
+          ),
+        ],
       ),
     );
   }

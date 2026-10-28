@@ -1,71 +1,58 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../core/database/app_database.dart';
 import '../domain/estado_descarga.dart';
 import '../domain/modulo.dart';
 
 class ModuloLocalDataSource {
+  static const String _tabla = 'modulo';
+  static const String _ordenCatalogo = 'area, grado, nombre';
+  static const List<String> _columnasDeDescarga = [
+    'estado_descarga',
+    'ruta_local',
+    'fecha_descarga',
+    'version_descargada',
+  ];
+
   final AppDatabase _appDatabase;
 
   ModuloLocalDataSource({
     AppDatabase? appDatabase,
   }) : _appDatabase = appDatabase ?? AppDatabase.instance;
 
-  /// Guarda el catálogo recibido del servidor sin perder el estado de
-  /// descarga local. Los módulos que ya no vienen en el catálogo quedan
-  /// deshabilitados (no se borran: pueden estar descargados).
+  // Conserva el estado de descarga; los módulos ausentes se deshabilitan, no se borran.
   Future<void> guardarCatalogo(List<Modulo> modulos) async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    await db.transaction((txn) async {
+    await baseDatos.transaction((transaccion) async {
       for (final modulo in modulos) {
-        final datosCatalogo = modulo.toMap()
-          ..remove('estado_descarga')
-          ..remove('ruta_local')
-          ..remove('fecha_descarga')
-          ..remove('version_descargada');
-
-        final actualizados = await txn.update(
-          'modulo',
-          datosCatalogo,
-          where: 'id = ?',
-          whereArgs: [modulo.id],
-        );
-
-        if (actualizados == 0) {
-          await txn.insert('modulo', modulo.toMap());
-        }
+        await _guardarDatosDeCatalogo(transaccion, modulo);
       }
 
-      final ids = modulos.map((modulo) => modulo.id).toList();
-
-      await txn.update(
-        'modulo',
-        {'habilitado': 0},
-        where: ids.isEmpty
-            ? null
-            : 'id NOT IN (${List.filled(ids.length, '?').join(', ')})',
-        whereArgs: ids.isEmpty ? null : ids,
+      await _deshabilitarAusentes(
+        transaccion,
+        modulos.map((modulo) => modulo.id).toList(),
       );
     });
   }
 
-  /// Módulos habilitados, ordenados por área, grado y nombre.
   Future<List<Modulo>> obtenerCatalogo() async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    final filas = await db.query(
-      'modulo',
+    final filas = await baseDatos.query(
+      _tabla,
       where: 'habilitado = 1',
-      orderBy: 'area, grado, nombre',
+      orderBy: _ordenCatalogo,
     );
 
     return filas.map(Modulo.fromMap).toList();
   }
 
   Future<Modulo?> obtenerModulo(String id) async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    final filas = await db.query(
-      'modulo',
+    final filas = await baseDatos.query(
+      _tabla,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -78,22 +65,20 @@ class ModuloLocalDataSource {
     return Modulo.fromMap(filas.first);
   }
 
-  /// Módulos en un estado de descarga, habilitados o no.
   Future<List<Modulo>> obtenerPorEstado(EstadoDescarga estado) async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    final filas = await db.query(
-      'modulo',
+    final filas = await baseDatos.query(
+      _tabla,
       where: 'estado_descarga = ?',
       whereArgs: [estado.valor],
-      orderBy: 'area, grado, nombre',
+      orderBy: _ordenCatalogo,
     );
 
     return filas.map(Modulo.fromMap).toList();
   }
 
-  /// Cambia el estado de descarga. La ruta, la fecha y la versión solo se
-  /// guardan cuando el módulo queda descargado; en otro estado se limpian.
+  // La ruta, la fecha y la versión solo se conservan en el estado "descargado".
   Future<void> actualizarEstadoDescarga(
     String id,
     EstadoDescarga estado, {
@@ -101,32 +86,65 @@ class ModuloLocalDataSource {
     DateTime? fechaDescarga,
     int? versionDescargada,
   }) async {
-    final db = await _appDatabase.database;
-    final descargado = estado == EstadoDescarga.descargado;
+    final baseDatos = await _appDatabase.database;
+    final estaDescargado = estado == EstadoDescarga.descargado;
 
-    await db.update(
-      'modulo',
+    await baseDatos.update(
+      _tabla,
       {
         'estado_descarga': estado.valor,
-        'ruta_local': descargado ? rutaLocal : null,
-        'fecha_descarga': descargado ? fechaDescarga?.toIso8601String() : null,
-        'version_descargada': descargado ? versionDescargada : null,
+        'ruta_local': estaDescargado ? rutaLocal : null,
+        'fecha_descarga':
+            estaDescargado ? fechaDescarga?.toIso8601String() : null,
+        'version_descargada': estaDescargado ? versionDescargada : null,
       },
       where: 'id = ?',
       whereArgs: [id],
     );
   }
 
-  /// Pasa a "error" las descargas que quedaron en "descargando" (la app se
-  /// cerró a mitad de una descarga).
   Future<void> marcarDescargasInterrumpidas() async {
-    final db = await _appDatabase.database;
+    final baseDatos = await _appDatabase.database;
 
-    await db.update(
-      'modulo',
+    await baseDatos.update(
+      _tabla,
       {'estado_descarga': EstadoDescarga.error.valor},
       where: 'estado_descarga = ?',
       whereArgs: [EstadoDescarga.descargando.valor],
+    );
+  }
+
+  Future<void> _guardarDatosDeCatalogo(
+    Transaction transaccion,
+    Modulo modulo,
+  ) async {
+    final datosCatalogo = modulo.toMap()
+      ..removeWhere((columna, _) => _columnasDeDescarga.contains(columna));
+
+    final filasActualizadas = await transaccion.update(
+      _tabla,
+      datosCatalogo,
+      where: 'id = ?',
+      whereArgs: [modulo.id],
+    );
+
+    if (filasActualizadas == 0) {
+      await transaccion.insert(_tabla, modulo.toMap());
+    }
+  }
+
+  Future<void> _deshabilitarAusentes(
+    Transaction transaccion,
+    List<String> idsEnCatalogo,
+  ) async {
+    final hayIds = idsEnCatalogo.isNotEmpty;
+    final marcadores = List.filled(idsEnCatalogo.length, '?').join(', ');
+
+    await transaccion.update(
+      _tabla,
+      {'habilitado': 0},
+      where: hayIds ? 'id NOT IN ($marcadores)' : null,
+      whereArgs: hayIds ? idsEnCatalogo : null,
     );
   }
 }

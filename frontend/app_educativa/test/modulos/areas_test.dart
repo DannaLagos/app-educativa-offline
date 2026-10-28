@@ -3,6 +3,7 @@ import 'package:app_educativa/features/modulos/data/modulo_repository.dart';
 import 'package:app_educativa/features/modulos/domain/area_resumen.dart';
 import 'package:app_educativa/features/modulos/domain/estado_descarga.dart';
 import 'package:app_educativa/features/modulos/domain/modulo.dart';
+import 'package:app_educativa/features/modulos/domain/resultado_catalogo.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_controller.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_scope.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/areas_screen.dart';
@@ -70,7 +71,7 @@ void main() {
       when(() => repositorio.obtenerCatalogo()).thenAnswer(
         (_) async => ResultadoCatalogo(
           modulos: [sociales, lenguaje1, lenguaje2],
-          desdeCache: false,
+          vieneDeCache: false,
         ),
       );
     });
