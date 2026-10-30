@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/resultado_sincronizacion.dart';
+import '../../../progreso/domain/resultado_sincronizacion.dart';
 import '../sincronizacion_controller.dart';
 import '../sincronizacion_scope.dart';
 

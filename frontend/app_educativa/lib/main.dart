@@ -19,13 +19,12 @@ import 'features/modulos/presentation/controllers/modulos_controller.dart';
 import 'features/modulos/presentation/controllers/modulos_scope.dart';
 import 'features/perfil/data/perfil_local_datasource.dart';
 import 'features/perfil/presentation/screens/verificar_perfil_screen.dart';
+import 'features/progreso/data/firestore_progreso_remote_datasource.dart';
 import 'features/progreso/data/progreso_local_datasource.dart';
+import 'features/progreso/data/progreso_remote_datasource.dart';
 import 'features/progreso/data/progreso_repository.dart';
 import 'features/progreso/presentation/progreso_controller.dart';
 import 'features/progreso/presentation/progreso_scope.dart';
-import 'features/sincronizacion/data/firestore_progreso_remote_datasource.dart';
-import 'features/sincronizacion/data/progreso_remote_datasource.dart';
-import 'features/sincronizacion/data/sincronizacion_service.dart';
 import 'features/sincronizacion/presentation/sincronizacion_controller.dart';
 import 'features/sincronizacion/presentation/sincronizacion_scope.dart';
 import 'features/sincronizacion/presentation/widgets/barra_conexion.dart';
@@ -40,17 +39,21 @@ Future<void> main() async {
   );
 
   final conectividad = ConectividadService();
-  final perfiles = PerfilLocalDataSource();
-  final progresoLocal = ProgresoLocalDataSource();
 
   final modulosController = _crearModulosController(conectividad);
   await modulosController.inicializar();
 
-  final progresoController = _crearProgresoController(perfiles, progresoLocal);
-  final sincronizacionController = _crearSincronizacionController(
+  // Un solo repositorio de progreso (offline first) para guardar y sincronizar.
+  final progresoRepository = _crearProgresoRepository(conectividad);
+
+  // HU08: carga en segundo plano dónde iba el estudiante.
+  final progresoController = ProgresoController(
+    repositorio: progresoRepository,
+  )..cargarUltimoModulo();
+
+  final sincronizacionController = SincronizacionController(
+    repositorio: progresoRepository,
     conectividad: conectividad,
-    perfiles: perfiles,
-    progresoLocal: progresoLocal,
   );
 
   // HU10 (Observer): cada avance guardado avisa a la sincronización.
@@ -85,34 +88,13 @@ Future<void> main() async {
   );
 }
 
-/// HU06: el progreso se guarda en SQLite y se asocia al perfil del estudiante.
-ProgresoController _crearProgresoController(
-  PerfilLocalDataSource perfiles,
-  ProgresoLocalDataSource progresoLocal,
-) {
-  // HU08: carga en segundo plano dónde iba el estudiante.
-  return ProgresoController(
-    repositorio: ProgresoRepository(
-      local: progresoLocal,
-      obtenerPerfilId: () async => (await perfiles.obtenerPerfil())?.id,
-    ),
-  )..cargarUltimoModulo();
-}
-
-/// HU10: envía al servidor el progreso pendiente cuando hay internet.
-SincronizacionController _crearSincronizacionController({
-  required ConectividadService conectividad,
-  required PerfilLocalDataSource perfiles,
-  required ProgresoLocalDataSource progresoLocal,
-}) {
-  return SincronizacionController(
+/// HU06–HU11: SQLite es la fuente de verdad y Firestore recibe una copia.
+ProgresoRepository _crearProgresoRepository(ConectividadService conectividad) {
+  return ProgresoRepository(
+    local: ProgresoLocalDataSource(),
+    remote: _crearProgresoRemoteDataSource(),
     conectividad: conectividad,
-    servicio: SincronizacionService(
-      local: progresoLocal,
-      remote: _crearProgresoRemoteDataSource(),
-      conectividad: conectividad,
-      obtenerPerfil: perfiles.obtenerPerfil,
-    ),
+    obtenerPerfil: PerfilLocalDataSource().obtenerPerfil,
   );
 }
 
@@ -181,7 +163,11 @@ ModuloRemoteDataSource _crearRemoteDataSource() {
     ..setMaxDownloadRetryTime(ApiConfig.reintentoFirebase)
     ..setMaxOperationRetryTime(ApiConfig.reintentoFirebase);
 
-  return FirebaseModuloRemoteDataSource(storage: storage);
+  // Las reglas de Storage solo dejan leer con sesión: se usa la anónima.
+  return FirebaseModuloRemoteDataSource(
+    storage: storage,
+    iniciarSesion: _usuarioAnonimo,
+  );
 }
 
 class AppEducativa extends StatelessWidget {
