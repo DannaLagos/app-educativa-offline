@@ -1,4 +1,5 @@
 import 'package:app_educativa/core/database/app_database.dart';
+import 'package:app_educativa/features/perfil/domain/perfil_estudiante.dart';
 import 'package:app_educativa/features/progreso/data/progreso_local_datasource.dart';
 import 'package:app_educativa/features/progreso/data/progreso_repository.dart';
 import 'package:app_educativa/features/progreso/domain/resultado_actividad.dart';
@@ -15,7 +16,10 @@ void main() {
   ProgresoRepository crearRepositorio() {
     return ProgresoRepository(
       local: local,
-      obtenerPerfilId: () async => perfilId,
+      obtenerPerfil: () async {
+        final id = perfilId;
+        return id == null ? null : PerfilEstudiante(id: id, nombre: 'Ana');
+      },
     );
   }
 
@@ -89,8 +93,7 @@ void main() {
 
   group('ProgresoController', () {
     test('HU06 CA2: guarda sin internet (solo usa el dispositivo)', () async {
-      // El controlador y el repositorio no dependen de la conexión: no
-      // reciben ConectividadService ni ningún origen remoto.
+      // Offline first: el repositorio no tiene servidor y aun así guarda.
       final controller = ProgresoController(repositorio: crearRepositorio());
 
       final guardado = await controller.guardarPagina(

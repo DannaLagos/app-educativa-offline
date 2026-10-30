@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/conectividad_service.dart';
-import '../data/sincronizacion_service.dart';
-import '../domain/resultado_sincronizacion.dart';
+import '../../progreso/data/progreso_repository.dart';
+import '../../progreso/domain/resultado_sincronizacion.dart';
 
 /// Estado de la conexión y de la sincronización para las pantallas (HU10,
-/// patrón Observer con ChangeNotifier).
+/// patrón Observer con ChangeNotifier). Decide cuándo sincronizar; el envío
+/// lo hace ProgresoRepository.
 ///
 /// - Escucha los cambios de red: al perder la conexión lo avisa (criterio 1)
 ///   y al recuperarla vuelve a intentar el envío (criterio 4).
@@ -15,7 +16,7 @@ import '../domain/resultado_sincronizacion.dart';
 /// - Si un envío falla, lo reintenta más tarde; los datos nunca se borran
 ///   (criterio 3).
 class SincronizacionController extends ChangeNotifier {
-  final SincronizacionService _servicio;
+  final ProgresoRepository _repositorio;
   final ConectividadService _conectividad;
   final Duration _esperaTrasCambio;
   final Duration _esperaReintento;
@@ -33,12 +34,12 @@ class SincronizacionController extends ChangeNotifier {
   bool _cerrado = false;
 
   SincronizacionController({
-    required SincronizacionService servicio,
+    required ProgresoRepository repositorio,
     required ConectividadService conectividad,
     Duration esperaTrasCambio = const Duration(seconds: 3),
     Duration esperaReintento = const Duration(minutes: 1),
     DateTime Function()? ahora,
-  })  : _servicio = servicio,
+  })  : _repositorio = repositorio,
         _conectividad = conectividad,
         _esperaTrasCambio = esperaTrasCambio,
         _esperaReintento = esperaReintento,
@@ -78,7 +79,7 @@ class SincronizacionController extends ChangeNotifier {
     }
 
     try {
-      _ultimaSincronizacion = await _servicio.ultimaSincronizacion();
+      _ultimaSincronizacion = await _repositorio.ultimaSincronizacion();
     } catch (error) {
       debugPrint('No se pudo leer la última sincronización: $error');
     }
@@ -137,7 +138,7 @@ class SincronizacionController extends ChangeNotifier {
 
     ResultadoSincronizacion resultado;
     try {
-      resultado = await _servicio.sincronizar();
+      resultado = await _repositorio.sincronizar();
     } catch (error, stack) {
       debugPrint('Error al sincronizar: $error\n$stack');
       resultado = FalloSincronizacion(error, _pendientes);
@@ -175,7 +176,7 @@ class SincronizacionController extends ChangeNotifier {
 
   Future<void> _actualizarPendientes() async {
     try {
-      _pendientes = await _servicio.contarPendientes();
+      _pendientes = await _repositorio.contarPendientes();
     } catch (error) {
       debugPrint('No se pudieron contar los pendientes: $error');
     }

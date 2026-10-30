@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Reglas de Firebase Storage para los contenidos.
+// Se copian en Firebase Console > Storage > Reglas > Publicar.
+//
+// - Solo la app puede leer: inicia una sesión anónima antes de descargar.
+// - Nadie escribe desde la app: los archivos los suben las administradoras
+//   desde la consola de Firebase.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /contenidos/{todo=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

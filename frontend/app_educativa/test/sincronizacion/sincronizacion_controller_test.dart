@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:app_educativa/core/network/conectividad_service.dart';
-import 'package:app_educativa/features/sincronizacion/data/sincronizacion_service.dart';
-import 'package:app_educativa/features/sincronizacion/domain/resultado_sincronizacion.dart';
+import 'package:app_educativa/features/progreso/data/progreso_repository.dart';
+import 'package:app_educativa/features/progreso/domain/resultado_sincronizacion.dart';
 import 'package:app_educativa/features/sincronizacion/presentation/sincronizacion_controller.dart';
 import 'package:app_educativa/features/sincronizacion/presentation/sincronizacion_scope.dart';
 import 'package:app_educativa/features/sincronizacion/presentation/widgets/barra_conexion.dart';
@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockServicio extends Mock implements SincronizacionService {}
+class MockProgresoRepository extends Mock implements ProgresoRepository {}
 
 /// Conectividad falsa: la prueba decide cuándo hay red y cuándo se pierde.
 class ConectividadFalsa implements ConectividadService {
@@ -38,7 +38,7 @@ Future<void> esperar([int milisegundos = 20]) =>
     Future<void>.delayed(Duration(milliseconds: milisegundos));
 
 void main() {
-  late MockServicio servicio;
+  late MockProgresoRepository repositorio;
   late ConectividadFalsa conectividad;
   late SincronizacionController controller;
   var pendientes = 0;
@@ -47,7 +47,7 @@ void main() {
     Duration esperaReintento = const Duration(minutes: 1),
   }) {
     return SincronizacionController(
-      servicio: servicio,
+      repositorio: repositorio,
       conectividad: conectividad,
       esperaTrasCambio: Duration.zero,
       esperaReintento: esperaReintento,
@@ -56,12 +56,14 @@ void main() {
 
   setUp(() {
     pendientes = 0;
-    servicio = MockServicio();
+    repositorio = MockProgresoRepository();
     conectividad = ConectividadFalsa();
 
-    when(() => servicio.contarPendientes()).thenAnswer((_) async => pendientes);
-    when(() => servicio.ultimaSincronizacion()).thenAnswer((_) async => null);
-    when(() => servicio.sincronizar()).thenAnswer((_) async {
+    when(() => repositorio.contarPendientes())
+        .thenAnswer((_) async => pendientes);
+    when(() => repositorio.ultimaSincronizacion())
+        .thenAnswer((_) async => null);
+    when(() => repositorio.sincronizar()).thenAnswer((_) async {
       final enviados = pendientes;
       pendientes = 0;
       return enviados == 0 ? const SinPendientes() : Enviado(enviados);
@@ -100,7 +102,7 @@ void main() {
 
     expect(controller.pendientes, 3);
     expect(controller.estado, EstadoSincronizacion.pendiente);
-    verifyNever(() => servicio.sincronizar());
+    verifyNever(() => repositorio.sincronizar());
   });
 
   test('CA4: al volver la conexión reintenta enviar lo pendiente', () async {
@@ -113,7 +115,7 @@ void main() {
     conectividad.cambiar(true);
     await esperar();
 
-    verify(() => servicio.sincronizar()).called(1);
+    verify(() => repositorio.sincronizar()).called(1);
     expect(controller.pendientes, 0);
     expect(controller.estado, EstadoSincronizacion.alDia);
     expect(controller.ultimaSincronizacion, isNotNull);
@@ -124,7 +126,7 @@ void main() {
 
     await controller.iniciar();
 
-    verify(() => servicio.sincronizar()).called(1);
+    verify(() => repositorio.sincronizar()).called(1);
     expect(controller.pendientes, 0);
   });
 
@@ -134,7 +136,7 @@ void main() {
     controller = crear(esperaReintento: const Duration(milliseconds: 50));
 
     var intentos = 0;
-    when(() => servicio.sincronizar()).thenAnswer((_) async {
+    when(() => repositorio.sincronizar()).thenAnswer((_) async {
       intentos++;
       if (intentos == 1) {
         return FalloSincronizacion(Exception('servidor caído'), pendientes);
@@ -157,7 +159,7 @@ void main() {
 
   test('al abrir la app muestra la última sincronización guardada', () async {
     final guardada = DateTime(2026, 10, 24, 9, 30);
-    when(() => servicio.ultimaSincronizacion())
+    when(() => repositorio.ultimaSincronizacion())
         .thenAnswer((_) async => guardada);
 
     await controller.iniciar();
@@ -165,8 +167,8 @@ void main() {
     expect(controller.ultimaSincronizacion, guardada);
   });
 
-  test('un error inesperado del servicio no rompe la app', () async {
-    when(() => servicio.sincronizar()).thenThrow(StateError('fallo'));
+  test('un error inesperado del repositorio no rompe la app', () async {
+    when(() => repositorio.sincronizar()).thenThrow(StateError('fallo'));
     pendientes = 1;
 
     await controller.iniciar();
@@ -216,7 +218,7 @@ void main() {
 
     testWidgets('CA3: si falló, avisa que está guardado y deja reintentar',
         (tester) async {
-      when(() => servicio.sincronizar()).thenAnswer(
+      when(() => repositorio.sincronizar()).thenAnswer(
         (_) async => FalloSincronizacion(Exception('x'), pendientes),
       );
       pendientes = 1;

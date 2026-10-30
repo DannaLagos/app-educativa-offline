@@ -9,12 +9,7 @@ import '../domain/progreso_pendiente.dart';
 import '../domain/resultado_actividad.dart';
 
 /// Guarda el progreso del estudiante en SQLite (HU06). Todo es local: no usa
-/// la red, así que funciona igual con o sin internet, y lo guardado sigue ahí
-/// al cerrar la app o reiniciar el teléfono.
-///
-/// Cada cambio marca los registros con `sincronizado = 0` para que la
-/// sincronización (HU10) sepa qué falta enviar. Un registro solo pasa a
-/// `sincronizado = 1` cuando el servidor confirma que lo recibió.
+///  y no depende de la red ni del servidor.
 class ProgresoLocalDataSource {
   static const String _tablaModulo = 'progreso_modulo';
   static const String _tablaLectura = 'progreso_lectura';
@@ -73,7 +68,6 @@ class ProgresoLocalDataSource {
       } else {
         final maximaAnterior = filas.first['pagina_maxima'] as int;
         // Si el documento se actualizó y ahora tiene menos páginas, el
-        // máximo no puede pasar del total.
         final maxima = min(max(maximaAnterior, paginaValida), totalPaginas);
 
         await txn.update(

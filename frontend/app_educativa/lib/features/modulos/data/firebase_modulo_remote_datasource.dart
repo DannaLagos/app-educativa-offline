@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../../../core/config/api_config.dart';
@@ -18,18 +16,33 @@ import 'modulo_remote_datasource.dart';
 ///   ├── catalogo.json
 ///   └── modulos/<id>/manifest.json + archivos del módulo
 ///
-/// Firebase Storage no guarda nada sin conexión: la copia offline la manejan
-/// SQLite (catálogo y estado) y [AlmacenamientoModulos] (archivos).
+/// Cada archivo se descarga por su URL: Firebase Storage la entrega y la app
+/// la descarga por HTTP. Antes de leer se inicia la sesión anónima, porque
+/// las reglas de Storage solo dejan leer a la app (`request.auth != null`).
+/// La copia offline la manejan SQLite (catálogo y estado) y
+/// [AlmacenamientoModulos] (archivos).
 class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
   /// Tamaño máximo aceptado para catalogo.json y manifest.json.
   static const int _maxBytesJson = 1024 * 1024;
 
   final Reference _raiz;
+  final Dio _dio;
+  final Future<Object?> Function()? _iniciarSesion;
 
   FirebaseModuloRemoteDataSource({
     FirebaseStorage? storage,
+    Dio? dio,
+    Future<Object?> Function()? iniciarSesion,
     String carpetaRaiz = ApiConfig.carpetaFirebase,
-  }) : _raiz = (storage ?? FirebaseStorage.instance).ref(carpetaRaiz);
+  })  : _raiz = (storage ?? FirebaseStorage.instance).ref(carpetaRaiz),
+        _iniciarSesion = iniciarSesion,
+        _dio = dio ??
+            Dio(
+              BaseOptions(
+                connectTimeout: ApiConfig.tiempoEspera,
+                receiveTimeout: ApiConfig.tiempoEspera,
+              ),
+            );
 
   @override
   Future<List<Modulo>> obtenerCatalogo() async {
@@ -52,26 +65,35 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
     ArchivoPorDescargar archivo, {
     void Function(int bytesRecibidos)? onRecibido,
   }) async {
-    final tarea = _carpetaModulo(archivo.moduloId)
-        .child(archivo.nombre)
-        .writeToFile(File(archivo.rutaDestino));
-
-    final StreamSubscription<TaskSnapshot> suscripcion =
-        tarea.snapshotEvents.listen(
-      (estado) => onRecibido?.call(estado.bytesTransferred),
-      // El error también llega al await de abajo, que es donde se maneja.
-      onError: (_) {},
-    );
+    final url = await obtenerUrl(archivo);
 
     try {
-      await tarea;
-    } on FirebaseException catch (error) {
+      await _dio.download(
+        url,
+        archivo.rutaDestino,
+        onReceiveProgress: (bytesRecibidos, _) =>
+            onRecibido?.call(bytesRecibidos),
+      );
+    } on DioException catch (error) {
       throw ServidorException(
         'Se interrumpió la descarga de ${archivo.nombre}.',
         error,
       );
-    } finally {
-      await suscripcion.cancel();
+    }
+  }
+
+  /// URL de descarga del archivo en Firebase Storage.
+  Future<String> obtenerUrl(ArchivoPorDescargar archivo) async {
+    final referencia = _carpetaModulo(archivo.moduloId).child(archivo.nombre);
+
+    try {
+      await _iniciarSesion?.call();
+      return await referencia.getDownloadURL();
+    } on FirebaseException catch (error) {
+      throw ServidorException(
+        'No se encontró la URL de ${referencia.fullPath} (${error.code}).',
+        error,
+      );
     }
   }
 
@@ -83,6 +105,7 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
     final List<int>? bytes;
 
     try {
+      await _iniciarSesion?.call();
       bytes = await referencia.getData(_maxBytesJson);
     } on FirebaseException catch (error) {
       throw ServidorException(
