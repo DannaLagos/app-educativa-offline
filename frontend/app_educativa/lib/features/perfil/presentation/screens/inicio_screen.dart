@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/boton_escuchar.dart';
 import '../../../../shared/widgets/boton_grande.dart';
-import '../../../../shared/widgets/etiqueta.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
+import '../../../../shared/widgets/panel_jugador.dart';
 import '../../../admin/presentation/screens/login_admin_screen.dart';
+import '../../../mascota/domain/mascota.dart';
+import '../../../mascota/presentation/mascota_scope.dart';
+import '../../../mascota/presentation/widgets/selector_mascota.dart';
+import '../../../mascota/presentation/widgets/escenario_mascota.dart';
+import '../../../mascota/presentation/widgets/mascota_animada.dart';
 import '../../../modulos/domain/area_resumen.dart';
-import '../../../modulos/domain/modulo.dart';
 import '../../../modulos/presentation/controllers/carga_al_mostrar.dart';
 import '../../../modulos/presentation/controllers/modulos_controller.dart';
 import '../../../modulos/presentation/controllers/modulos_scope.dart';
 import '../../../modulos/presentation/screens/areas_screen.dart';
 import '../../../modulos/presentation/screens/detalle_modulo_screen.dart';
 import '../../../modulos/presentation/widgets/tarjeta_area.dart';
-import '../../../progreso/domain/progreso_modulo.dart';
 import '../../../progreso/presentation/progreso_scope.dart';
 import '../../../sincronizacion/presentation/sincronizacion_scope.dart';
+import '../../data/perfil_local_datasource.dart';
 import '../../domain/perfil_estudiante.dart';
 
 class InicioScreen extends StatefulWidget {
   final PerfilEstudiante perfil;
+  final PerfilLocalDataSource? perfilLocalDataSource;
 
   const InicioScreen({
     super.key,
     required this.perfil,
+    this.perfilLocalDataSource,
   });
 
   @override
@@ -31,9 +39,38 @@ class InicioScreen extends StatefulWidget {
 
 class _InicioScreenState extends State<InicioScreen>
     with CargaAlMostrar<InicioScreen> {
+  late MascotaElegida? _mascota = widget.perfil.mascotaElegida;
+
   @override
   Future<void> cargarAlMostrar(ModulosController controller) {
     return controller.cargarCatalogo();
+  }
+
+  Future<void> _elegirMascota() async {
+    final elegida = await elegirMascota(context);
+
+    if (elegida == null || !mounted) {
+      return;
+    }
+
+    // Perfil antiguo: la mascota se llama como su especie.
+    final mascota = MascotaElegida.de(elegida);
+    setState(() => _mascota = mascota);
+    MascotaScope.cambiar(context, mascota);
+
+    try {
+      await (widget.perfilLocalDataSource ?? PerfilLocalDataSource())
+          .guardarMascota(widget.perfil.id, elegida);
+    } catch (error, stack) {
+      // Se sigue mostrando en esta sesión; se puede volver a elegir después.
+      debugPrint('Error al guardar la mascota: $error\n$stack');
+    }
+  }
+
+  /// Dos días o más sin jugar: la mascota se duerme esperándolo.
+  static bool _llevaDiasSinJugar(DateTime? ultimaActividad) {
+    return ultimaActividad != null &&
+        DateTime.now().difference(ultimaActividad).inDays >= 2;
   }
 
   void _abrir(Widget pantalla) {
@@ -51,71 +88,79 @@ class _InicioScreenState extends State<InicioScreen>
     final ultimoId = progresos?.ultimoModuloId;
     final ultimoModulo =
         ultimoId == null ? null : controller.buscarModulo(ultimoId);
+    final mascota = _mascota;
+    final nombre = widget.perfil.nombre;
+    final botonJugar = BotonJugar(
+      detalle: ultimoModulo == null
+          ? 'Elige un mundo'
+          : 'Sigue en: ${ultimoModulo.nombre}',
+      onPressed: () => _abrir(
+        ultimoModulo == null
+            ? const AreasScreen()
+            : DetalleModuloScreen(moduloId: ultimoModulo.id),
+      ),
+    );
 
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: controller.cargarCatalogo,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            children: [
-              _Saludo(
-                nombre: widget.perfil.nombre,
-                estadoConexion: _construirEstadoConexion(controller, areas),
-                onAbrirAdmin: () => _abrir(const LoginAdminScreen()),
-              ),
-              const SizedBox(height: 24),
-              _TarjetaContinuar(
-                ultimoModulo: ultimoModulo,
-                progreso: ultimoModulo == null
-                    ? null
-                    : progresos?.progresoDe(ultimoModulo.id),
-                onContinuar: () => _abrir(
-                  ultimoModulo == null
-                      ? const AreasScreen()
-                      : DetalleModuloScreen(moduloId: ultimoModulo.id),
+      body: FondoDivertido(
+        child: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: controller.cargarCatalogo,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                BarraJugador(
+                  nombre: nombre,
+                  mascota: mascota?.especie,
+                  estrellas: progresos?.estrellasTotales ?? 0,
+                  hayConexion: _hayConexion(controller, areas),
+                  onAbrirAdmin: () => _abrir(const LoginAdminScreen()),
                 ),
-              ),
-              const SizedBox(height: 24),
-              _EncabezadoAreas(
-                onVerTodas: () => _abrir(const AreasScreen()),
-              ),
-              const SizedBox(height: 8),
-              _construirAreas(controller, areas),
-              const SizedBox(height: 16),
-              const _TarjetaMotivacion(),
-            ],
+                const SizedBox(height: 16),
+                if (mascota == null) ...[
+                  _InvitacionMascota(onElegir: _elegirMascota),
+                  const SizedBox(height: 16),
+                  botonJugar,
+                ] else
+                  EscenarioMascota(
+                    mascota: mascota,
+                    dormida: _llevaDiasSinJugar(progresos?.ultimaActividad),
+                    estrellas: progresos?.estrellasTotales,
+                    saludo: '¡Hola, $nombre! ¿Jugamos?',
+                    botonEscuchar: BotonEscuchar(
+                      texto: '¡Hola, $nombre! ¿Jugamos? Toca el botón '
+                          'amarillo para seguir jugando, o elige un mundo '
+                          'de colores.',
+                    ),
+                    accion: botonJugar,
+                  ),
+                const SizedBox(height: 24),
+                _EncabezadoAreas(
+                  onVerTodas: () => _abrir(const AreasScreen()),
+                ),
+                const SizedBox(height: 8),
+                _construirAreas(controller, areas),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget? _construirEstadoConexion(
-    ModulosController controller,
-    List<AreaResumen> areas,
-  ) {
+  /// null mientras carga por primera vez (todavía no se sabe).
+  bool? _hayConexion(ModulosController controller, List<AreaResumen> areas) {
     if (controller.estaCargando && areas.isEmpty) {
       return null;
     }
 
     // HU10: si está disponible, se usa el estado de la red en vivo.
-    final hayConexion = SincronizacionScope.maybeOf(context)?.hayConexion ??
+    return SincronizacionScope.maybeOf(context)?.hayConexion ??
         !controller.vieneDeCache;
-
-    if (!hayConexion) {
-      return const Etiqueta.gris('Sin conexión', icono: Icons.wifi_off_rounded);
-    }
-
-    return const Etiqueta(
-      texto: 'Conectado',
-      color: AppTheme.verde,
-      fondo: AppTheme.verdeSuave,
-      icono: Icons.wifi_rounded,
-    );
   }
 
-  Widget _construirAreas(ModulosController controller, List<AreaResumen> areas) {
+  Widget _construirAreas(
+      ModulosController controller, List<AreaResumen> areas) {
     if (controller.estaCargando && areas.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(32),
@@ -131,47 +176,67 @@ class _InicioScreenState extends State<InicioScreen>
   }
 }
 
-class _Saludo extends StatelessWidget {
-  final String nombre;
-  final Widget? estadoConexion;
-  final VoidCallback onAbrirAdmin;
+class _InvitacionMascota extends StatelessWidget {
+  final VoidCallback onElegir;
 
-  const _Saludo({
-    required this.nombre,
-    required this.estadoConexion,
-    required this.onAbrirAdmin,
-  });
+  const _InvitacionMascota({required this.onElegir});
 
   @override
   Widget build(BuildContext context) {
-    final estado = estadoConexion;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.morado,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(color: Color(0xFF4A2BB0), offset: Offset(0, 7)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Las cinco mascotas se asoman para invitar al niño.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                '¡Hola, $nombre! 👋',
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
+              for (var i = 0; i < EspecieMascota.values.length; i++)
+                MascotaAnimada(
+                  especie: EspecieMascota.values[i],
+                  etapa: EtapaMascota.bebe,
+                  tamano: 58,
+                  desfase: i / EspecieMascota.values.length,
                 ),
-              ),
-              const SizedBox(height: 8),
-              if (estado != null) estado,
             ],
           ),
-        ),
-        IconButton(
-          tooltip: 'Acceso administrador',
-          iconSize: 28,
-          icon: const Icon(Icons.admin_panel_settings_outlined),
-          onPressed: onAbrirAdmin,
-        ),
-      ],
+          const SizedBox(height: 10),
+          const Text(
+            '¡Elige tu mascota!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Crecerá con las estrellas que ganes en los juegos.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          BotonGrande(
+            texto: 'Elegir mascota',
+            icono: Icons.pets_rounded,
+            color: AppTheme.rosa,
+            onPressed: onElegir,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -185,18 +250,20 @@ class _EncabezadoAreas extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        const Icon(Icons.public_rounded, color: AppTheme.morado, size: 30),
+        const SizedBox(width: 8),
         Expanded(
           child: Semantics(
             header: true,
             child: const Text(
-              'Tus áreas educativas',
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+              'Mis mundos',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
             ),
           ),
         ),
         TextButton(
           onPressed: onVerTodas,
-          child: const Text('Ver todas'),
+          child: const Text('Ver todos'),
         ),
       ],
     );
@@ -277,122 +344,6 @@ class _SinAreas extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TarjetaContinuar extends StatelessWidget {
-  static const Color _colorSombra = Color(0x0A1F2A44);
-
-  final Modulo? ultimoModulo;
-  final ProgresoModulo? progreso;
-  final VoidCallback onContinuar;
-
-  const _TarjetaContinuar({
-    required this.ultimoModulo,
-    required this.progreso,
-    required this.onContinuar,
-  });
-
-  String get _resumen {
-    final datos = progreso;
-
-    if (datos == null) {
-      return 'Sigue donde ibas.';
-    }
-
-    final partes = [
-      if (datos.actividadesCompletadas > 0)
-        '⭐ ${datos.actividadesCompletadas} '
-            '${datos.actividadesCompletadas == 1 ? 'juego' : 'juegos'}',
-      if (datos.lecturas.isNotEmpty)
-        '📖 página ${datos.lecturas.first.ultimaPagina}',
-    ];
-
-    return partes.isEmpty ? 'Sigue donde ibas.' : partes.join(' · ');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.superficie,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: _colorSombra,
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Etiqueta.azul('APRENDIZAJE'),
-          const SizedBox(height: 16),
-          Text(
-            ultimoModulo == null
-                ? 'Continúa aprendiendo'
-                : 'Vas en: ${ultimoModulo!.nombre}',
-            style: const TextStyle(
-              color: AppTheme.texto,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            ultimoModulo == null ? '¿Qué quieres aprender hoy?' : _resumen,
-            style: const TextStyle(
-              color: AppTheme.textoSecundario,
-              fontSize: 17,
-            ),
-          ),
-          const SizedBox(height: 20),
-          BotonGrande(
-            texto: ultimoModulo == null
-                ? 'Continuar aprendiendo'
-                : 'Continuar donde ibas',
-            icono: Icons.play_arrow_rounded,
-            onPressed: onContinuar,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TarjetaMotivacion extends StatelessWidget {
-  const _TarjetaMotivacion();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppTheme.azulSuave,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '⭐ ¡Sigue aprendiendo!',
-            style: TextStyle(
-              color: AppTheme.texto,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Cada módulo completado te ayuda a avanzar.',
-            style: TextStyle(color: AppTheme.textoSecundario, fontSize: 15),
-          ),
-        ],
       ),
     );
   }

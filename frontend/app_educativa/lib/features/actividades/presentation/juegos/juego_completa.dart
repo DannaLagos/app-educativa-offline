@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/dibujo.dart';
 import '../../domain/actividad.dart';
 import '../widgets/boton_pista.dart';
 import '../widgets/tarjeta_elemento.dart';
@@ -87,11 +88,7 @@ class _JuegoCompletaState extends State<JuegoCompleta>
           total: widget.actividad.oraciones.length,
         ),
         const SizedBox(height: 20),
-        Text(
-          oracion.emoji,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 56),
-        ),
+        Center(child: Dibujo(oracion.emoji, tamano: 88)),
         const SizedBox(height: 12),
         _OracionConEspacio(
           oracion: oracion,

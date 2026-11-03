@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/boton_grande.dart';
+import '../../../../shared/widgets/dibujo.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../../../shared/widgets/mensaje_con_accion.dart';
 import '../../domain/modulo.dart';
 import '../../domain/recurso_local.dart';
 import '../controllers/modulos_scope.dart';
+import '../widgets/encabezado_mundo.dart';
+import '../widgets/icono_area.dart';
 import '../widgets/visor_pdf_con_progreso.dart';
 
 typedef ConstructorVisor = Widget Function(RecursoLocal recurso);
@@ -59,9 +64,11 @@ class _LectorModuloScreenState extends State<LectorModuloScreen> {
       appBar: AppBar(
         title: Text(widget.modulo.nombre),
       ),
-      body: FutureBuilder<List<RecursoLocal>>(
-        future: _recursos,
-        builder: _construirSegunEstado,
+      body: FondoDivertido(
+        child: FutureBuilder<List<RecursoLocal>>(
+          future: _recursos,
+          builder: _construirSegunEstado,
+        ),
       ),
     );
   }
@@ -105,22 +112,92 @@ class _LectorModuloScreenState extends State<LectorModuloScreen> {
 
   Widget _construirSelectorDeRecursos(List<RecursoLocal> recursos) {
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
-        const Text(
-          'Elige qué quieres ver:',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        EncabezadoMundo(
+          area: widget.modulo.area,
+          titulo: widget.modulo.nombre,
+          subtitulo: '¿Qué quieres leer?',
         ),
-        const SizedBox(height: 16),
-        for (final recurso in recursos) ...[
-          BotonGrande(
-            texto: recurso.titulo,
-            icono: Icons.picture_as_pdf_rounded,
-            onPressed: () => _abrirRecurso(recurso),
+        const SizedBox(height: 20),
+        for (final recurso in recursos)
+          _TarjetaDocumento(
+            titulo: recurso.titulo,
+            color: AparienciaArea.de(widget.modulo.area).color,
+            onTap: () => _abrirRecurso(recurso),
           ),
-          const SizedBox(height: 12),
-        ],
       ],
+    );
+  }
+}
+
+/// Un documento de la cartilla como ficha grande para tocar.
+class _TarjetaDocumento extends StatelessWidget {
+  final String titulo;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _TarjetaDocumento({
+    required this.titulo,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final radio = BorderRadius.circular(24);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: radio,
+        border: Border.all(
+          color: Color.lerp(color, Colors.white, 0.6)!,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color.lerp(color, Colors.white, 0.45)!,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: radio,
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Dibujo('📖', tamano: 40),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, size: 34, color: color),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

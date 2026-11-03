@@ -23,6 +23,10 @@ abstract class JuegoBase extends StatefulWidget {
   /// pista).
   final String? moduloId;
 
+  /// Para niños que empiezan a leer (primero y segundo): la voz lee las
+  /// opciones, los dibujos van en grande y cada tarjeta tiene su 🔊.
+  final bool lecturaAsistida;
+
   const JuegoBase({
     super.key,
     required this.onResponder,
@@ -30,11 +34,38 @@ abstract class JuegoBase extends StatefulWidget {
     required this.random,
     required this.pausa,
     this.moduloId,
+    this.lecturaAsistida = false,
   });
 }
 
 mixin EstadoJuego<T extends JuegoBase> on State<T> {
+  int _turnoLectura = 0;
+
   LectorVoz get voz => VozScope.de(context);
+
+  /// Lee [textos] uno tras otro. [alLeer] recibe cuál se está leyendo, para
+  /// resaltarlo, y null al terminar. Se corta si se vuelve a llamar o con
+  /// [cortarLectura] (por ejemplo, cuando el niño responde).
+  Future<void> leerEnOrden(
+    List<String> textos,
+    ValueChanged<int?> alLeer,
+  ) async {
+    final turno = ++_turnoLectura;
+
+    for (var i = 0; i < textos.length; i++) {
+      if (!mounted || turno != _turnoLectura) {
+        return;
+      }
+      alLeer(i);
+      await voz.hablar(textos[i]);
+    }
+
+    if (mounted && turno == _turnoLectura) {
+      alLeer(null);
+    }
+  }
+
+  void cortarLectura() => _turnoLectura++;
 
   /// Espera [JuegoBase.pausa] y ejecuta [accion] si la pantalla sigue abierta.
   void despuesDeLaPausa(VoidCallback accion) {

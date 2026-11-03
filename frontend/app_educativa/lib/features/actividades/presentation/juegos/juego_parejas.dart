@@ -35,7 +35,7 @@ class _JuegoParejasState extends State<JuegoParejas>
   List<Pareja> get _pares => widget.actividad.pares;
 
   void _tocarIzquierda(int indice) {
-    voz.hablar(_pares[indice].izquierda.texto);
+    voz.hablar(_pares[indice].izquierda.paraLeer);
     setState(() {
       _fallo = null;
       _izquierda = indice;
@@ -44,7 +44,7 @@ class _JuegoParejasState extends State<JuegoParejas>
   }
 
   void _tocarDerecha(int indice) {
-    voz.hablar(_pares[indice].derecha.texto);
+    voz.hablar(_pares[indice].derecha.paraLeer);
     setState(() {
       _fallo = null;
       _derecha = indice;

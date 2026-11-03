@@ -12,6 +12,9 @@ import '../domain/manifest_modulo.dart';
 import '../domain/modulo.dart';
 import 'modulo_remote_datasource.dart';
 
+/// Inicia (o recupera) la sesión de Firebase que piden las reglas de Storage.
+typedef AsegurarSesion = Future<void> Function();
+
 /// Lee los contenidos desde Firebase Storage:
 ///
 ///   contenidos/
@@ -25,11 +28,14 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
   static const int _maxBytesJson = 1024 * 1024;
 
   final Reference _raiz;
+  final AsegurarSesion _asegurarSesion;
 
   FirebaseModuloRemoteDataSource({
     FirebaseStorage? storage,
     String carpetaRaiz = ApiConfig.carpetaFirebase,
-  }) : _raiz = (storage ?? FirebaseStorage.instance).ref(carpetaRaiz);
+    AsegurarSesion? asegurarSesion,
+  })  : _raiz = (storage ?? FirebaseStorage.instance).ref(carpetaRaiz),
+        _asegurarSesion = asegurarSesion ?? (() async {});
 
   @override
   Future<List<Modulo>> obtenerCatalogo() async {
@@ -52,6 +58,8 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
     ArchivoPorDescargar archivo, {
     void Function(int bytesRecibidos)? onRecibido,
   }) async {
+    await _conSesion();
+
     final tarea = _carpetaModulo(archivo.moduloId)
         .child(archivo.nombre)
         .writeToFile(File(archivo.rutaDestino));
@@ -79,7 +87,26 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
     return _raiz.child('modulos').child(moduloId);
   }
 
+  /// Las reglas de Storage exigen sesión: sin ella la lectura falla con 403.
+  Future<void> _conSesion() async {
+    try {
+      await _asegurarSesion().timeout(ApiConfig.tiempoEspera);
+    } on TimeoutException catch (error) {
+      throw ServidorException(
+        'No fue posible iniciar la sesión de Firebase a tiempo.',
+        error,
+      );
+    } on FirebaseException catch (error) {
+      throw ServidorException(
+        'No fue posible iniciar la sesión de Firebase (${error.code}).',
+        error,
+      );
+    }
+  }
+
   Future<Map<String, dynamic>> _leerJson(Reference referencia) async {
+    await _conSesion();
+
     final List<int>? bytes;
 
     try {

@@ -22,9 +22,15 @@ void main() {
   testWidgets('La bienvenida lleva a crear el perfil', (
     WidgetTester tester,
   ) async {
+    // Las mascotas se mueven sin parar; con "reducir animaciones" se quedan
+    // quietas y pumpAndSettle puede terminar.
     await tester.pumpWidget(
-      const MaterialApp(
-        home: BienvenidaScreen(),
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: const BienvenidaScreen(),
       ),
     );
 

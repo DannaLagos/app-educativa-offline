@@ -1,3 +1,4 @@
+import '../../actividades/domain/ruta_aprendizaje.dart';
 import '../domain/progreso_modulo.dart';
 import '../domain/resultado_actividad.dart';
 import 'progreso_local_datasource.dart';
@@ -72,6 +73,32 @@ class ProgresoRepository {
     }
 
     return _local.obtenerUltimoModuloId(perfilId);
+  }
+
+  /// Última vez que el estudiante avanzó en cualquier módulo.
+  Future<DateTime?> obtenerUltimaActividad() async {
+    final perfilId = await _buscarPerfil();
+
+    if (perfilId == null) {
+      return null;
+    }
+
+    return _local.obtenerUltimaActividad(perfilId);
+  }
+
+  /// Estrellas ganadas en todos los módulos: hacen evolucionar a la mascota.
+  Future<int> obtenerEstrellasTotales() async {
+    final perfilId = await _buscarPerfil();
+
+    if (perfilId == null) {
+      return 0;
+    }
+
+    final puntajes = await _local.obtenerPuntajesCompletados(perfilId);
+    return puntajes.fold<int>(
+      0,
+      (total, puntaje) => total + estrellasPorPuntaje(puntaje),
+    );
   }
 
   Future<String> _perfilActual() async {

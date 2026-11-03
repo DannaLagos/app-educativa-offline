@@ -213,7 +213,15 @@ void main() {
           controller: modulosController,
           child: ProgresoScope(
             controller: progresoController,
-            child: MaterialApp(home: pantalla),
+            child: MaterialApp(
+              // El siguiente juego del mapa late sin parar; con "reducir
+              // animaciones" se queda quieto y pumpAndSettle puede terminar.
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(disableAnimations: true),
+                child: child!,
+              ),
+              home: pantalla,
+            ),
           ),
         ),
       );
@@ -231,9 +239,16 @@ void main() {
 
       await mostrar(tester, const DetalleModuloScreen(moduloId: 'cs-grado-1'));
 
-      expect(find.text('📌 Tu avance'), findsOneWidget);
-      expect(find.text('⭐ 2 juegos terminados'), findsOneWidget);
-      expect(find.text('📖 Vas en la página 5 de 22'), findsOneWidget);
+      Finder enFicha(String ficha, String texto) => find.descendant(
+            of: find.byKey(ValueKey('avance-$ficha')),
+            matching: find.text(texto),
+          );
+
+      expect(find.text('Tu avance'), findsOneWidget);
+      expect(enFicha('juegos', '2'), findsOneWidget);
+      expect(enFicha('juegos', 'juegos terminados'), findsOneWidget);
+      expect(enFicha('lectura', 'Página 5'), findsOneWidget);
+      expect(enFicha('lectura', 'de 22'), findsOneWidget);
       expect(find.text('Seguir leyendo (página 5)'), findsOneWidget);
       expect(find.text('Seguir jugando'), findsOneWidget);
     });
@@ -246,7 +261,7 @@ void main() {
 
       await mostrar(tester, const DetalleModuloScreen(moduloId: 'cs-grado-1'));
 
-      expect(find.text('📌 Tu avance'), findsNothing);
+      expect(find.text('Tu avance'), findsNothing);
       expect(find.text('Abrir módulo'), findsOneWidget);
       expect(find.text('Jugar y aprender'), findsOneWidget);
     });

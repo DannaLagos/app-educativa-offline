@@ -94,4 +94,36 @@ void main() {
 
     expect(remote.obtenerCatalogo(), throwsA(isA<ServidorException>()));
   });
+
+  group('sesión de Firebase', () {
+    test('inicia la sesión antes de leer de Storage', () async {
+      var llamadas = 0;
+      remote = FirebaseModuloRemoteDataSource(
+        storage: storage,
+        asegurarSesion: () async => llamadas++,
+      );
+      responder(catalogo, '{"modulos": []}');
+
+      await remote.obtenerCatalogo();
+
+      expect(llamadas, 1);
+    });
+
+    test('si no se puede iniciar la sesión, no lee y lanza ServidorException',
+        () async {
+      remote = FirebaseModuloRemoteDataSource(
+        storage: storage,
+        asegurarSesion: () async => throw FirebaseException(
+          plugin: 'firebase_auth',
+          code: 'operation-not-allowed',
+        ),
+      );
+
+      await expectLater(
+        remote.obtenerCatalogo(),
+        throwsA(isA<ServidorException>()),
+      );
+      verifyNever(() => catalogo.getData(any()));
+    });
+  });
 }

@@ -1,10 +1,17 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/voz/lector_voz.dart';
+import '../../../../shared/widgets/boton_escuchar.dart';
 import '../../../../shared/widgets/boton_grande.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
+import '../../../mascota/domain/mascota.dart';
+import '../../../mascota/presentation/mascota_scope.dart';
+import '../../../mascota/presentation/widgets/ceremonia_evolucion.dart';
+import '../../../mascota/presentation/widgets/mascota_animada.dart';
 import '../../../progreso/domain/resultado_actividad.dart';
 import '../../../progreso/presentation/progreso_scope.dart';
 import '../../domain/actividad.dart';
@@ -12,15 +19,18 @@ import '../../domain/ruta_aprendizaje.dart';
 import '../juegos/juego_arma.dart';
 import '../juegos/juego_arrastra.dart';
 import '../juegos/juego_atrapa.dart';
+import '../juegos/juego_bien_o_mal.dart';
 import '../juegos/juego_clasifica.dart';
 import '../juegos/juego_completa.dart';
 import '../juegos/juego_elige.dart';
+import '../juegos/juego_escucha.dart';
 import '../juegos/juego_memoria.dart';
 import '../juegos/juego_ordena.dart';
 import '../juegos/juego_parejas.dart';
 import '../juegos/juego_sopa.dart';
 import '../widgets/boton_pista.dart';
 import '../widgets/confeti.dart';
+import '../widgets/efectos.dart';
 import '../widgets/tarjeta_elemento.dart';
 
 /// Pantalla donde el niño juega una actividad (HU07). Muestra la
@@ -35,6 +45,10 @@ class JuegoScreen extends StatefulWidget {
   final Random? random;
   final Duration pausa;
 
+  /// Para primero y segundo: la voz lee las opciones y los dibujos van en
+  /// grande (ver [JuegoBase.lecturaAsistida]).
+  final bool lecturaAsistida;
+
   const JuegoScreen({
     super.key,
     required this.moduloId,
@@ -42,6 +56,7 @@ class JuegoScreen extends StatefulWidget {
     required this.actividad,
     this.random,
     this.pausa = pausaPorDefecto,
+    this.lecturaAsistida = false,
   });
 
   @override
@@ -65,9 +80,20 @@ class _JuegoScreenState extends State<JuegoScreen> {
 
   late final Random _random = widget.random ?? Random();
   int _errores = 0;
+
+  /// Cada acierto hace saltar a la mascota y lanza un estallido de estrellas.
+  int _aciertos = 0;
   bool? _ultimaFueAcierto;
   String _mensaje = '';
   int? _puntaje;
+
+  /// Si al terminar la mascota cambió de etapa, se celebra con la ceremonia
+  /// antes de ver las estrellas.
+  ({
+    MascotaElegida mascota,
+    EtapaMascota anterior,
+    EtapaMascota nueva
+  })? _evolucion;
 
   Actividad get _actividad => widget.actividad;
 
@@ -77,9 +103,13 @@ class _JuegoScreenState extends State<JuegoScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // En "Elige" el propio juego lee cada pregunta.
-    if (_puntaje == null && _ultimaFueAcierto == null &&
-        _actividad is! ActividadElige) {
+    // En "Elige", "¿Bien o mal?" y "Escucha" el propio juego lee cada
+    // pregunta.
+    if (_puntaje == null &&
+        _ultimaFueAcierto == null &&
+        _actividad is! ActividadElige &&
+        _actividad is! ActividadBienOMal &&
+        _actividad is! ActividadEscucha) {
       _voz.hablar(_actividad.instruccion);
     }
   }
@@ -89,12 +119,16 @@ class _JuegoScreenState extends State<JuegoScreen> {
     final mensaje = opciones[_random.nextInt(opciones.length)];
 
     setState(() {
-      if (!esAcierto) {
+      if (esAcierto) {
+        _aciertos++;
+      } else {
         _errores++;
       }
       _ultimaFueAcierto = esAcierto;
       _mensaje = mensaje;
     });
+    // Una vibración corta: el niño "siente" que respondió.
+    esAcierto ? HapticFeedback.mediumImpact() : HapticFeedback.lightImpact();
     // En "Arma" cada palabra es un acierto: la voz solo avisa los errores
     // para no interrumpir (al final de cada oración se lee la oración).
     if (!esAcierto || _actividad is! ActividadArma) {
@@ -109,8 +143,12 @@ class _JuegoScreenState extends State<JuegoScreen> {
       errores: _errores,
     );
 
+    final progreso = ProgresoScope.leer(context);
+    final mascota = MascotaScope.leer(context);
+    final estrellasAntes = progreso?.estrellasTotales;
+
     // HU07, criterio 3: registra el resultado y actualiza el progreso.
-    await ProgresoScope.leer(context)?.registrarResultado(
+    await progreso?.registrarResultado(
       ResultadoActividad(
         moduloId: widget.moduloId,
         actividadId: _actividad.id,
@@ -123,8 +161,44 @@ class _JuegoScreenState extends State<JuegoScreen> {
       return;
     }
 
-    setState(() => _puntaje = puntaje);
-    _voz.hablar(_mensajeFinal(estrellasPorPuntaje(puntaje)));
+    final evolucion = _buscarEvolucion(
+      mascota,
+      estrellasAntes,
+      progreso?.estrellasTotales,
+    );
+
+    setState(() {
+      _puntaje = puntaje;
+      _evolucion = evolucion;
+    });
+
+    if (evolucion != null) {
+      HapticFeedback.heavyImpact();
+      _voz.hablar(
+        '¡Wow! ${CeremoniaEvolucion.anuncio(evolucion.mascota, evolucion.nueva)}',
+      );
+    } else {
+      _voz.hablar(_mensajeFinal(estrellasPorPuntaje(puntaje)));
+    }
+  }
+
+  static ({MascotaElegida mascota, EtapaMascota anterior, EtapaMascota nueva})?
+      _buscarEvolucion(MascotaElegida? mascota, int? antes, int? despues) {
+    if (mascota == null || antes == null || despues == null) {
+      return null;
+    }
+
+    final anterior = EtapaMascota.segunEstrellas(antes);
+    final nueva = EtapaMascota.segunEstrellas(despues);
+
+    return nueva.index > anterior.index
+        ? (mascota: mascota, anterior: anterior, nueva: nueva)
+        : null;
+  }
+
+  void _cerrarCeremonia() {
+    setState(() => _evolucion = null);
+    _voz.hablar(_mensajeFinal(estrellasPorPuntaje(_puntaje ?? 0)));
   }
 
   static String _mensajeFinal(int estrellas) => switch (estrellas) {
@@ -142,6 +216,7 @@ class _JuegoScreenState extends State<JuegoScreen> {
           random: _random,
           pausa: widget.pausa,
           moduloId: widget.moduloId,
+          lecturaAsistida: widget.lecturaAsistida,
         ),
       final ActividadParejas a => JuegoParejas(
           actividad: a,
@@ -163,6 +238,7 @@ class _JuegoScreenState extends State<JuegoScreen> {
           onCompletado: _alCompletar,
           random: _random,
           pausa: widget.pausa,
+          lecturaAsistida: widget.lecturaAsistida,
         ),
       final ActividadMemoria a => JuegoMemoria(
           actividad: a,
@@ -207,6 +283,24 @@ class _JuegoScreenState extends State<JuegoScreen> {
           random: _random,
           pausa: widget.pausa,
         ),
+      final ActividadBienOMal a => JuegoBienOMal(
+          actividad: a,
+          onResponder: _alResponder,
+          onCompletado: _alCompletar,
+          random: _random,
+          pausa: widget.pausa,
+          moduloId: widget.moduloId,
+          lecturaAsistida: widget.lecturaAsistida,
+        ),
+      final ActividadEscucha a => JuegoEscucha(
+          actividad: a,
+          onResponder: _alResponder,
+          onCompletado: _alCompletar,
+          random: _random,
+          pausa: widget.pausa,
+          moduloId: widget.moduloId,
+          lecturaAsistida: widget.lecturaAsistida,
+        ),
     };
   }
 
@@ -215,31 +309,65 @@ class _JuegoScreenState extends State<JuegoScreen> {
     final puntaje = _puntaje;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_actividad.titulo)),
-      body: SafeArea(
-        child: puntaje == null
-            ? _construirPartida()
-            : Stack(
-                children: [
-                  Positioned.fill(
-                    child: _VistaResultado(
-                      moduloId: widget.moduloId,
-                      plan: widget.plan,
-                      actividad: _actividad,
-                      estrellas: estrellasPorPuntaje(puntaje),
-                      mensaje: _mensajeFinal(estrellasPorPuntaje(puntaje)),
-                      random: widget.random,
-                      pausa: widget.pausa,
+      appBar: AppBar(
+        title: Text(_actividad.titulo),
+        backgroundColor: Colors.transparent,
+      ),
+      extendBodyBehindAppBar: true,
+      body: FondoDivertido(
+        child: SafeArea(
+          child: puntaje == null
+              ? _construirPartida()
+              : Stack(
+                  children: [
+                    Positioned.fill(
+                      child: _VistaResultado(
+                        moduloId: widget.moduloId,
+                        plan: widget.plan,
+                        actividad: _actividad,
+                        estrellas: estrellasPorPuntaje(puntaje),
+                        mensaje: _mensajeFinal(estrellasPorPuntaje(puntaje)),
+                        random: widget.random,
+                        pausa: widget.pausa,
+                        lecturaAsistida: widget.lecturaAsistida,
+                      ),
                     ),
-                  ),
-                  const Positioned.fill(child: Confeti()),
-                ],
-              ),
+                    const Positioned.fill(child: Confeti()),
+                    if (_evolucion case final evolucion?)
+                      Positioned.fill(
+                        child: CeremoniaEvolucion(
+                          mascota: evolucion.mascota,
+                          etapaAnterior: evolucion.anterior,
+                          etapaNueva: evolucion.nueva,
+                          onTerminar: _cerrarCeremonia,
+                        ),
+                      ),
+                  ],
+                ),
+        ),
       ),
     );
   }
 
   Widget _construirPartida() {
+    return Stack(
+      children: [
+        Positioned.fill(child: _construirTablero()),
+        // Estallido de estrellas con cada acierto, cerca del mensaje.
+        if (_aciertos > 0 && _ultimaFueAcierto == true)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 20,
+            child: Center(
+              child: EstallidoEstrellas(key: ValueKey('estallido-$_aciertos')),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _construirTablero() {
     final ultimaFueAcierto = _ultimaFueAcierto;
 
     return Column(
@@ -252,7 +380,12 @@ class _JuegoScreenState extends State<JuegoScreen> {
               children: [
                 _Instruccion(
                   texto: _actividad.instruccion,
-                  onEscuchar: () => _voz.hablar(_actividad.instruccion),
+                  saltosMascota: _aciertos,
+                  // Tras un error la mascota pone cara de ánimo hasta el
+                  // siguiente acierto.
+                  animando: _ultimaFueAcierto == false,
+                  onEscuchar: () =>
+                      hablarOAvisar(context, _actividad.instruccion),
                 ),
                 if (_actividad.pista != null) ...[
                   const SizedBox(height: 10),
@@ -295,41 +428,80 @@ class _JuegoScreenState extends State<JuegoScreen> {
   }
 }
 
+/// La mascota del niño "dice" la instrucción en una burbuja y salta con
+/// cada acierto.
 class _Instruccion extends StatelessWidget {
   final String texto;
+  final int saltosMascota;
+  final bool animando;
   final VoidCallback onEscuchar;
 
-  const _Instruccion({required this.texto, required this.onEscuchar});
+  const _Instruccion({
+    required this.texto,
+    required this.saltosMascota,
+    required this.animando,
+    required this.onEscuchar,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.azulSuave,
-        borderRadius: BorderRadius.circular(AppTheme.radio),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              texto,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.azul,
-              ),
+    final mascota = MascotaScope.de(context);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (mascota != null) ...[
+          MascotaAnimada(
+            especie: mascota.especie,
+            etapa: EtapaMascota.segunEstrellas(
+              ProgresoScope.leer(context)?.estrellasTotales ?? 0,
+            ),
+            tamano: 84,
+            saltos: saltosMascota,
+            expresion:
+                animando ? ExpresionMascota.animo : ExpresionMascota.normal,
+          ),
+          const SizedBox(width: 4),
+        ],
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 10, 12),
+            decoration: BoxDecoration(
+              color: AppTheme.superficie,
+              borderRadius: BorderRadius.circular(AppTheme.radio),
+              border: Border.all(color: AppTheme.morado, width: 3),
+              boxShadow: const [
+                BoxShadow(color: Color(0x336741D9), offset: Offset(0, 5)),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    texto,
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.texto,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  tooltip: 'Escuchar la instrucción',
+                  iconSize: 30,
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppTheme.morado,
+                    minimumSize: const Size.square(56),
+                  ),
+                  onPressed: onEscuchar,
+                  icon: const Icon(Icons.volume_up_rounded),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          IconButton.filled(
-            tooltip: 'Escuchar la instrucción',
-            iconSize: 30,
-            onPressed: onEscuchar,
-            icon: const Icon(Icons.volume_up_rounded),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -342,6 +514,7 @@ class _VistaResultado extends StatelessWidget {
   final String mensaje;
   final Random? random;
   final Duration pausa;
+  final bool lecturaAsistida;
 
   const _VistaResultado({
     required this.moduloId,
@@ -351,6 +524,7 @@ class _VistaResultado extends StatelessWidget {
     required this.mensaje,
     required this.random,
     required this.pausa,
+    required this.lecturaAsistida,
   });
 
   /// La siguiente actividad del camino y si empieza un nivel nuevo.
@@ -386,6 +560,7 @@ class _VistaResultado extends StatelessWidget {
           actividad: actividad,
           random: random,
           pausa: pausa,
+          lecturaAsistida: lecturaAsistida,
         ),
       ),
     );
@@ -394,6 +569,7 @@ class _VistaResultado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final siguiente = _siguiente();
+    final mascota = MascotaScope.de(context);
     final nivelNuevo = siguiente?.$2;
 
     return SingleChildScrollView(
@@ -401,41 +577,82 @@ class _VistaResultado extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            switch (estrellas) { 3 => '🏆', 2 => '🎉', _ => '👏' },
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 80),
-          ),
+          if (mascota == null)
+            Text(
+              switch (estrellas) { 3 => '🏆', 2 => '🎉', _ => '👏' },
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 80),
+            )
+          else
+            Center(
+              child: MascotaAnimada(
+                especie: mascota.especie,
+                etapa: EtapaMascota.segunEstrellas(
+                  ProgresoScope.leer(context)?.estrellasTotales ?? 0,
+                ),
+                tamano: 150,
+              ),
+            ),
           const SizedBox(height: 8),
-          Center(child: FilaEstrellas(estrellas: estrellas, tamano: 60)),
+          Center(child: _EstrellasGanadas(estrellas: estrellas)),
           const SizedBox(height: 16),
           Text(
             mensaje,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
           ),
-          if (nivelNuevo != null) ...[
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.verdeSuave,
-                borderRadius: BorderRadius.circular(AppTheme.radio),
-                border: Border.all(color: AppTheme.verde, width: 2),
-              ),
-              child: Text(
-                '🔓 ¡Abriste el nivel ${nivelNuevo.numero}: '
-                '${nivelNuevo.titulo}!',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.verde,
+          if (mascota != null && estrellas > 0) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.amarilloSuave,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: AppTheme.amarillo, width: 3),
+                ),
+                child: Text(
+                  '+$estrellas ⭐ para ${mascota.nombre}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.ambar,
+                  ),
                 ),
               ),
             ),
           ],
-          if (siguiente == null && actividad.id == plan.actividades.last.id) ...[
+          if (nivelNuevo != null) ...[
+            const SizedBox(height: 20),
+            Aparecer(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.verde,
+                  borderRadius: BorderRadius.circular(AppTheme.radio),
+                  boxShadow: [
+                    BoxShadow(
+                      color: relieve(AppTheme.verde),
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  '🔓 ¡Abriste el nivel ${nivelNuevo.numero}: '
+                  '${nivelNuevo.titulo}!',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          if (siguiente == null &&
+              actividad.id == plan.actividades.last.id) ...[
             const SizedBox(height: 20),
             const Text(
               '🌟 ¡Terminaste todos los niveles de este módulo!',
@@ -467,6 +684,58 @@ class _VistaResultado extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Las estrellas ganadas aparecen una por una, con un saltito.
+class _EstrellasGanadas extends StatelessWidget {
+  static const double _tamano = 68;
+
+  final int estrellas;
+
+  const _EstrellasGanadas({required this.estrellas});
+
+  @override
+  Widget build(BuildContext context) {
+    final sinAnimar = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+
+    return Semantics(
+      label: '$estrellas de 3 estrellas',
+      excludeSemantics: true,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: sinAnimar ? 1 : 0, end: 1),
+        duration: const Duration(milliseconds: 1400),
+        builder: (context, t, _) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < 3; i++)
+              Transform.scale(
+                // Cada estrella empieza un poco después que la anterior.
+                scale: Curves.elasticOut.transform(
+                  ((t - i * 0.22) / 0.5).clamp(0.0, 1.0),
+                ),
+                child: Padding(
+                  // La del medio, más alta: como un podio.
+                  padding: EdgeInsets.only(bottom: i == 1 ? 18 : 0),
+                  child: Icon(
+                    Icons.star_rounded,
+                    size: i == 1 ? _tamano + 14 : _tamano,
+                    color: i < estrellas
+                        ? const Color(0xFFFFC93C)
+                        : AppTheme.borde,
+                    shadows: i < estrellas
+                        ? const [
+                            Shadow(
+                                color: Color(0x80C2410C), offset: Offset(0, 4)),
+                          ]
+                        : null,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
