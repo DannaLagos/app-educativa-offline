@@ -201,6 +201,35 @@ class ProgresoLocalDataSource {
     return filas.isEmpty ? null : filas.first['modulo_id'] as String;
   }
 
+  /// Cuándo avanzó por última vez en cualquier módulo, o null si nunca. Si
+  /// pasan días sin jugar, la mascota aparece dormida.
+  Future<DateTime?> obtenerUltimaActividad(String perfilId) async {
+    final baseDatos = await _appDatabase.database;
+    final filas = await baseDatos.query(
+      _tablaModulo,
+      columns: ['MAX(ultima_actualizacion) AS ultima'],
+      where: 'perfil_id = ?',
+      whereArgs: [perfilId],
+    );
+    final fecha = filas.first['ultima'] as String?;
+
+    return fecha == null ? null : DateTime.parse(fecha);
+  }
+
+  /// Puntajes de las actividades completadas en todos los módulos. Con ellos
+  /// se calculan las estrellas que hacen evolucionar a la mascota.
+  Future<List<int>> obtenerPuntajesCompletados(String perfilId) async {
+    final baseDatos = await _appDatabase.database;
+    final filas = await baseDatos.query(
+      _tablaActividad,
+      columns: ['puntaje'],
+      where: 'perfil_id = ? AND completada = 1',
+      whereArgs: [perfilId],
+    );
+
+    return [for (final fila in filas) fila['puntaje'] as int];
+  }
+
   /// Todo lo que falta enviar al servidor (HU10, criterio 2).
   Future<ProgresoPendiente> obtenerPendientes(String perfilId) async {
     final baseDatos = await _appDatabase.database;

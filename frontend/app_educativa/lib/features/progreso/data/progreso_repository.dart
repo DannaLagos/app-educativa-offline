@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/conectividad_service.dart';
+import '../../actividades/domain/ruta_aprendizaje.dart';
 import '../../perfil/domain/perfil_estudiante.dart';
 import '../domain/progreso_modulo.dart';
 import '../domain/resultado_actividad.dart';
@@ -132,6 +133,28 @@ class ProgresoRepository {
     }
 
     return Enviado(await _local.marcarSincronizados(pendientes));
+  }
+
+  /// Última vez que el estudiante avanzó en cualquier módulo.
+  Future<DateTime?> obtenerUltimaActividad() async {
+    final perfil = await _buscarPerfil();
+
+    return perfil == null ? null : _local.obtenerUltimaActividad(perfil.id);
+  }
+
+  /// Estrellas ganadas en todos los módulos: hacen evolucionar a la mascota.
+  Future<int> obtenerEstrellasTotales() async {
+    final perfil = await _buscarPerfil();
+
+    if (perfil == null) {
+      return 0;
+    }
+
+    final puntajes = await _local.obtenerPuntajesCompletados(perfil.id);
+    return puntajes.fold<int>(
+      0,
+      (total, puntaje) => total + estrellasPorPuntaje(puntaje),
+    );
   }
 
   Future<PerfilEstudiante> _perfilActual() async {

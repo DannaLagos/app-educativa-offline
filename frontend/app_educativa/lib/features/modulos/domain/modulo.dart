@@ -39,6 +39,10 @@ class Modulo {
 
   String get areaYGrado => '$area · Grado $grado';
 
+  /// En primero y segundo los niños apenas empiezan a leer: los juegos leen
+  /// las opciones en voz alta y muestran los dibujos en grande.
+  bool get necesitaLecturaAsistida => grado <= 2;
+
   factory Modulo.desdeCatalogo(Map<String, dynamic> json) {
     return Modulo(
       id: json['id'] as String,

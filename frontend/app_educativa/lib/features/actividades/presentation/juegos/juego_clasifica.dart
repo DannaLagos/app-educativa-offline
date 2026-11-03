@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/dibujo.dart';
 import '../../domain/actividad.dart';
 import '../widgets/tarjeta_elemento.dart';
 import 'juego_base.dart';
@@ -68,7 +69,7 @@ class _JuegoClasificaState extends State<JuegoClasifica>
       _acerto = false;
       _grupoFallido = null;
     });
-    voz.hablar(_tarjeta.elemento.texto);
+    voz.hablar(_tarjeta.elemento.paraLeer);
   }
 
   @override
@@ -94,7 +95,7 @@ class _JuegoClasificaState extends State<JuegoClasifica>
           elemento: _tarjeta.elemento,
           estado: _acerto ? EstadoTarjeta.correcta : EstadoTarjeta.normal,
           tamanoEmoji: 64,
-          onTap: () => voz.hablar(_tarjeta.elemento.texto),
+          onTap: () => voz.hablar(_tarjeta.elemento.paraLeer),
         ),
         const SizedBox(height: 28),
         Row(
@@ -153,7 +154,7 @@ class _Canasta extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
             child: Column(
               children: [
-                Text(grupo.elemento.emoji, style: const TextStyle(fontSize: 48)),
+                Dibujo(grupo.elemento.emoji, tamano: 48),
                 const SizedBox(height: 8),
                 Text(
                   grupo.elemento.texto,

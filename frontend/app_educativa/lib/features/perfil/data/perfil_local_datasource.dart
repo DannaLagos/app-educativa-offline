@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../mascota/domain/mascota.dart';
 import '../domain/perfil_estudiante.dart';
 
 class PerfilLocalDataSource {
@@ -17,6 +18,22 @@ class PerfilLocalDataSource {
       'perfil_estudiante',
       perfil.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Para los perfiles que se crearon antes de que existieran las mascotas.
+  Future<void> guardarMascota(
+    String perfilId,
+    EspecieMascota mascota, {
+    String? nombre,
+  }) async {
+    final baseDatos = await _appDatabase.database;
+
+    await baseDatos.update(
+      'perfil_estudiante',
+      {'mascota': mascota.name, 'nombre_mascota': nombre},
+      where: 'id = ?',
+      whereArgs: [perfilId],
     );
   }
 

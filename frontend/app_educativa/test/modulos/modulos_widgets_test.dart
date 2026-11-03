@@ -83,8 +83,7 @@ void main() {
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
-    testWidgets('descargando muestra el porcentaje y la barra',
-        (tester) async {
+    testWidgets('descargando muestra el porcentaje y la barra', (tester) async {
       await mostrar(tester, EstadoDescarga.descargando, progreso: 0.45);
       expect(find.text('Descargando 45 %'), findsOneWidget);
       final barra = tester.widget<LinearProgressIndicator>(
@@ -197,8 +196,8 @@ void main() {
           onProgreso: any(named: 'onProgreso'),
         ),
       ).thenAnswer((invocacion) {
-        reportar = invocacion.namedArguments[#onProgreso]
-            as void Function(double);
+        reportar =
+            invocacion.namedArguments[#onProgreso] as void Function(double);
         return terminar.future;
       });
 
@@ -339,8 +338,7 @@ void main() {
       expect(find.text('VISOR ${leccion1.ruta}'), findsOneWidget);
     });
 
-    testWidgets('con varios documentos deja elegir cuál abrir',
-        (tester) async {
+    testWidgets('con varios documentos deja elegir cuál abrir', (tester) async {
       when(() => repositorio.obtenerRecursosLocales(any()))
           .thenAnswer((_) async => [leccion1, leccion2]);
 
@@ -360,8 +358,7 @@ void main() {
       expect(find.text('VISOR ${leccion2.ruta}'), findsOneWidget);
     });
 
-    testWidgets('si faltan archivos muestra un mensaje claro',
-        (tester) async {
+    testWidgets('si faltan archivos muestra un mensaje claro', (tester) async {
       when(() => repositorio.obtenerRecursosLocales(any()))
           .thenThrow(const ContenidoIncompletoException('falta'));
       when(() => repositorio.obtenerModulo(any()))
@@ -437,6 +434,24 @@ void main() {
       expect(find.text('Eliminar'), findsOneWidget);
     });
 
+    testWidgets('en un celular angosto con letra grande nada se desborda',
+        (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      when(() => repositorio.obtenerDescargados())
+          .thenAnswer((_) async => [descargado]);
+
+      await tester.pumpWidget(app(const MisDescargasScreen()));
+      await tester.pumpAndSettle();
+
+      // Un desborde haría fallar la prueba con una excepción de Flutter.
+      expect(tester.takeException(), isNull);
+      expect(find.text('Disponible sin conexión'), findsOneWidget);
+    });
+
     testWidgets('cancelar en el diálogo no elimina nada', (tester) async {
       when(() => repositorio.obtenerDescargados())
           .thenAnswer((_) async => [descargado]);
@@ -485,8 +500,7 @@ void main() {
     });
 
     testWidgets('sin descargas invita a ver los módulos', (tester) async {
-      when(() => repositorio.obtenerDescargados())
-          .thenAnswer((_) async => []);
+      when(() => repositorio.obtenerDescargados()).thenAnswer((_) async => []);
 
       await tester.pumpWidget(app(const MisDescargasScreen()));
       await tester.pumpAndSettle();

@@ -3,7 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/dibujo.dart';
 import '../../domain/actividad.dart';
+import '../widgets/efectos.dart';
 import '../widgets/tarjeta_elemento.dart';
 import 'juego_base.dart';
 
@@ -39,6 +41,10 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
   final List<_Carta> _volteadas = [];
   bool _esperando = false;
 
+  /// Para sacudir las cartas que no son pareja y hacer rebotar las que sí.
+  final Map<_Carta, int> _sacudidas = {};
+  final Map<int, int> _rebotes = {};
+
   List<_Carta> _mezclarCartas() {
     final cartas = <_Carta>[
       for (var i = 0; i < widget.actividad.pares.length; i++) ...[
@@ -64,7 +70,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
       return;
     }
 
-    voz.hablar(_elemento(carta).texto);
+    voz.hablar(_elemento(carta).paraLeer);
     setState(() => _volteadas.add(carta));
 
     if (_volteadas.length == 2) {
@@ -79,6 +85,7 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
     if (primera.pareja == segunda.pareja) {
       setState(() {
         _encontradas.add(primera.pareja);
+        _rebotes[primera.pareja] = (_rebotes[primera.pareja] ?? 0) + 1;
         _volteadas.clear();
       });
       widget.onResponder(true);
@@ -96,6 +103,11 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
     _vistas
       ..add(primera)
       ..add(segunda);
+    setState(() {
+      for (final carta in [primera, segunda]) {
+        _sacudidas[carta] = (_sacudidas[carta] ?? 0) + 1;
+      }
+    });
 
     if (yaSabia) {
       widget.onResponder(false);
@@ -138,12 +150,18 @@ class _JuegoMemoriaState extends State<JuegoMemoria>
           childAspectRatio: 0.8,
           children: [
             for (final carta in _cartas)
-              _CartaMemoria(
-                key: ValueKey('carta-${carta.pareja}-${carta.lado}'),
-                elemento: _elemento(carta),
-                bocaArriba: _estaBocaArriba(carta),
-                encontrada: _encontradas.contains(carta.pareja),
-                onTap: () => _voltear(carta),
+              Sacudir(
+                veces: _sacudidas[carta] ?? 0,
+                child: Rebotar(
+                  veces: _rebotes[carta.pareja] ?? 0,
+                  child: _CartaMemoria(
+                    key: ValueKey('carta-${carta.pareja}-${carta.lado}'),
+                    elemento: _elemento(carta),
+                    bocaArriba: _estaBocaArriba(carta),
+                    encontrada: _encontradas.contains(carta.pareja),
+                    onTap: () => _voltear(carta),
+                  ),
+                ),
               ),
           ],
         ),
@@ -202,50 +220,109 @@ class _CartaMemoria extends StatelessWidget {
   Widget _reverso() {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.azul,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppTheme.morado, AppTheme.rosa],
+        ),
         borderRadius: BorderRadius.circular(AppTheme.radio),
-        border: Border.all(color: AppTheme.azulClaro, width: 3),
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: [
+          BoxShadow(color: relieve(AppTheme.morado), offset: const Offset(0, 5)),
+        ],
       ),
-      alignment: Alignment.center,
-      child: const Text('⭐', style: TextStyle(fontSize: 36)),
+      child: Stack(
+        children: [
+          const Positioned(top: 8, left: 10, child: _Chispita()),
+          const Positioned(bottom: 10, right: 10, child: _Chispita()),
+          Center(
+            child: Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 3),
+              ),
+              child: const Text(
+                '?',
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _frente() {
+    final color = encontrada ? AppTheme.verde : AppTheme.azul;
+
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: encontrada ? AppTheme.verdeSuave : AppTheme.superficie,
         borderRadius: BorderRadius.circular(AppTheme.radio),
-        border: Border.all(
-          color: encontrada ? AppTheme.verde : AppTheme.azul,
-          width: 3,
-        ),
+        border: Border.all(color: color, width: 4),
+        boxShadow: [
+          BoxShadow(color: suave(color), offset: const Offset(0, 5)),
+        ],
       ),
       // La carta tiene tamaño fijo (cuadrícula): si el texto no cabe, todo
       // se reduce en vez de desbordarse.
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 110),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(elemento.emoji, style: const TextStyle(fontSize: 38)),
-              const SizedBox(height: 4),
-              Text(
-                elemento.texto,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.2,
-                  fontWeight: FontWeight.w700,
+      child: Stack(
+        children: [
+          Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 110),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Dibujo(elemento.emoji, tamano: 44),
+                    const SizedBox(height: 4),
+                    Text(
+                      elemento.texto,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.2,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          if (encontrada)
+            const Positioned(
+              top: 0,
+              right: 0,
+              child: Icon(
+                Icons.check_circle_rounded,
+                color: AppTheme.verde,
+                size: 26,
+              ),
+            ),
+        ],
       ),
     );
+  }
+}
+
+/// Estrellita decorativa del reverso de las cartas.
+class _Chispita extends StatelessWidget {
+  const _Chispita();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Icon(Icons.auto_awesome_rounded, color: Colors.white70, size: 18);
   }
 }

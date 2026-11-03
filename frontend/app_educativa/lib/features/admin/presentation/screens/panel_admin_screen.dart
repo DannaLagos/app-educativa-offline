@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../../modulos/presentation/screens/modulos_screen.dart';
+import '../../../modulos/presentation/widgets/encabezado_mundo.dart';
 import '../../../perfil/data/perfil_local_datasource.dart';
 import '../../../perfil/domain/perfil_estudiante.dart';
 import '../../domain/sesion_admin.dart';
@@ -45,8 +48,10 @@ class _PanelAdminScreenState extends State<PanelAdminScreen> {
     return PopScope(
       onPopInvokedWithResult: _cerrarSesionAlSalir,
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: const Text('Panel de administración'),
+          backgroundColor: Colors.transparent,
           actions: [
             IconButton(
               tooltip: 'Cerrar sesión',
@@ -55,26 +60,29 @@ class _PanelAdminScreenState extends State<PanelAdminScreen> {
             ),
           ],
         ),
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              _Bienvenida(usuario: SesionAdmin.instance.actual?.usuario ?? ''),
-              const SizedBox(height: 28),
-              const _TituloSeccion('Estudiante registrado'),
-              const SizedBox(height: 10),
-              _TarjetaEstudiante(perfilFuture: _perfilFuture),
-              const SizedBox(height: 28),
-              const _TituloSeccion('Contenidos'),
-              const SizedBox(height: 10),
-              _TarjetaModulos(onTap: _abrirModulos),
-              const SizedBox(height: 32),
-              OutlinedButton.icon(
-                onPressed: _cerrarSesion,
-                icon: const Icon(Icons.logout),
-                label: const Text('Cerrar sesión'),
-              ),
-            ],
+        body: FondoDivertido(
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                _Bienvenida(
+                    usuario: SesionAdmin.instance.actual?.usuario ?? ''),
+                const SizedBox(height: 28),
+                const _TituloSeccion('Estudiante registrado'),
+                const SizedBox(height: 10),
+                _TarjetaEstudiante(perfilFuture: _perfilFuture),
+                const SizedBox(height: 28),
+                const _TituloSeccion('Contenidos'),
+                const SizedBox(height: 10),
+                _TarjetaModulos(onTap: _abrirModulos),
+                const SizedBox(height: 32),
+                OutlinedButton.icon(
+                  onPressed: _cerrarSesion,
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Cerrar sesión'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -89,19 +97,12 @@ class _Bienvenida extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Hola, $usuario',
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Desde aquí puedes consultar la información de la aplicación.',
-          style: TextStyle(fontSize: 16),
-        ),
-      ],
+    return EncabezadoMundo(
+      area: '',
+      titulo: 'Hola, $usuario',
+      subtitulo: 'Desde aquí puedes consultar la información de la aplicación.',
+      color: AppTheme.azul,
+      emoji: '👨‍🏫',
     );
   }
 }

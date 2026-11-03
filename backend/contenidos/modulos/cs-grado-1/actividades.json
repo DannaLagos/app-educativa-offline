@@ -77,7 +77,8 @@
               },
               "derecha": {
                 "emoji": "🎁",
-                "texto": "Me dieron un regalo"
+                "texto": "Un regalo",
+                "lectura": "Me dieron un regalo"
               }
             },
             {
@@ -87,7 +88,8 @@
               },
               "derecha": {
                 "emoji": "🐶",
-                "texto": "Se perdió mi perrito"
+                "texto": "Perrito perdido",
+                "lectura": "Se perdió mi perrito"
               }
             },
             {
@@ -97,7 +99,8 @@
               },
               "derecha": {
                 "emoji": "🧸",
-                "texto": "Me rompieron el juguete"
+                "texto": "Juguete roto",
+                "lectura": "Me rompieron el juguete"
               }
             }
           ],
@@ -108,77 +111,49 @@
         },
         {
           "id": "n1-a3-soy-especial",
-          "tipo": "elige",
+          "tipo": "bienomal",
           "titulo": "Soy especial y me cuido",
-          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
-          "preguntas": [
+          "instruccion": "Escucha y mira el dibujo. ¿Está bien o está mal?",
+          "situaciones": [
             {
-              "enunciado": "¿Todos los niños y niñas somos iguales?",
-              "opciones": [
-                {
-                  "emoji": "🌈",
-                  "texto": "No, cada uno es único y especial"
-                },
-                {
-                  "emoji": "👥",
-                  "texto": "Sí, todos somos iguales"
-                }
-              ],
-              "correcta": 0
+              "emoji": "🌈",
+              "texto": "Cada niño es especial",
+              "lectura": "Cada niño y cada niña es único y especial.",
+              "bien": true
             },
             {
-              "enunciado": "¿Qué me hace único?",
-              "opciones": [
-                {
-                  "emoji": "👕",
-                  "texto": "Mi ropa nueva"
-                },
-                {
-                  "emoji": "🧒",
-                  "texto": "Mi nombre, mi cara y mi forma de ser"
-                },
-                {
-                  "emoji": "🚫",
-                  "texto": "Nada"
-                }
-              ],
-              "correcta": 1
+              "emoji": "🗣️",
+              "texto": "Contar cómo me siento",
+              "lectura": "Cuando estoy triste, le cuento a alguien cómo me siento.",
+              "bien": true
             },
             {
-              "enunciado": "Cuando estoy triste, puedo…",
-              "opciones": [
-                {
-                  "emoji": "💥",
-                  "texto": "Romper cosas"
-                },
-                {
-                  "emoji": "🙈",
-                  "texto": "Esconderme siempre"
-                },
-                {
-                  "emoji": "🗣️",
-                  "texto": "Contarle a alguien cómo me siento"
-                }
-              ],
-              "correcta": 2
+              "emoji": "💥",
+              "texto": "Romper cosas",
+              "lectura": "Cuando estoy triste, rompo cosas.",
+              "bien": false
             },
             {
-              "enunciado": "Mi cuerpo me pertenece. Si alguien me toca y no me gusta, ¿qué hago?",
-              "opciones": [
-                {
-                  "emoji": "✋",
-                  "texto": "Digo NO y le cuento a un adulto de confianza"
-                },
-                {
-                  "emoji": "🤫",
-                  "texto": "Lo guardo en secreto"
-                },
-                {
-                  "emoji": "😶",
-                  "texto": "Me quedo callado"
-                }
-              ],
-              "correcta": 0,
+              "emoji": "🙈",
+              "texto": "Esconderme siempre",
+              "lectura": "Cuando estoy triste, me escondo siempre y no le hablo a nadie.",
+              "bien": false
+            },
+            {
+              "emoji": "✋",
+              "texto": "Decir NO y contar",
+              "lectura": "Mi cuerpo me pertenece. Si alguien me toca y no me gusta, digo NO y le cuento a un adulto de confianza.",
+              "bien": true,
+              "pista": {
+                "texto": "Guía 1: «Tu cuerpo te pertenece, nadie tiene derecho a tocarlo sin tu permiso».",
+                "pagina": 9
+              }
+            },
+            {
+              "emoji": "🤫",
+              "texto": "Guardar el secreto",
+              "lectura": "Si alguien me toca y no me gusta, lo guardo en secreto.",
+              "bien": false,
               "pista": {
                 "texto": "Guía 1: «Tu cuerpo te pertenece, nadie tiene derecho a tocarlo sin tu permiso».",
                 "pagina": 9
@@ -280,8 +255,9 @@
             },
             {
               "emoji": "🧹",
-              "texto": "Ayudar a limpiar la casa",
-              "grupo": "cuida"
+              "texto": "Ayudar a limpiar",
+              "grupo": "cuida",
+              "lectura": "Ayudar a limpiar la casa"
             },
             {
               "emoji": "😡",
@@ -300,8 +276,9 @@
             },
             {
               "emoji": "🙉",
-              "texto": "No escuchar a los demás",
-              "grupo": "no-cuida"
+              "texto": "No escuchar",
+              "grupo": "no-cuida",
+              "lectura": "No escuchar a los demás"
             }
           ],
           "pista": {
@@ -313,68 +290,76 @@
           "id": "n2-a3-tipos-de-familia",
           "tipo": "elige",
           "titulo": "Hay muchos tipos de familia",
-          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "instruccion": "Escucha la pregunta y toca el dibujo correcto.",
           "preguntas": [
             {
               "enunciado": "¿Cómo son las familias?",
               "opciones": [
                 {
                   "emoji": "👥",
-                  "texto": "Todas son iguales"
+                  "texto": "Todas iguales",
+                  "lectura": "Todas las familias son iguales"
                 },
                 {
                   "emoji": "🌈",
-                  "texto": "Son diferentes y todas son valiosas"
+                  "texto": "Diferentes y valiosas",
+                  "lectura": "Son diferentes y todas son valiosas"
                 }
               ],
               "correcta": 1
             },
             {
-              "enunciado": "En una casa viven los abuelos, los tíos y los primos. Es una familia…",
+              "enunciado": "Abuelos, tíos y primos: ¿qué familia es?",
+              "lectura": "En una casa viven los abuelos, los tíos y los primos. ¿Es una familia grande o pequeña?",
               "opciones": [
                 {
                   "emoji": "🏘️",
-                  "texto": "Grande"
+                  "texto": "Grande",
+                  "lectura": "Es una familia grande"
                 },
                 {
                   "emoji": "🔹",
-                  "texto": "Pequeña"
-                },
-                {
-                  "emoji": "🚫",
-                  "texto": "No es una familia"
+                  "texto": "Pequeña",
+                  "lectura": "Es una familia pequeña"
                 }
               ],
               "correcta": 0
             },
             {
-              "enunciado": "Sofía vive solo con su mamá. ¿Sofía tiene una familia?",
+              "enunciado": "¿Sofía y su mamá son familia?",
+              "lectura": "Sofía vive solo con su mamá. ¿Sofía tiene una familia?",
               "opciones": [
                 {
-                  "emoji": "👩‍👧",
-                  "texto": "Sí, es su familia"
+                  "emoji": "💛",
+                  "texto": "Sí",
+                  "lectura": "Sí, es su familia"
                 },
                 {
                   "emoji": "🚫",
-                  "texto": "No tiene familia"
+                  "texto": "No",
+                  "lectura": "No tiene familia"
                 }
               ],
               "correcta": 0
             },
             {
-              "enunciado": "¿Qué tipo de familia es mejor?",
+              "enunciado": "¿Qué familia es mejor?",
+              "lectura": "¿Qué tipo de familia es mejor?",
               "opciones": [
                 {
                   "emoji": "🏘️",
-                  "texto": "Solo las familias grandes"
+                  "texto": "Las grandes",
+                  "lectura": "Solo las familias grandes"
                 },
                 {
                   "emoji": "💛",
-                  "texto": "Ninguna es mejor: todas merecen respeto"
+                  "texto": "Todas valen",
+                  "lectura": "Ninguna es mejor: todas merecen respeto"
                 },
                 {
                   "emoji": "🔹",
-                  "texto": "Solo las familias pequeñas"
+                  "texto": "Las pequeñas",
+                  "lectura": "Solo las familias pequeñas"
                 }
               ],
               "correcta": 1
@@ -448,77 +433,53 @@
         },
         {
           "id": "n3-a2-buenos-vecinos",
-          "tipo": "elige",
+          "tipo": "bienomal",
           "titulo": "Todos los oficios son valiosos",
-          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
-          "preguntas": [
+          "instruccion": "Escucha y mira el dibujo. ¿Está bien o está mal?",
+          "situaciones": [
             {
-              "enunciado": "¿Quién puede ser policía?",
-              "opciones": [
-                {
-                  "emoji": "👮‍♂️",
-                  "texto": "Solo los hombres"
-                },
-                {
-                  "emoji": "👮‍♀️",
-                  "texto": "Solo las mujeres"
-                },
-                {
-                  "emoji": "👮",
-                  "texto": "Hombres y mujeres"
-                }
-              ],
-              "correcta": 2
+              "emoji": "👮",
+              "texto": "Hombres y mujeres policías",
+              "lectura": "Hombres y mujeres pueden ser policías.",
+              "bien": true
             },
             {
-              "enunciado": "¿Qué trabajo es más importante?",
-              "opciones": [
-                {
-                  "emoji": "💰",
-                  "texto": "El que gana más dinero"
-                },
-                {
-                  "emoji": "🤝",
-                  "texto": "Todos los trabajos son valiosos"
-                }
-              ],
-              "correcta": 1
+              "emoji": "👮‍♂️",
+              "texto": "Policías solo hombres",
+              "lectura": "Solo los hombres pueden ser policías.",
+              "bien": false
             },
             {
-              "enunciado": "Cuidar la casa y a los hijos, ¿es un trabajo valioso?",
-              "opciones": [
-                {
-                  "emoji": "🏠",
-                  "texto": "Sí, es muy valioso"
-                },
-                {
-                  "emoji": "🚫",
-                  "texto": "No es un trabajo"
-                }
-              ],
-              "correcta": 0,
+              "emoji": "💰",
+              "texto": "Vale más si da dinero",
+              "lectura": "Un trabajo vale más si gana más dinero.",
+              "bien": false
+            },
+            {
+              "emoji": "🏠",
+              "texto": "Cuidar la casa es trabajo",
+              "lectura": "Cuidar la casa y a los hijos es un trabajo muy valioso.",
+              "bien": true,
               "pista": {
                 "texto": "Guía 3: «Las labores domésticas, como el cuidado de la casa y de los hijos, aunque no sean actividades remuneradas con dinero, son de gran valor para la familia y la comunidad».",
                 "pagina": 18
               }
             },
             {
-              "enunciado": "Tu vecina está muy enferma y necesita un médico. ¿Qué hacemos?",
-              "opciones": [
-                {
-                  "emoji": "🚪",
-                  "texto": "Cerramos la puerta"
-                },
-                {
-                  "emoji": "🤷",
-                  "texto": "No hacemos nada"
-                },
-                {
-                  "emoji": "🤝",
-                  "texto": "La ayudamos a buscar un médico"
-                }
-              ],
-              "correcta": 2,
+              "emoji": "🤝",
+              "texto": "Ayudar a la vecina",
+              "lectura": "Mi vecina está enferma. La ayudamos a buscar un médico.",
+              "bien": true,
+              "pista": {
+                "texto": "Guía 3 · ¿Quiénes son mis vecinos?: «Los vecinos al compartir el mismo espacio van formando relaciones de amistad y solidaridad».",
+                "pagina": 17
+              }
+            },
+            {
+              "emoji": "🚪",
+              "texto": "Cerrarle la puerta",
+              "lectura": "Mi vecina está enferma y le cerramos la puerta.",
+              "bien": false,
               "pista": {
                 "texto": "Guía 3 · ¿Quiénes son mis vecinos?: «Los vecinos al compartir el mismo espacio van formando relaciones de amistad y solidaridad».",
                 "pagina": 17
@@ -538,19 +499,23 @@
           "pasos": [
             {
               "emoji": "🌱",
-              "texto": "Siembra la semilla"
+              "texto": "Siembra",
+              "lectura": "Siembra la semilla"
             },
             {
               "emoji": "💧",
-              "texto": "Riega las plantas"
+              "texto": "Riega",
+              "lectura": "Riega las plantas"
             },
             {
               "emoji": "🌽",
-              "texto": "Recoge la cosecha"
+              "texto": "Cosecha",
+              "lectura": "Recoge la cosecha"
             },
             {
               "emoji": "🛒",
-              "texto": "La vende en el mercado"
+              "texto": "Vende",
+              "lectura": "La vende en el mercado"
             }
           ],
           "pista": {
@@ -643,8 +608,9 @@
           "tarjetas": [
             {
               "emoji": "🚰",
-              "texto": "Cerrar la llave del agua",
-              "grupo": "cuida"
+              "texto": "Cerrar la llave",
+              "grupo": "cuida",
+              "lectura": "Cerrar la llave del agua"
             },
             {
               "emoji": "🔥",
@@ -658,18 +624,21 @@
             },
             {
               "emoji": "🥤",
-              "texto": "Tirar basura al río",
-              "grupo": "dana"
+              "texto": "Basura al río",
+              "grupo": "dana",
+              "lectura": "Tirar basura al río"
             },
             {
               "emoji": "🗑️",
-              "texto": "Botar la basura en la caneca",
-              "grupo": "cuida"
+              "texto": "Basura a la caneca",
+              "grupo": "cuida",
+              "lectura": "Botar la basura en la caneca"
             },
             {
               "emoji": "🪓",
-              "texto": "Cortar todos los árboles",
-              "grupo": "dana"
+              "texto": "Cortar árboles",
+              "grupo": "dana",
+              "lectura": "Cortar todos los árboles"
             }
           ],
           "pista": {
@@ -679,66 +648,97 @@
         },
         {
           "id": "n4-a3-regalos-naturaleza",
-          "tipo": "elige",
+          "tipo": "escucha",
           "titulo": "Los regalos de la naturaleza",
-          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
-          "preguntas": [
+          "instruccion": "Escucha y toca el dibujo correcto.",
+          "rondas": [
             {
               "enunciado": "¿Qué nos regala la naturaleza?",
+              "lectura": "¿Qué nos regala la naturaleza? Toca el dibujo.",
               "opciones": [
-                {
-                  "emoji": "📱",
-                  "texto": "Celulares y juguetes"
-                },
                 {
                   "emoji": "🍎",
-                  "texto": "Agua, frutas y aire"
-                }
-              ],
-              "correcta": 1
-            },
-            {
-              "enunciado": "¿Qué pasaría si no hubiera agua?",
-              "opciones": [
-                {
-                  "emoji": "🥀",
-                  "texto": "Las plantas, los animales y las personas no podrían vivir"
+                  "texto": "Frutas"
                 },
                 {
-                  "emoji": "🤷",
-                  "texto": "No pasaría nada"
+                  "emoji": "📱",
+                  "texto": "Celular"
+                },
+                {
+                  "emoji": "🚗",
+                  "texto": "Carro"
+                },
+                {
+                  "emoji": "🧸",
+                  "texto": "Juguete"
                 }
               ],
               "correcta": 0
             },
             {
-              "enunciado": "El agua se puede acabar. ¿Qué hacemos?",
+              "enunciado": "¿Qué necesitan las plantas para vivir?",
+              "lectura": "Sin agua, las plantas, los animales y las personas no podrían vivir. ¿Qué necesitan las plantas para vivir?",
               "opciones": [
                 {
-                  "emoji": "🚿",
-                  "texto": "Dejar la llave abierta"
+                  "emoji": "💧",
+                  "texto": "Agua"
                 },
                 {
+                  "emoji": "🍔",
+                  "texto": "Hamburguesa"
+                },
+                {
+                  "emoji": "📱",
+                  "texto": "Celular"
+                },
+                {
+                  "emoji": "⚽",
+                  "texto": "Balón"
+                }
+              ],
+              "correcta": 0
+            },
+            {
+              "enunciado": "¿Cómo cuidamos el agua?",
+              "lectura": "El agua se puede acabar. ¿Cómo la cuidamos? Toca el dibujo.",
+              "opciones": [
+                {
                   "emoji": "🚰",
-                  "texto": "Cuidarla y no desperdiciarla"
+                  "texto": "Cerrar la llave",
+                  "lectura": "Cerrar la llave y no desperdiciarla"
+                },
+                {
+                  "emoji": "🚿",
+                  "texto": "Llave abierta",
+                  "lectura": "Dejar la llave abierta"
                 },
                 {
                   "emoji": "🥤",
-                  "texto": "Echarle basura"
+                  "texto": "Basura al agua",
+                  "lectura": "Echarle basura al agua"
                 }
               ],
-              "correcta": 1
+              "correcta": 0
             },
             {
-              "enunciado": "¿Por qué cuidamos la naturaleza?",
+              "enunciado": "¿Qué nos da sombra y frutas?",
+              "lectura": "¿Qué nos regala sombra y frutas? Toca el dibujo.",
               "opciones": [
                 {
-                  "emoji": "🌍",
-                  "texto": "Para que todos podamos disfrutarla siempre"
+                  "emoji": "🌳",
+                  "texto": "Árbol"
                 },
                 {
-                  "emoji": "🙅",
-                  "texto": "No hay que cuidarla"
+                  "emoji": "🏠",
+                  "texto": "Casa"
+                },
+                {
+                  "emoji": "🚌",
+                  "texto": "Bus"
+                },
+                {
+                  "emoji": "📱",
+                  "texto": "Celular"
                 }
               ],
               "correcta": 0
@@ -762,32 +762,38 @@
           "id": "n5-a1-muchas-culturas",
           "tipo": "elige",
           "titulo": "Colombia tiene muchas culturas",
-          "instruccion": "Escucha la pregunta y toca la mejor respuesta.",
+          "instruccion": "Escucha la pregunta y toca el dibujo correcto.",
           "preguntas": [
             {
-              "enunciado": "En Colombia viven pueblos indígenas, afrocolombianos, campesinos y mestizos. Eso quiere decir que Colombia…",
+              "enunciado": "¿Colombia tiene muchas culturas?",
+              "lectura": "En Colombia viven pueblos indígenas, afrocolombianos, campesinos y mestizos. ¿Colombia tiene una cultura o muchas culturas?",
               "opciones": [
                 {
                   "emoji": "🌈",
-                  "texto": "Tiene muchas culturas"
+                  "texto": "Muchas culturas",
+                  "lectura": "Tiene muchas culturas"
                 },
                 {
                   "emoji": "1️⃣",
-                  "texto": "Tiene una sola cultura"
+                  "texto": "Una sola",
+                  "lectura": "Tiene una sola cultura"
                 }
               ],
               "correcta": 0
             },
             {
-              "enunciado": "Un compañero habla, se viste o come diferente a mí. Yo…",
+              "enunciado": "Mi compañero es diferente. Yo…",
+              "lectura": "Un compañero habla, se viste o come diferente a mí. ¿Qué hago yo?",
               "opciones": [
                 {
                   "emoji": "😝",
-                  "texto": "Me burlo de él"
+                  "texto": "Me burlo",
+                  "lectura": "Me burlo de él"
                 },
                 {
                   "emoji": "🤝",
-                  "texto": "Lo respeto y aprendo de él"
+                  "texto": "Lo respeto",
+                  "lectura": "Lo respeto y aprendo de él"
                 },
                 {
                   "emoji": "🙅",
@@ -797,15 +803,18 @@
               "correcta": 1
             },
             {
-              "enunciado": "¿Las personas indígenas usan siempre su ropa tradicional?",
+              "enunciado": "¿Siempre usan su ropa tradicional?",
+              "lectura": "¿Las personas indígenas usan siempre su ropa tradicional?",
               "opciones": [
                 {
                   "emoji": "👕",
-                  "texto": "No, también usan otra ropa"
+                  "texto": "No, también otra",
+                  "lectura": "No, también usan otra ropa"
                 },
                 {
                   "emoji": "🔁",
-                  "texto": "Sí, siempre la misma"
+                  "texto": "Sí, siempre",
+                  "lectura": "Sí, siempre la misma"
                 }
               ],
               "correcta": 0,
@@ -815,7 +824,8 @@
               }
             },
             {
-              "enunciado": "¿Cómo se llama la fiesta más famosa de Nariño?",
+              "enunciado": "¿Cuál es la fiesta de Nariño?",
+              "lectura": "¿Cómo se llama la fiesta más famosa de Nariño?",
               "opciones": [
                 {
                   "emoji": "🌸",
@@ -861,33 +871,39 @@
           "tarjetas": [
             {
               "emoji": "🧒",
-              "texto": "Jugar con todos los niños",
-              "grupo": "respeto"
+              "texto": "Jugar con todos",
+              "grupo": "respeto",
+              "lectura": "Jugar con todos los niños"
             },
             {
               "emoji": "😝",
-              "texto": "Burlarse de cómo habla alguien",
-              "grupo": "no-respeto"
+              "texto": "Burlarse",
+              "grupo": "no-respeto",
+              "lectura": "Burlarse de cómo habla alguien"
             },
             {
               "emoji": "👂",
-              "texto": "Escuchar a los demás",
-              "grupo": "respeto"
+              "texto": "Escuchar",
+              "grupo": "respeto",
+              "lectura": "Escuchar a los demás"
             },
             {
               "emoji": "🙅",
-              "texto": "No dejar jugar a un niño diferente",
-              "grupo": "no-respeto"
+              "texto": "Dejarlo por fuera",
+              "grupo": "no-respeto",
+              "lectura": "No dejar jugar a un niño diferente"
             },
             {
               "emoji": "🎶",
-              "texto": "Aprender la música de otra región",
-              "grupo": "respeto"
+              "texto": "Aprender su música",
+              "grupo": "respeto",
+              "lectura": "Aprender la música de otra región"
             },
             {
               "emoji": "🤭",
-              "texto": "Reírse de la ropa de otro",
-              "grupo": "no-respeto"
+              "texto": "Reírse de su ropa",
+              "grupo": "no-respeto",
+              "lectura": "Reírse de la ropa de otro"
             }
           ],
           "pista": {
@@ -911,7 +927,8 @@
             },
             {
               "emoji": "🏘️",
-              "texto": "Mi barrio o mi vereda"
+              "texto": "Mi vereda",
+              "lectura": "Mi barrio o mi vereda"
             },
             {
               "emoji": "🏙️",

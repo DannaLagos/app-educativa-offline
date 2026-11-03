@@ -8,6 +8,8 @@ import 'core/config/api_config.dart';
 import 'core/network/conectividad_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/voz/lector_voz.dart';
+import 'features/mascota/domain/mascota.dart';
+import 'features/mascota/presentation/mascota_scope.dart';
 import 'features/modulos/data/almacenamiento_modulos.dart';
 import 'features/modulos/data/descarga_service.dart';
 import 'features/modulos/data/firebase_modulo_remote_datasource.dart';
@@ -180,13 +182,17 @@ class AppEducativa extends StatelessWidget {
   /// Lee instrucciones en voz alta (HU07).
   final LectorVoz voz;
 
-  const AppEducativa({
+  /// La mascota del estudiante: la acompaña también en los juegos.
+  final ValueNotifier<MascotaElegida?> mascota;
+
+  AppEducativa({
     super.key,
     required this.modulosController,
     required this.progresoController,
     required this.sincronizacionController,
     required this.voz,
-  });
+    ValueNotifier<MascotaElegida?>? mascota,
+  }) : mascota = mascota ?? ValueNotifier(null);
 
   @override
   Widget build(BuildContext context) {
@@ -198,13 +204,16 @@ class AppEducativa extends StatelessWidget {
           controller: sincronizacionController,
           child: VozScope(
             voz: voz,
-            child: MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'Aprendo',
-              theme: AppTheme.claro,
-              // HU10: aviso de "sin internet" encima de todas las pantallas.
-              builder: BarraConexion.envolver,
-              home: const VerificarPerfilScreen(),
+            child: MascotaScope(
+              mascota: mascota,
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                title: 'Aprendo',
+                theme: AppTheme.claro,
+                // HU10: aviso de "sin internet" encima de todas las pantallas.
+                builder: BarraConexion.envolver,
+                home: const VerificarPerfilScreen(),
+              ),
             ),
           ),
         ),

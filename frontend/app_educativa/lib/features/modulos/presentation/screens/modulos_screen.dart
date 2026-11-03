@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/aviso_resultado.dart';
 import '../../../../shared/widgets/boton_grande.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../../../shared/widgets/mensaje_con_accion.dart';
 import '../../domain/modulo.dart';
 import '../controllers/carga_al_mostrar.dart';
 import '../controllers/modulos_controller.dart';
 import '../controllers/modulos_scope.dart';
+import '../widgets/encabezado_mundo.dart';
 import '../widgets/modulo_card.dart';
 import 'detalle_modulo_screen.dart';
 
@@ -71,12 +73,17 @@ class _ModulosScreenState extends State<ModulosScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.area ?? 'Módulos educativos'),
+        // El nombre del mundo ya está en el encabezado grande.
+        title: Text(widget.area == null ? 'Módulos educativos' : ''),
+        backgroundColor: Colors.transparent,
       ),
-      body: SafeArea(
-        child: _construirCuerpo(
-          controller,
-          _filtrarPorArea(controller.catalogo),
+      extendBodyBehindAppBar: true,
+      body: FondoDivertido(
+        child: SafeArea(
+          child: _construirCuerpo(
+            controller,
+            _filtrarPorArea(controller.catalogo),
+          ),
         ),
       ),
     );
@@ -94,7 +101,7 @@ class _ModulosScreenState extends State<ModulosScreen>
     return RefreshIndicator(
       onRefresh: controller.cargarCatalogo,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           ..._construirEncabezado(controller),
           for (final grupo in _agruparPorAreaYGrado(modulos).entries)
@@ -105,22 +112,29 @@ class _ModulosScreenState extends State<ModulosScreen>
   }
 
   List<Widget> _construirEncabezado(ModulosController controller) {
+    final area = widget.area;
+
     return [
       if (controller.vieneDeCache) ...[
         const _AvisoSinConexion(),
         const SizedBox(height: 20),
       ],
-      if (widget.area == null) ...[
+      if (area == null) ...[
         const Text(
           '¿Qué quieres aprender hoy?',
           style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
-      ],
-      const Text(
-        'Toca un módulo para ver su contenido.',
-        style: TextStyle(fontSize: 18),
-      ),
+        const Text(
+          'Toca un módulo para ver su contenido.',
+          style: TextStyle(fontSize: 18),
+        ),
+      ] else
+        EncabezadoMundo(
+          area: area,
+          titulo: area,
+          subtitulo: 'Toca un módulo para ver su contenido.',
+        ),
     ];
   }
 
@@ -129,7 +143,7 @@ class _ModulosScreenState extends State<ModulosScreen>
     MapEntry<String, List<Modulo>> grupo,
   ) {
     return [
-      const SizedBox(height: 24),
+      const SizedBox(height: 22),
       _TituloGrupo(grupo.key),
       const SizedBox(height: 12),
       for (final modulo in grupo.value)
@@ -184,14 +198,26 @@ class _TituloGrupo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Text(
-        texto,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w800,
-          color: AppTheme.azul,
+    // Pastilla blanca: se lee bien sobre el paisaje.
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Semantics(
+        header: true,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppTheme.superficie,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.borde, width: 2),
+          ),
+          child: Text(
+            texto,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.morado,
+            ),
+          ),
         ),
       ),
     );

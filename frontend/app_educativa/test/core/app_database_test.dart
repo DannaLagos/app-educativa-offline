@@ -48,8 +48,9 @@ void main() {
     final db = await base.database;
 
     expect(await db.getVersion(), AppDatabase.versionEsquema);
+    // Los perfiles anteriores quedan sin mascota y la eligen desde el inicio.
     expect(await db.query('perfil_estudiante'), [
-      {'id': 'p1', 'nombre': 'Ana'},
+      {'id': 'p1', 'nombre': 'Ana', 'mascota': null, 'nombre_mascota': null},
     ]);
     expect(await db.query('superadministrador'), hasLength(1));
     expect(await db.query('modulo'), isEmpty);
@@ -86,7 +87,8 @@ void main() {
     await db.close();
   });
 
-  test('migrar de la versión 3 a la actual conserva las descargas y su progreso',
+  test(
+      'migrar de la versión 3 a la actual conserva las descargas y su progreso',
       () async {
     final ruta = join(carpeta.path, 'v3.db');
 
@@ -151,7 +153,8 @@ void main() {
     await db.close();
   });
 
-  test('migrar de la versión 4 a la actual crea las tablas de progreso '
+  test(
+      'migrar de la versión 4 a la actual crea las tablas de progreso '
       '(HU06) y de sincronización (HU11) sin perder el progreso anterior',
       () async {
     final ruta = join(carpeta.path, 'v4.db');

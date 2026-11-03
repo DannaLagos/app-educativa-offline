@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
+import '../../../modulos/presentation/widgets/encabezado_mundo.dart';
 import '../../data/admin_local_datasource.dart';
 import '../../domain/sesion_admin.dart';
 import '../../domain/superadministrador.dart';
@@ -101,23 +104,40 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Acceso administrador'),
+        backgroundColor: Colors.transparent,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+      extendBodyBehindAppBar: true,
+      body: FondoDivertido(
+        child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const _Encabezado(),
-                  const SizedBox(height: 32),
-                  _construirCampoUsuario(),
-                  const SizedBox(height: 16),
-                  _construirCampoPassword(),
-                  ..._construirMensajeError(context),
-                  const SizedBox(height: 24),
-                  _construirBotonIngresar(),
+                  const SizedBox(height: 20),
+                  // Formulario en una tarjeta blanca, sobrio: es para el
+                  // docente, no para el niño.
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: AppTheme.superficie,
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(color: AppTheme.borde, width: 2),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _construirCampoUsuario(),
+                        const SizedBox(height: 16),
+                        _construirCampoPassword(),
+                        ..._construirMensajeError(context),
+                        const SizedBox(height: 24),
+                        _construirBotonIngresar(),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -205,23 +225,12 @@ class _Encabezado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Icon(Icons.admin_panel_settings_outlined, size: 72),
-        SizedBox(height: 16),
-        Text(
-          'Inicia sesión',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Solo para el superadministrador de la aplicación.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
-      ],
+    return const EncabezadoMundo(
+      area: '',
+      titulo: 'Inicia sesión',
+      subtitulo: 'Solo para el superadministrador de la aplicación.',
+      color: AppTheme.azul,
+      emoji: '🔑',
     );
   }
 }
