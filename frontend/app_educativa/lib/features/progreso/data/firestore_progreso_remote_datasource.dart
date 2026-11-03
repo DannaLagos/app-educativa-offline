@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/network/servidor_exception.dart';
-import '../../progreso/domain/progreso_pendiente.dart';
+import '../domain/progreso_pendiente.dart';
 import 'progreso_remote_datasource.dart';
 
 /// Devuelve el identificador (uid) del usuario de Firebase con el que se

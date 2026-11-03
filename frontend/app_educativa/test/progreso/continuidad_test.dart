@@ -10,6 +10,7 @@ import 'package:app_educativa/features/modulos/domain/resultado_catalogo.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_controller.dart';
 import 'package:app_educativa/features/modulos/presentation/controllers/modulos_scope.dart';
 import 'package:app_educativa/features/modulos/presentation/screens/detalle_modulo_screen.dart';
+import 'package:app_educativa/features/perfil/domain/perfil_estudiante.dart';
 import 'package:app_educativa/features/progreso/data/progreso_local_datasource.dart';
 import 'package:app_educativa/features/progreso/data/progreso_repository.dart';
 import 'package:app_educativa/features/progreso/domain/progreso_modulo.dart';
@@ -132,7 +133,8 @@ void main() {
     final antes = ProgresoController(
       repositorio: ProgresoRepository(
         local: ProgresoLocalDataSource(appDatabase: primera),
-        obtenerPerfilId: () async => _perfil,
+        obtenerPerfil: () async =>
+            const PerfilEstudiante(id: _perfil, nombre: 'Sofía'),
       ),
     );
     await antes.guardarPagina(
@@ -156,7 +158,8 @@ void main() {
     final despues = ProgresoController(
       repositorio: ProgresoRepository(
         local: ProgresoLocalDataSource(appDatabase: segunda),
-        obtenerPerfilId: () async => _perfil,
+        obtenerPerfil: () async =>
+            const PerfilEstudiante(id: _perfil, nombre: 'Sofía'),
       ),
     );
     await despues.cargarUltimoModulo();

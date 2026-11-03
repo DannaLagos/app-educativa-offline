@@ -121,7 +121,7 @@ void main() {
 
       final repositorio = ProgresoRepository(
         local: local,
-        obtenerPerfilId: () async => 'p1',
+        obtenerPerfil: () async => const PerfilEstudiante(id: 'p1', nombre: 'Ana'),
       );
 
       // 3 ⭐ (95) + 2 ⭐ (70); el juego sin terminar y el otro perfil no cuentan.
@@ -131,7 +131,7 @@ void main() {
     test('sin perfil no hay estrellas', () async {
       final repositorio = ProgresoRepository(
         local: ProgresoLocalDataSource(appDatabase: base),
-        obtenerPerfilId: () async => null,
+        obtenerPerfil: () async => null,
       );
 
       expect(await repositorio.obtenerEstrellasTotales(), 0);
@@ -142,7 +142,7 @@ void main() {
       final controller = ProgresoController(
         repositorio: ProgresoRepository(
           local: ProgresoLocalDataSource(appDatabase: base),
-          obtenerPerfilId: () async => 'p1',
+          obtenerPerfil: () async => const PerfilEstudiante(id: 'p1', nombre: 'Ana'),
         ),
       );
 

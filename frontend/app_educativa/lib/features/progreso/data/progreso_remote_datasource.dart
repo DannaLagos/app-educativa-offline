@@ -1,9 +1,8 @@
 import '../../../core/network/servidor_exception.dart';
-import '../../progreso/domain/progreso_pendiente.dart';
+import '../domain/progreso_pendiente.dart';
 
-/// Destino del progreso en el servidor (patrón Strategy, igual que con los
-/// contenidos): la sincronización no sabe si los datos van a Firestore o a
-/// otro servidor.
+/// Origen remoto del progreso (patrón Strategy): ProgresoRepository no sabe si
+/// los datos van a Firestore o a otro servidor; eso se decide en `main.dart`.
 abstract interface class ProgresoRemoteDataSource {
   /// Envía [pendientes]. Si algo falla lanza una excepción, y entonces los
   /// datos siguen pendientes en el teléfono.

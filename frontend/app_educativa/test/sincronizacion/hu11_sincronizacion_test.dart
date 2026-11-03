@@ -5,11 +5,11 @@ import 'package:app_educativa/core/network/conectividad_service.dart';
 import 'package:app_educativa/core/network/servidor_exception.dart';
 import 'package:app_educativa/features/perfil/domain/perfil_estudiante.dart';
 import 'package:app_educativa/features/progreso/data/progreso_local_datasource.dart';
+import 'package:app_educativa/features/progreso/data/progreso_remote_datasource.dart';
+import 'package:app_educativa/features/progreso/data/progreso_repository.dart';
 import 'package:app_educativa/features/progreso/domain/progreso_pendiente.dart';
 import 'package:app_educativa/features/progreso/domain/resultado_actividad.dart';
-import 'package:app_educativa/features/sincronizacion/data/progreso_remote_datasource.dart';
-import 'package:app_educativa/features/sincronizacion/data/sincronizacion_service.dart';
-import 'package:app_educativa/features/sincronizacion/domain/resultado_sincronizacion.dart';
+import 'package:app_educativa/features/progreso/domain/resultado_sincronizacion.dart';
 import 'package:app_educativa/features/sincronizacion/presentation/sincronizacion_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -69,7 +69,7 @@ void main() {
   late ProgresoLocalDataSource local;
   late ServidorFalso servidor;
   late ConectividadFalsa conectividad;
-  late SincronizacionService servicio;
+  late ProgresoRepository repositorio;
   var ahora = DateTime(2026, 10, 25, 10);
 
   setUp(() {
@@ -78,7 +78,7 @@ void main() {
     local = ProgresoLocalDataSource(appDatabase: base, ahora: () => ahora);
     servidor = ServidorFalso();
     conectividad = ConectividadFalsa();
-    servicio = SincronizacionService(
+    repositorio = ProgresoRepository(
       local: local,
       remote: servidor,
       conectividad: conectividad,
@@ -125,7 +125,7 @@ void main() {
       'sincronizar', () async {
     conectividad.hayRed = false;
     final controller = SincronizacionController(
-      servicio: servicio,
+      repositorio: repositorio,
       conectividad: conectividad,
       esperaTrasCambio: Duration.zero,
     );
@@ -149,15 +149,15 @@ void main() {
     await jugar('a1', puntaje: 80);
     await leer(5);
 
-    expect(await servicio.sincronizar(), isA<Enviado>());
+    expect(await repositorio.sincronizar(), isA<Enviado>());
 
     expect(await columnaSincronizado('progreso_actividad'), [1]);
     expect(await columnaSincronizado('progreso_lectura'), [1]);
     expect(await columnaSincronizado('progreso_modulo'), [1]);
-    expect(await servicio.contarPendientes(), 0);
+    expect(await repositorio.contarPendientes(), 0);
 
     // La fecha queda guardada en el teléfono.
-    expect(await servicio.ultimaSincronizacion(), ahora);
+    expect(await repositorio.ultimaSincronizacion(), ahora);
 
     // Y las pantallas pueden mostrarlo por juego y por lectura.
     final progreso = await local.obtenerProgresoModulo(
@@ -171,17 +171,17 @@ void main() {
   test('CA3: sincronizar otra vez no genera registros duplicados', () async {
     await jugar('a1', puntaje: 60);
     await leer(3);
-    await servicio.sincronizar();
+    await repositorio.sincronizar();
     final documentosIniciales = servidor.documentos.length;
 
     // Sin cambios: no hay nada que enviar.
-    expect(await servicio.sincronizar(), isA<SinPendientes>());
+    expect(await repositorio.sincronizar(), isA<SinPendientes>());
 
     // El niño repite el juego y sigue leyendo: se actualizan los mismos
     // documentos en lugar de crear otros.
     await jugar('a1', puntaje: 100);
     await leer(9);
-    expect(await servicio.sincronizar(), isA<Enviado>());
+    expect(await repositorio.sincronizar(), isA<Enviado>());
 
     expect(servidor.documentos, hasLength(documentosIniciales));
     expect(servidor.rutasDe('actividades'), hasLength(1));
@@ -223,29 +223,29 @@ void main() {
     await jugar('a1', puntaje: 70);
     await leer(4);
 
-    expect(await servicio.sincronizar(), isA<FalloSincronizacion>());
+    expect(await repositorio.sincronizar(), isA<FalloSincronizacion>());
 
     expect(await columnaSincronizado('progreso_actividad'), [0]);
     expect(await columnaSincronizado('progreso_lectura'), [0]);
-    expect(await servicio.contarPendientes(), 2);
-    expect(await servicio.ultimaSincronizacion(), isNull);
+    expect(await repositorio.contarPendientes(), 2);
+    expect(await repositorio.ultimaSincronizacion(), isNull);
     expect(servidor.documentos, isEmpty);
 
     // Intento posterior: ahora sí se envía todo lo que estaba guardado.
     servidor.falla = false;
-    expect(await servicio.sincronizar(), isA<Enviado>());
+    expect(await repositorio.sincronizar(), isA<Enviado>());
     expect(
       servidor.documentos['estudiantes/perfil-1/actividades/cs-grado-1__a1']![
           'puntaje'],
       70,
     );
-    expect(await servicio.contarPendientes(), 0);
+    expect(await repositorio.contarPendientes(), 0);
   });
 
   test('cada documento lleva el uid del dueño para las reglas de Firestore',
       () async {
     await jugar('a1');
-    await servicio.sincronizar();
+    await repositorio.sincronizar();
 
     for (final datos in servidor.documentos.values) {
       expect(datos['uid'], 'uid-1');
