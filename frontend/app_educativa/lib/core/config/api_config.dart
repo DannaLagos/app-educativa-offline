@@ -16,6 +16,10 @@ class ApiConfig {
   /// Carpeta de Firebase Storage que contiene catalogo.json y modulos/.
   static const String carpetaFirebase = 'contenidos';
 
+  /// Colección de Firestore con los módulos que edita el superadministrador
+  /// (HU13). Mientras esté vacía, la app usa el catalogo.json de Storage.
+  static const String coleccionCatalogo = 'catalogo';
+
   /// Solo para `FUENTE_CONTENIDOS=http`. Se cambia con
   /// `--dart-define=API_BASE_URL=...` (sin "/" al final).
   static const String baseUrl = String.fromEnvironment(

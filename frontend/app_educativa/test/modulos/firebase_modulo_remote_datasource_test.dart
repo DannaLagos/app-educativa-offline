@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:app_educativa/core/network/servidor_exception.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:app_educativa/features/modulos/data/firebase_modulo_remote_datasource.dart';
 import 'package:app_educativa/features/modulos/domain/archivo_por_descargar.dart';
 import 'package:dio/dio.dart';
@@ -195,4 +196,107 @@ void main() {
       );
     });
   });
+
+  group('HU13: catálogo en Firestore', () {
+    late MockFirestore firestore;
+    late MockColeccion coleccion;
+
+    const catalogoJson = '''
+      {"modulos": [{
+        "id": "cs-grado-1", "nombre": "Desde Storage",
+        "area": "Ciencias Sociales", "grado": 1, "descripcion": "D",
+        "version": 1, "habilitado": true
+      }]}
+    ''';
+
+    setUp(() {
+      firestore = MockFirestore();
+      coleccion = MockColeccion();
+      when(() => firestore.collection('catalogo')).thenReturn(coleccion);
+      responder(catalogo, catalogoJson);
+
+      remote = FirebaseModuloRemoteDataSource(
+        storage: storage,
+        firestore: firestore,
+        dio: dio,
+      );
+    });
+
+    void responderColeccion(List<Map<String, dynamic>> documentos) {
+      // Se arman antes: mocktail no deja configurar un mock dentro de otro.
+      final docs = [
+        for (final datos in documentos)
+          MockDocumento()
+            ..configurar(datos['id'] as String, {...datos}..remove('id')),
+      ];
+      final consulta = MockConsulta();
+      when(() => consulta.docs).thenReturn(docs);
+      when(() => coleccion.get()).thenAnswer((_) async => consulta);
+    }
+
+    test('usa los módulos de Firestore, también los deshabilitados', () async {
+      responderColeccion([
+        {
+          'id': 'cs-grado-1',
+          'nombre': 'Editado por el admin',
+          'area': 'Ciencias Sociales',
+          'grado': 1,
+          'descripcion': 'D',
+          'version': 2,
+          'habilitado': false,
+          'contenidos': ['Guía 1'],
+        },
+      ]);
+
+      final resultado = await remote.obtenerCatalogo();
+
+      expect(resultado.single.nombre, 'Editado por el admin');
+      expect(resultado.single.estaHabilitado, isFalse);
+      verifyNever(() => catalogo.getData(any()));
+    });
+
+    test('si la colección está vacía, usa catalogo.json', () async {
+      responderColeccion([]);
+
+      final resultado = await remote.obtenerCatalogo();
+
+      expect(resultado.single.nombre, 'Desde Storage');
+    });
+
+    test('si las reglas aún no la dejan leer, usa catalogo.json', () async {
+      when(() => coleccion.get()).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
+      );
+
+      final resultado = await remote.obtenerCatalogo();
+
+      expect(resultado.single.nombre, 'Desde Storage');
+    });
+
+    test('otro error no vuelve a catalogo.json, para no mostrar módulos '
+        'que el administrador deshabilitó', () async {
+      when(() => coleccion.get()).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+      );
+
+      expect(remote.obtenerCatalogo(), throwsA(isA<ServidorException>()));
+    });
+  });
+}
+
+class MockFirestore extends Mock implements FirebaseFirestore {}
+
+// ignore: subtype_of_sealed_class
+class MockColeccion extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class MockConsulta extends Mock implements QuerySnapshot<Map<String, dynamic>> {}
+
+// ignore: subtype_of_sealed_class
+class MockDocumento extends Mock
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {
+  void configurar(String id, Map<String, dynamic> datos) {
+    when(() => this.id).thenReturn(id);
+    when(data).thenReturn(datos);
+  }
 }

@@ -1,14 +1,21 @@
 rules_version = '2';
 
-// Reglas de Cloud Firestore para el progreso de los estudiantes (HU10/HU11).
+// Reglas de Cloud Firestore (HU10/HU11 progreso, HU12–HU14 superadministrador).
 // Se copian en Firebase Console > Firestore Database > Reglas > Publicar.
 //
 // - La app inicia una sesión anónima de Firebase y escribe su uid en cada
 //   documento: solo ese usuario puede crearlo o actualizarlo.
-// - Nadie puede leer ni borrar el progreso desde la app. El docente lo
-//   consulta desde la consola de Firebase.
+// - El superadministrador entra con correo y contraseña (Firebase Auth) y
+//   debe tener un documento en administradores/{uid}. Solo él puede editar
+//   el catálogo y leer el progreso de todos los estudiantes.
+// - Nadie puede borrar desde la app.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function esAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/administradores/$(request.auth.uid));
+    }
 
     // Quien escribe tiene sesión, pone su propio uid y, si el documento ya
     // existía, es el mismo dueño. Los documentos de pruebas anteriores (sin
@@ -21,21 +28,65 @@ service cloud.firestore {
             || resource.data.uid == request.auth.uid);
     }
 
+    // Los mismos campos de catalogo.json (HU13).
+    function esModuloValido() {
+      let datos = request.resource.data;
+      return datos.keys().hasOnly(['nombre', 'area', 'grado', 'descripcion',
+          'version', 'habilitado', 'contenidos', 'actualizado_en'])
+        && datos.nombre is string && datos.nombre.size() > 0
+        && datos.area is string && datos.area.size() > 0
+        && datos.grado is int
+        && datos.descripcion is string
+        && datos.version is int && datos.version >= 1
+        && datos.habilitado is bool
+        && datos.contenidos is list;
+    }
+
+    // administradores/{uid}: se crean a mano en la consola. Cada uno solo
+    // puede leer el suyo (la app lo revisa al iniciar sesión, HU12).
+    match /administradores/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // catalogo/{modulo}: módulos que gestiona el superadministrador (HU13).
+    // La app del estudiante los lee con su sesión anónima.
+    match /catalogo/{modulo} {
+      allow read: if request.auth != null;
+      allow create, update: if esAdmin() && esModuloValido();
+      allow delete: if false;
+    }
+
     // estudiantes/{perfil}: datos básicos del estudiante.
     match /estudiantes/{perfil} {
-      allow read, delete: if false;
+      allow read: if esAdmin();
+      allow delete: if false;
       allow create, update: if esDelUsuario()
         && request.resource.data.perfil_id == perfil
         && request.resource.data.size() <= 6;
 
       // estudiantes/{perfil}/{modulos|lecturas|actividades}/{registro}
       match /{coleccion}/{registro} {
-        allow read, delete: if false;
+        allow read: if esAdmin();
+        allow delete: if false;
         allow create, update: if esDelUsuario()
           && coleccion in ['modulos', 'lecturas', 'actividades']
           && request.resource.data.perfil_id == perfil
           && request.resource.data.size() <= 15;
       }
+    }
+
+    // HU14: el resumen de uso lee los módulos, lecturas y actividades de
+    // todos los estudiantes con consultas de grupo (collectionGroup), que
+    // necesitan una regla con comodín recursivo.
+    match /{ruta=**}/modulos/{registro} {
+      allow read: if esAdmin();
+    }
+    match /{ruta=**}/lecturas/{registro} {
+      allow read: if esAdmin();
+    }
+    match /{ruta=**}/actividades/{registro} {
+      allow read: if esAdmin();
     }
 
     // Todo lo demás está cerrado.

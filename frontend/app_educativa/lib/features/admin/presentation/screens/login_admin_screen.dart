@@ -3,17 +3,22 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../../modulos/presentation/widgets/encabezado_mundo.dart';
-import '../../data/admin_local_datasource.dart';
+import '../../data/autenticacion_admin.dart';
+import '../../domain/acceso_admin_exception.dart';
 import '../../domain/sesion_admin.dart';
 import '../../domain/superadministrador.dart';
 import 'panel_admin_screen.dart';
 
 class LoginAdminScreen extends StatefulWidget {
-  final AdminLocalDataSource? adminLocalDataSource;
+  final AutenticacionAdmin? autenticacion;
+
+  /// Pantalla que se abre al validar; en las pruebas se reemplaza.
+  final WidgetBuilder? construirPanel;
 
   const LoginAdminScreen({
     super.key,
-    this.adminLocalDataSource,
+    this.autenticacion,
+    this.construirPanel,
   });
 
   @override
@@ -23,10 +28,10 @@ class LoginAdminScreen extends StatefulWidget {
 class _LoginAdminScreenState extends State<LoginAdminScreen> {
   static const double _alturaBotonIngresar = 52;
 
-  final TextEditingController _usuarioController = TextEditingController();
+  final TextEditingController _correoController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  late final AdminLocalDataSource _adminLocalDataSource =
-      widget.adminLocalDataSource ?? AdminLocalDataSource();
+  late final AutenticacionAdmin _autenticacion =
+      widget.autenticacion ?? FirebaseAutenticacionAdmin();
 
   bool _estaVerificando = false;
   bool _debeOcultarPassword = true;
@@ -34,17 +39,17 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
 
   @override
   void dispose() {
-    _usuarioController.dispose();
+    _correoController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _iniciarSesion() async {
-    final usuario = _usuarioController.text.trim();
+    final usuario = _correoController.text.trim();
     final password = _passwordController.text;
 
     if (usuario.isEmpty || password.isEmpty) {
-      setState(() => _mensajeError = 'Ingresa tu usuario y contraseña.');
+      setState(() => _mensajeError = 'Ingresa tu correo y contraseña.');
       return;
     }
 
@@ -56,19 +61,18 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
     await _autenticar(usuario, password);
   }
 
-  Future<void> _autenticar(String usuario, String password) async {
+  Future<void> _autenticar(String correo, String password) async {
     try {
-      final admin = await _adminLocalDataSource.autenticar(usuario, password);
+      final admin = await _autenticacion.iniciarSesion(correo, password);
 
       if (!mounted) return;
 
-      if (admin == null) {
-        _passwordController.clear();
-        _mostrarError('Los datos de acceso no son válidos.');
-        return;
-      }
-
       _abrirPanel(admin);
+    } on AccesoAdminException catch (error) {
+      if (!mounted) return;
+
+      _passwordController.clear();
+      _mostrarError(error.mensaje);
     } catch (error, stack) {
       debugPrint('Error al verificar el administrador: $error\n$stack');
 
@@ -90,7 +94,8 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => const PanelAdminScreen(),
+        builder: widget.construirPanel ??
+            (_) => PanelAdminScreen(autenticacion: _autenticacion),
       ),
     );
   }
@@ -149,12 +154,13 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
 
   Widget _construirCampoUsuario() {
     return TextField(
-      controller: _usuarioController,
+      controller: _correoController,
       autocorrect: false,
+      keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
-        labelText: 'Usuario',
-        prefixIcon: Icon(Icons.person_outline),
+        labelText: 'Correo',
+        prefixIcon: Icon(Icons.email_outlined),
         border: OutlineInputBorder(),
       ),
     );

@@ -58,6 +58,20 @@ class Modulo {
     );
   }
 
+  /// Los mismos campos de catalogo.json: así se guarda en Firestore (HU13).
+  Map<String, dynamic> toCatalogo() {
+    return {
+      'id': id,
+      'nombre': nombre,
+      'area': area,
+      'grado': grado,
+      'descripcion': descripcion,
+      'version': version,
+      'habilitado': estaHabilitado,
+      'contenidos': contenidos,
+    };
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

@@ -42,11 +42,15 @@ Future<void> main() async {
 
   final conectividad = ConectividadService();
 
-  final modulosController = _crearModulosController(conectividad);
+  // La configuración de Firestore solo se puede cambiar antes de usarlo, y
+  // el catálogo (HU13) lo usa al iniciar.
+  final firestore = ApiConfig.usaFirebase ? _crearFirestore() : null;
+
+  final modulosController = _crearModulosController(conectividad, firestore);
   await modulosController.inicializar();
 
   // Un solo repositorio de progreso (offline first) para guardar y sincronizar.
-  final progresoRepository = _crearProgresoRepository(conectividad);
+  final progresoRepository = _crearProgresoRepository(conectividad, firestore);
 
   // HU08: carga en segundo plano dónde iba el estudiante.
   final progresoController = ProgresoController(
@@ -91,24 +95,32 @@ Future<void> main() async {
 }
 
 /// HU06–HU11: SQLite es la fuente de verdad y Firestore recibe una copia.
-ProgresoRepository _crearProgresoRepository(ConectividadService conectividad) {
+ProgresoRepository _crearProgresoRepository(
+  ConectividadService conectividad,
+  FirebaseFirestore? firestore,
+) {
   return ProgresoRepository(
     local: ProgresoLocalDataSource(),
-    remote: _crearProgresoRemoteDataSource(),
+    remote: _crearProgresoRemoteDataSource(firestore),
     conectividad: conectividad,
     obtenerPerfil: PerfilLocalDataSource().obtenerPerfil,
   );
 }
 
-ProgresoRemoteDataSource _crearProgresoRemoteDataSource() {
-  if (!ApiConfig.usaFirebase) {
+FirebaseFirestore _crearFirestore() {
+  return FirebaseFirestore.instance
+    // La cola de pendientes y la copia del catálogo son SQLite: sin la caché
+    // de Firestore, un envío sin internet falla y los datos siguen marcados
+    // como pendientes.
+    ..settings = const Settings(persistenceEnabled: false);
+}
+
+ProgresoRemoteDataSource _crearProgresoRemoteDataSource(
+  FirebaseFirestore? firestore,
+) {
+  if (firestore == null) {
     return const SinServidorProgresoRemoteDataSource();
   }
-
-  final firestore = FirebaseFirestore.instance
-    // La cola de pendientes es SQLite: sin la caché de Firestore, un envío
-    // sin internet falla y los datos siguen marcados como pendientes.
-    ..settings = const Settings(persistenceEnabled: false);
 
   return FirestoreProgresoRemoteDataSource(
     firestore: firestore,
@@ -135,8 +147,11 @@ Future<String> _usuarioAnonimo() async {
 
 /// Arma las dependencias (inyección por constructor). Aquí es el único lugar
 /// donde se decide qué servidor de contenidos usar.
-ModulosController _crearModulosController(ConectividadService conectividad) {
-  final remote = _crearRemoteDataSource();
+ModulosController _crearModulosController(
+  ConectividadService conectividad,
+  FirebaseFirestore? firestore,
+) {
+  final remote = _crearRemoteDataSource(firestore);
   final local = ModuloLocalDataSource();
   final almacenamiento = AlmacenamientoModulos();
 
@@ -156,8 +171,8 @@ ModulosController _crearModulosController(ConectividadService conectividad) {
   );
 }
 
-ModuloRemoteDataSource _crearRemoteDataSource() {
-  if (!ApiConfig.usaFirebase) {
+ModuloRemoteDataSource _crearRemoteDataSource(FirebaseFirestore? firestore) {
+  if (firestore == null) {
     return HttpModuloRemoteDataSource();
   }
 
@@ -168,6 +183,7 @@ ModuloRemoteDataSource _crearRemoteDataSource() {
   // Las reglas de Storage solo dejan leer con sesión: se usa la anónima.
   return FirebaseModuloRemoteDataSource(
     storage: storage,
+    firestore: firestore,
     iniciarSesion: _usuarioAnonimo,
   );
 }

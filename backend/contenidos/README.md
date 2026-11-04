@@ -17,6 +17,15 @@ contenidos/
 Reglas de Storage: todos pueden leer `contenidos/`, nadie puede escribir
 desde la app (los archivos se suben desde la consola de Firebase).
 
+## Catálogo en Firestore (HU13)
+
+La lista de módulos ahora la gestiona el superadministrador desde la app y se
+guarda en la colección `catalogo` de Firestore (ver
+[`../CONFIGURAR_SUPERADMIN.md`](../CONFIGURAR_SUPERADMIN.md)). La app usa
+`catalogo.json` solo mientras esa colección esté vacía. Desde la app se cambia
+la información de un módulo y se habilita o deshabilita; los **archivos**
+(PDF, `manifest.json`) se siguen subiendo a Storage como se explica abajo.
+
 ## Agregar o cambiar un módulo
 
 1. Pon el archivo en `backend/contenidos/modulos/<id>/` (en tu computador;
@@ -28,7 +37,8 @@ desde la app (los archivos se suben desde la consola de Firebase).
 4. Sube a Firebase Storage el archivo, el `manifest.json` y el `catalogo.json`
    en las mismas rutas.
 
-Para ocultar un módulo, pon `"habilitado": false` en `catalogo.json` y súbelo.
+Para ocultar un módulo, desactívalo en **Gestión de contenidos** dentro de la
+app (antes de usar Firestore: `"habilitado": false` en `catalogo.json`).
 Quien ya lo descargó lo sigue viendo en "Mis descargas".
 
 ## Probar con un servidor local (sin Firebase)

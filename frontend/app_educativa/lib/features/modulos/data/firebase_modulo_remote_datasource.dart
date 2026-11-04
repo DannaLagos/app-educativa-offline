@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -16,6 +18,9 @@ import 'modulo_remote_datasource.dart';
 ///   ├── catalogo.json
 ///   └── modulos/<id>/manifest.json + archivos del módulo
 ///
+/// La lista de módulos se lee primero de la colección `catalogo` de
+/// Firestore, que es la que edita el superadministrador (HU13).
+///
 /// Cada archivo se descarga por su URL: Firebase Storage la entrega y la app
 /// la descarga por HTTP. Antes de leer se inicia la sesión anónima, porque
 /// las reglas de Storage solo dejan leer a la app (`request.auth != null`).
@@ -29,12 +34,17 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
   final Dio _dio;
   final Future<Object?> Function()? _iniciarSesion;
 
+  /// Sin Firestore, el catálogo sale solo de catalogo.json.
+  final FirebaseFirestore? _firestore;
+
   FirebaseModuloRemoteDataSource({
     FirebaseStorage? storage,
+    FirebaseFirestore? firestore,
     Dio? dio,
     Future<Object?> Function()? iniciarSesion,
     String carpetaRaiz = ApiConfig.carpetaFirebase,
   })  : _raiz = (storage ?? FirebaseStorage.instance).ref(carpetaRaiz),
+        _firestore = firestore,
         _iniciarSesion = iniciarSesion,
         _dio = dio ??
             Dio(
@@ -46,8 +56,60 @@ class FirebaseModuloRemoteDataSource implements ModuloRemoteDataSource {
 
   @override
   Future<List<Modulo>> obtenerCatalogo() async {
+    final desdeFirestore = await _leerCatalogoFirestore();
+
+    if (desdeFirestore != null) {
+      return desdeFirestore;
+    }
+
     return interpretarCatalogo(
       await _leerJson(_raiz.child('catalogo.json')),
+    );
+  }
+
+  /// HU13: los módulos que edita el superadministrador están en Firestore.
+  /// Trae también los deshabilitados: SQLite los guarda y solo muestra los
+  /// habilitados (criterio 4).
+  ///
+  /// Devuelve null para usar catalogo.json mientras la colección no exista
+  /// (vacía o sin reglas publicadas). Otro error se lanza, para que el
+  /// repositorio use la copia guardada y no un catalogo.json viejo que
+  /// volvería a mostrar módulos deshabilitados.
+  Future<List<Modulo>?> _leerCatalogoFirestore() async {
+    final firestore = _firestore;
+
+    if (firestore == null) {
+      return null;
+    }
+
+    final QuerySnapshot<Map<String, dynamic>> consulta;
+
+    try {
+      await _iniciarSesion?.call();
+      consulta = await firestore
+          .collection(ApiConfig.coleccionCatalogo)
+          .get()
+          .timeout(ApiConfig.tiempoEspera);
+    } on FirebaseException catch (error) {
+      if (error.code == 'permission-denied') {
+        return null;
+      }
+
+      throw ServidorException('No fue posible leer el catálogo.', error);
+    } on TimeoutException catch (error) {
+      throw ServidorException('El catálogo tardó demasiado.', error);
+    }
+
+    if (consulta.docs.isEmpty) {
+      return null;
+    }
+
+    return interpretarRespuesta(
+      () => [
+        for (final documento in consulta.docs)
+          Modulo.desdeCatalogo({...documento.data(), 'id': documento.id}),
+      ],
+      mensajeError: 'El catálogo de Firestore no tiene el formato esperado.',
     );
   }
 
