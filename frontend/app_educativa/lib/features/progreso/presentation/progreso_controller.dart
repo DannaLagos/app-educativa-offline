@@ -13,6 +13,8 @@ class ProgresoController extends ChangeNotifier {
   final ProgresoRepository _repositorio;
   final Map<String, ProgresoModulo> _porModulo = {};
   String? _ultimoModuloId;
+  int? _estrellasTotales;
+  DateTime? _ultimaActividad;
 
   ProgresoController({required ProgresoRepository repositorio})
       : _repositorio = repositorio;
@@ -21,8 +23,18 @@ class ProgresoController extends ChangeNotifier {
   /// continuar donde iba (HU08).
   String? get ultimoModuloId => _ultimoModuloId;
 
+  /// Estrellas de todos los módulos (hacen evolucionar a la mascota), o null
+  /// mientras no se han leído.
+  int? get estrellasTotales => _estrellasTotales;
+
+  /// Última vez que avanzó en algún módulo (null si nunca o sin leer).
+  DateTime? get ultimaActividad => _ultimaActividad;
+
   /// Se llama al abrir la app. Solo usa la base local: funciona sin internet.
   Future<void> cargarUltimoModulo() async {
+    await _leerEstrellasTotales();
+    await _leerUltimaActividad();
+
     try {
       final id = await _repositorio.obtenerUltimoModulo();
       _ultimoModuloId = id;
@@ -109,7 +121,27 @@ class ProgresoController extends ChangeNotifier {
     }
 
     _ultimoModuloId = moduloId;
+    await _leerEstrellasTotales();
+    await _leerUltimaActividad();
     await cargarProgreso(moduloId);
     return true;
+  }
+
+  // No avisa a las pantallas: lo hace quien la llama.
+  Future<void> _leerEstrellasTotales() async {
+    try {
+      _estrellasTotales = await _repositorio.obtenerEstrellasTotales();
+    } catch (error, stack) {
+      debugPrint('Error al contar las estrellas: $error\n$stack');
+    }
+  }
+
+  // No avisa a las pantallas: lo hace quien la llama.
+  Future<void> _leerUltimaActividad() async {
+    try {
+      _ultimaActividad = await _repositorio.obtenerUltimaActividad();
+    } catch (error, stack) {
+      debugPrint('Error al leer la última actividad: $error\n$stack');
+    }
   }
 }

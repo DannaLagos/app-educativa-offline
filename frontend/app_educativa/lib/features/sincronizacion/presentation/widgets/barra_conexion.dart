@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/resultado_sincronizacion.dart';
+import '../../../progreso/domain/resultado_sincronizacion.dart';
 import '../sincronizacion_controller.dart';
 import '../sincronizacion_scope.dart';
 
@@ -179,78 +179,55 @@ class TarjetaSincronizacion extends StatelessWidget {
         ),
     };
 
-    return Container(
+    final puedeReintentar = hayConexion &&
+        (sincronizacion.estado == EstadoSincronizacion.error ||
+            sincronizacion.estado == EstadoSincronizacion.pendiente);
+
+    // Una sola fila discreta: el estado del envío no es lo principal para
+    // el niño, pero tiene que estar a la vista.
+    return Row(
       key: const ValueKey('tarjeta-sincronizacion'),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: fondo,
-        borderRadius: BorderRadius.circular(AppTheme.radio),
-        border: Border.all(color: color, width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                hayConexion ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-                color: hayConexion ? AppTheme.verde : AppTheme.ambar,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                hayConexion ? 'Con internet' : 'Sin internet',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: hayConexion ? AppTheme.verde : AppTheme.ambar,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(color: fondo, shape: BoxShape.circle),
+          child: Icon(icono, color: color, size: 22),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icono, color: color, size: 28),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titulo,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: color,
-                      ),
-                    ),
-                    Text(detalle, style: const TextStyle(fontSize: 16)),
-                  ],
+              Text(
+                titulo,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+              Text(
+                detalle,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textoSecundario,
                 ),
               ),
             ],
           ),
-          if (hayConexion &&
-              (sincronizacion.estado == EstadoSincronizacion.error ||
-                  sincronizacion.estado == EstadoSincronizacion.pendiente)) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.icon(
-                key: const ValueKey('boton-reintentar'),
-                onPressed: sincronizacion.sincronizar,
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(
-                  sincronizacion.estado == EstadoSincronizacion.error
-                      ? 'Intentar de nuevo'
-                      : 'Enviar ahora',
-                ),
-              ),
+        ),
+        if (puedeReintentar)
+          TextButton(
+            key: const ValueKey('boton-reintentar'),
+            onPressed: sincronizacion.sincronizar,
+            child: Text(
+              sincronizacion.estado == EstadoSincronizacion.error
+                  ? 'Intentar de nuevo'
+                  : 'Enviar ahora',
             ),
-          ],
-        ],
-      ),
+          ),
+      ],
     );
   }
 

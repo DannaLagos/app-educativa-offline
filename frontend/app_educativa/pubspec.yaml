@@ -37,6 +37,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Ilustraciones 3D de los juegos, incluidas para funcionar sin internet
+  # (licencia MIT en assets/dibujos/LICENSE.txt).
+  assets:
+    - assets/dibujos/
+
   # Nunito va incluida para funcionar sin internet (licencia en assets/fonts/OFL.txt).
   fonts:
     - family: Nunito

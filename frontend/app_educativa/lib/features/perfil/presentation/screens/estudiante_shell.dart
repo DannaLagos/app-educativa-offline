@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme.dart';
+import '../../../mascota/presentation/mascota_scope.dart';
 import '../../../modulos/presentation/controllers/modulos_scope.dart';
 import '../../../modulos/presentation/screens/mis_descargas_screen.dart';
 import '../../../progreso/presentation/screens/mi_progreso_screen.dart';
@@ -19,6 +21,19 @@ class EstudianteShell extends StatefulWidget {
 }
 
 class _EstudianteShellState extends State<EstudianteShell> {
+  @override
+  void initState() {
+    super.initState();
+    // Los juegos se abren como rutas nuevas: la mascota les llega por el
+    // MascotaScope. Se cambia después del primer cuadro porque avisa a
+    // otras pantallas.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        MascotaScope.cambiar(context, widget.perfil.mascotaElegida);
+      }
+    });
+  }
+
   static const int _indiceInicio = 0;
   static const int _indiceDescargas = 1;
   static const int _indiceProgreso = 2;
@@ -56,27 +71,50 @@ class _EstudianteShellState extends State<EstudianteShell> {
             const SizedBox.shrink(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _pestanaSeleccionada,
-        onDestinationSelected: _seleccionarPestana,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Inicio',
+      // Barra flotante, como el menú de un videojuego.
+      extendBody: true,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: AppTheme.borde, width: 2),
+              boxShadow: const [
+                BoxShadow(color: AppTheme.borde, offset: Offset(0, 5)),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(26),
+              child: _construirNavegacion(),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.download_for_offline_outlined),
-            selectedIcon: Icon(Icons.download_for_offline_rounded),
-            label: 'Descargas',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.emoji_events_outlined),
-            selectedIcon: Icon(Icons.emoji_events_rounded),
-            label: 'Mi progreso',
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _construirNavegacion() {
+    return NavigationBar(
+      selectedIndex: _pestanaSeleccionada,
+      onDestinationSelected: _seleccionarPestana,
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home_rounded),
+          label: 'Inicio',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.download_for_offline_outlined),
+          selectedIcon: Icon(Icons.download_for_offline_rounded),
+          label: 'Descargas',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.emoji_events_outlined),
+          selectedIcon: Icon(Icons.emoji_events_rounded),
+          label: 'Mi progreso',
+        ),
+      ],
     );
   }
 }

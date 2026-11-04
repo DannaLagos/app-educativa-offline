@@ -10,9 +10,22 @@ class AppTheme {
   static const Color azulClaro = Color(0xFFD8EEFB);
   static const Color azulSuave = Color(0xFFEAF5FD);
 
-  static const Color fondo = Color(0xFFF5F6FA);
+  static const Color fondo = Color(0xFFFFF9F0);
   static const Color superficie = Colors.white;
-  static const Color borde = Color(0xFFDDE3EA);
+  static const Color borde = Color(0xFFEADFCF);
+
+  // Colores vivos para los niños. Todos llevan texto blanco con contraste
+  // AA (4,5:1 o más).
+  static const Color morado = Color(0xFF6741D9);
+  static const Color moradoSuave = Color(0xFFEFE9FF);
+  static const Color naranja = Color(0xFFC2410C);
+  static const Color naranjaSuave = Color(0xFFFFE8D9);
+  static const Color rosa = Color(0xFFC2255C);
+  static const Color rosaSuave = Color(0xFFFFE3EC);
+  static const Color turquesa = Color(0xFF0C8599);
+  static const Color turquesaSuave = Color(0xFFDDF6F8);
+  static const Color amarillo = Color(0xFFFFC93C);
+  static const Color amarilloSuave = Color(0xFFFFF3C4);
 
   static const Color texto = Color(0xFF1B2430);
   static const Color textoSecundario = Color(0xFF4A5563);
@@ -27,18 +40,18 @@ class AppTheme {
   static const Color gris = Color(0xFF4A5563);
   static const Color grisSuave = Color(0xFFEEF1F5);
 
-  static const double radio = 16;
-  static const double radioBoton = 12;
-  static const double radioDialogo = 20;
-  static const double alturaBoton = 56;
-  static const double alturaBotonTarjeta = 52;
-  static const double alturaBarraNavegacion = 72;
+  static const double radio = 22;
+  static const double radioBoton = 18;
+  static const double radioDialogo = 26;
+  static const double alturaBoton = 60;
+  static const double alturaBotonTarjeta = 56;
+  static const double alturaBarraNavegacion = 84;
   static const double anchoMinimoBoton = 64;
-  static const double tamanoMinimoToque = 48;
+  static const double tamanoMinimoToque = 52;
 
   static const TextStyle _textoBoton = TextStyle(
     fontFamily: fuente,
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: FontWeight.w800,
   );
 
@@ -50,8 +63,8 @@ class AppTheme {
       appBarTheme: _temaBarraSuperior(),
       cardTheme: _temaTarjeta(),
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(fontSize: 18, color: texto),
-        bodyMedium: TextStyle(fontSize: 17, color: texto),
+        bodyLarge: TextStyle(fontSize: 19, color: texto),
+        bodyMedium: TextStyle(fontSize: 18, color: texto),
       ),
       elevatedButtonTheme: _temaBotonRelleno(),
       outlinedButtonTheme: _temaBotonContorno(),
@@ -107,7 +120,7 @@ class AppTheme {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radio),
-        side: const BorderSide(color: borde),
+        side: const BorderSide(color: borde, width: 2),
       ),
     );
   }
@@ -174,9 +187,10 @@ class AppTheme {
     return InputDecorationTheme(
       filled: true,
       fillColor: superficie,
-      border: _bordeCampo(const BorderSide(color: borde)),
-      enabledBorder: _bordeCampo(const BorderSide(color: borde)),
-      focusedBorder: _bordeCampo(const BorderSide(color: azul, width: 2)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      border: _bordeCampo(const BorderSide(color: borde, width: 2)),
+      enabledBorder: _bordeCampo(const BorderSide(color: borde, width: 2)),
+      focusedBorder: _bordeCampo(const BorderSide(color: morado, width: 3)),
     );
   }
 
@@ -190,18 +204,21 @@ class AppTheme {
   static NavigationBarThemeData _temaBarraNavegacion() {
     return NavigationBarThemeData(
       backgroundColor: superficie,
-      indicatorColor: azulClaro,
+      indicatorColor: amarilloSuave,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radioBoton),
+      ),
       height: alturaBarraNavegacion,
       iconTheme: WidgetStateProperty.resolveWith(
         (estados) => IconThemeData(
-          size: 28,
+          size: 32,
           color: _colorSegunSeleccion(estados),
         ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (estados) => TextStyle(
           fontFamily: fuente,
-          fontSize: 15,
+          fontSize: 16,
           fontWeight: FontWeight.w800,
           color: _colorSegunSeleccion(estados),
         ),

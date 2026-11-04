@@ -612,6 +612,12 @@ void main() {
         ProgresoScope(
           controller: progreso,
           child: MaterialApp(
+            // El siguiente juego late sin parar; con "reducir animaciones"
+            // se queda quieto y pumpAndSettle puede terminar.
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: child!,
+            ),
             home: MapaNivelesScreen(
               modulo: moduloDePrueba(
                 id: 'cs-grado-1',

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/aviso_resultado.dart';
 import '../../../../shared/widgets/boton_grande.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
+import '../../../../shared/widgets/panel_jugador.dart';
 import '../../../actividades/presentation/screens/mapa_niveles_screen.dart';
 import '../../../progreso/domain/progreso_modulo.dart';
 import '../../../progreso/presentation/progreso_scope.dart';
@@ -10,7 +12,9 @@ import '../../domain/estado_descarga.dart';
 import '../../domain/modulo.dart';
 import '../controllers/modulos_controller.dart';
 import '../controllers/modulos_scope.dart';
+import '../widgets/encabezado_mundo.dart';
 import '../widgets/estado_descarga_chip.dart';
+import '../widgets/marcador_avance.dart';
 import 'lector_modulo_screen.dart';
 
 class DetalleModuloScreen extends StatefulWidget {
@@ -51,16 +55,18 @@ class _DetalleModuloScreenState extends State<DetalleModuloScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(modulo.nombre),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: _ContenidoDetalle(
-            modulo: modulo,
-            controller: controller,
-            progreso: progreso,
+      // El nombre del módulo ya está en el encabezado grande.
+      appBar: AppBar(backgroundColor: Colors.transparent),
+      extendBodyBehindAppBar: true,
+      body: FondoDivertido(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: _ContenidoDetalle(
+              modulo: modulo,
+              controller: controller,
+              progreso: progreso,
+            ),
           ),
         ),
       ),
@@ -103,37 +109,55 @@ class _ContenidoDetalle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          modulo.nombre,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        EncabezadoMundo(
+          area: modulo.area,
+          titulo: modulo.nombre,
+          etiquetas: [modulo.area, 'Grado ${modulo.grado}'],
         ),
-        const SizedBox(height: 12),
-        _Dato(icono: Icons.school_outlined, texto: modulo.area),
-        const SizedBox(height: 8),
-        _Dato(icono: Icons.grade_outlined, texto: 'Grado ${modulo.grado}'),
-        const SizedBox(height: 24),
-        _SeccionDescarga(
-          modulo: modulo,
-          controller: controller,
-          progreso: progreso,
+        const SizedBox(height: 20),
+        _Panel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SeccionDescarga(
+                modulo: modulo,
+                controller: controller,
+                progreso: progreso,
+              ),
+              if (_debeMostrarFechaDescarga) ...[
+                const SizedBox(height: 8),
+                _FechaDescarga(fecha: modulo.fechaDescarga!),
+              ],
+            ],
+          ),
         ),
-        if (_debeMostrarFechaDescarga) ...[
-          const SizedBox(height: 8),
-          _FechaDescarga(fecha: modulo.fechaDescarga!),
-        ],
-        const SizedBox(height: 28),
-        const _Titulo('Descripción'),
-        const SizedBox(height: 10),
-        Text(
-          modulo.descripcion,
-          style: const TextStyle(fontSize: 18, height: 1.5),
+        const SizedBox(height: 20),
+        _Panel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _Titulo('Descripción', icono: Icons.info_rounded),
+              const SizedBox(height: 10),
+              Text(
+                modulo.descripcion,
+                style: const TextStyle(fontSize: 18, height: 1.5),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 28),
-        const _Titulo('Contenidos'),
-        const SizedBox(height: 10),
-        _ListaContenidos(contenidos: modulo.contenidos),
+        const SizedBox(height: 20),
+        _Panel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _Titulo('Contenidos', icono: Icons.auto_stories_rounded),
+              const SizedBox(height: 12),
+              _ListaContenidos(contenidos: modulo.contenidos),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -243,6 +267,7 @@ class _SeccionDescarga extends StatelessWidget {
           BotonGrande(
             texto: 'Descargar',
             icono: Icons.download_rounded,
+            color: AppTheme.naranja,
             onPressed: () => _descargar(context),
           ),
         ];
@@ -283,17 +308,19 @@ class _SeccionDescarga extends StatelessWidget {
       if (modulo.tieneActualizacion)
         ..._construirOfertaDeActualizacion(context),
       if (progreso?.estaIniciado ?? false) ...[
-        _TarjetaAvance(
+        MarcadorAvance(
           progreso: progreso!,
           ultimaLectura: _ultimaLectura,
+          onJugar: () => _abrirJuegos(context),
+          onLeer: () => _abrirLector(context),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
       ],
-      BotonGrande(
+      BotonJugar(
         texto: (progreso?.actividadesCompletadas ?? 0) > 0
             ? 'Seguir jugando'
             : 'Jugar y aprender',
-        icono: Icons.videogame_asset_rounded,
+        detalle: 'Juegos y niveles del módulo',
         onPressed: () => _abrirJuegos(context),
       ),
       const SizedBox(height: 12),
@@ -306,14 +333,23 @@ class _SeccionDescarga extends StatelessWidget {
         color: AppTheme.verde,
         onPressed: () => _abrirLector(context),
       ),
-      const SizedBox(height: 12),
-      const Text(
-        'Disponible sin conexión.',
-        style: TextStyle(
-          fontSize: 18,
-          color: AppTheme.verde,
-          fontWeight: FontWeight.w600,
-        ),
+      const SizedBox(height: 8),
+      const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle_rounded, color: AppTheme.verde),
+          SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              'Disponible sin conexión.',
+              style: TextStyle(
+                fontSize: 18,
+                color: AppTheme.verde,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
       ),
     ];
   }
@@ -332,55 +368,6 @@ class _SeccionDescarga extends StatelessWidget {
       ),
       const SizedBox(height: 12),
     ];
-  }
-}
-
-/// Resumen de lo que el estudiante ya avanzó en el módulo (HU08).
-class _TarjetaAvance extends StatelessWidget {
-  final ProgresoModulo progreso;
-  final ProgresoLectura? ultimaLectura;
-
-  const _TarjetaAvance({required this.progreso, required this.ultimaLectura});
-
-  @override
-  Widget build(BuildContext context) {
-    final lectura = ultimaLectura;
-    final juegos = progreso.actividadesCompletadas;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.verdeSuave,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.verde, width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '📌 Tu avance',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 8),
-          if (juegos > 0)
-            Text(
-              '⭐ ${juegos == 1 ? '1 juego terminado' : '$juegos juegos terminados'}',
-              style: const TextStyle(fontSize: 18),
-            ),
-          if (lectura != null)
-            Text(
-              '📖 Vas en la página ${lectura.ultimaPagina} de '
-              '${lectura.totalPaginas}',
-              style: const TextStyle(fontSize: 18),
-            ),
-          const SizedBox(height: 4),
-          const Text(
-            'Puedes seguir donde ibas, aunque no tengas internet.',
-            style: TextStyle(fontSize: 16, color: AppTheme.verde),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -420,46 +407,50 @@ class _Aviso extends StatelessWidget {
 
 class _Titulo extends StatelessWidget {
   final String texto;
+  final IconData icono;
 
-  const _Titulo(this.texto);
+  const _Titulo(this.texto, {required this.icono});
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       header: true,
-      child: Text(
-        texto,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        children: [
+          Icon(icono, color: AppTheme.morado, size: 28),
+          const SizedBox(width: 8),
+          Text(
+            texto,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _Dato extends StatelessWidget {
-  final IconData icono;
-  final String texto;
+/// Tarjeta blanca redondeada: se lee bien sobre el paisaje.
+class _Panel extends StatelessWidget {
+  final Widget child;
 
-  const _Dato({
-    required this.icono,
-    required this.texto,
-  });
+  const _Panel({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icono, size: 24),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            texto,
-            style: const TextStyle(fontSize: 18),
-          ),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: AppTheme.borde, width: 2),
+        boxShadow: const [
+          BoxShadow(color: AppTheme.borde, offset: Offset(0, 5)),
+        ],
+      ),
+      child: child,
     );
   }
 }
@@ -488,6 +479,14 @@ class _ListaContenidos extends StatelessWidget {
 }
 
 class _ElementoContenido extends StatelessWidget {
+  static const List<Color> _colores = [
+    AppTheme.azul,
+    AppTheme.naranja,
+    AppTheme.morado,
+    AppTheme.verde,
+    AppTheme.rosa,
+  ];
+
   final int numero;
   final String titulo;
 
@@ -498,31 +497,37 @@ class _ElementoContenido extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = _colores[(numero - 1) % _colores.length];
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.superficie,
-        border: Border.all(color: AppTheme.borde),
-        borderRadius: BorderRadius.circular(14),
+        color: Color.lerp(color, Colors.white, 0.88),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppTheme.azul,
-            foregroundColor: Colors.white,
+          Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             child: Text(
               '$numero',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
               titulo,
-              style: const TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
           ),
         ],

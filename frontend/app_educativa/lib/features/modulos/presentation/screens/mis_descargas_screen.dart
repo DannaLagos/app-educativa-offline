@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/aviso_resultado.dart';
 import '../../../../shared/widgets/boton_grande.dart';
-import '../../../../shared/widgets/mensaje_con_accion.dart';
+import '../../../../shared/widgets/dibujo.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../domain/modulo.dart';
 import '../controllers/carga_al_mostrar.dart';
 import '../controllers/modulos_controller.dart';
 import '../controllers/modulos_scope.dart';
 import '../widgets/confirmar_eliminar_dialog.dart';
+import '../widgets/encabezado_mundo.dart';
+import '../widgets/icono_area.dart';
 import 'areas_screen.dart';
 import 'lector_modulo_screen.dart';
 
@@ -65,11 +68,10 @@ class _MisDescargasScreenState extends State<MisDescargasScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mis descargas'),
-      ),
-      body: SafeArea(
-        child: _construirCuerpo(ModulosScope.of(context).descargados),
+      body: FondoDivertido(
+        child: SafeArea(
+          child: _construirCuerpo(ModulosScope.of(context).descargados),
+        ),
       ),
     );
   }
@@ -79,19 +81,19 @@ class _MisDescargasScreenState extends State<MisDescargasScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (descargados.isEmpty) {
-      return _construirSinDescargas();
-    }
-
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
-        const Text(
-          'Estos módulos están guardados en tu dispositivo. '
-          'Puedes usarlos sin internet.',
-          style: TextStyle(fontSize: 18),
+        // La mochila: lo que el niño lleva consigo para usar sin internet.
+        const EncabezadoMundo(
+          area: '',
+          titulo: 'Mis descargas',
+          subtitulo: 'Tus módulos guardados. Funcionan sin internet.',
+          color: AppTheme.turquesa,
+          emoji: '🎒',
         ),
         const SizedBox(height: 20),
+        if (descargados.isEmpty) _construirSinDescargas(),
         for (final modulo in descargados)
           _TarjetaDescarga(
             modulo: modulo,
@@ -103,22 +105,42 @@ class _MisDescargasScreenState extends State<MisDescargasScreen>
   }
 
   Widget _construirSinDescargas() {
-    return MensajeConAccion(
-      icono: const Icon(
-        Icons.download_for_offline_outlined,
-        color: AppTheme.gris,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: AppTheme.borde, width: 2),
+        boxShadow: const [
+          BoxShadow(color: AppTheme.borde, offset: Offset(0, 5)),
+        ],
       ),
-      mensaje: 'Aún no tienes módulos descargados.',
-      accion: BotonGrande(
-        texto: 'Ver módulos',
-        icono: Icons.menu_book_rounded,
-        onPressed: () => _abrir(const AreasScreen()),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Dibujo('📦', tamano: 90),
+          const SizedBox(height: 10),
+          const Text(
+            'Aún no tienes módulos descargados.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 16),
+          BotonGrande(
+            texto: 'Ver módulos',
+            icono: Icons.menu_book_rounded,
+            color: AppTheme.naranja,
+            onPressed: () => _abrir(const AreasScreen()),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _TarjetaDescarga extends StatelessWidget {
+  static const double _relieve = 5;
+
   final Modulo modulo;
   final VoidCallback onAbrir;
   final VoidCallback onEliminar;
@@ -131,67 +153,116 @@ class _TarjetaDescarga extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radio),
-        side: const BorderSide(color: AppTheme.borde),
+    final apariencia = AparienciaArea.de(modulo.area);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14 + _relieve),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Color.lerp(apariencia.color, Colors.white, 0.6)!,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color.lerp(apariencia.color, Colors.white, 0.45)!,
+            offset: const Offset(0, _relieve),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ..._construirEncabezado(),
-            const SizedBox(height: 16),
-            BotonGrande(
-              texto: 'Abrir',
-              icono: Icons.menu_book_rounded,
-              color: AppTheme.verde,
-              onPressed: onAbrir,
-            ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: apariencia.color,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Dibujo(apariencia.emoji, tamano: 48),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      modulo.nombre,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      modulo.areaYGrado,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: AppTheme.textoSecundario,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const _EtiquetaSinConexion(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (modulo.tieneActualizacion) ...[
             const SizedBox(height: 10),
-            BotonGrande(
-              texto: 'Eliminar',
-              icono: Icons.delete_outline_rounded,
-              color: AppTheme.rojo,
-              tieneContorno: true,
-              onPressed: onEliminar,
+            const Text(
+              'Hay una versión nueva. Búscala en Inicio para actualizarla.',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.azul,
+              ),
             ),
           ],
-        ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: BotonGrande(
+                  texto: 'Abrir',
+                  icono: Icons.menu_book_rounded,
+                  color: AppTheme.verde,
+                  onPressed: onAbrir,
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Compacto: eliminar es la acción menos importante.
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: OutlinedButton.icon(
+                  onPressed: onEliminar,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.rojo,
+                    minimumSize: const Size(0, 64),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    side: const BorderSide(color: AppTheme.rojo, width: 3),
+                    textStyle: const TextStyle(
+                      fontFamily: AppTheme.fuente,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  icon: const Icon(Icons.delete_outline_rounded, size: 26),
+                  label: const Text('Eliminar'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
-  }
-
-  List<Widget> _construirEncabezado() {
-    return [
-      Text(
-        modulo.nombre,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        modulo.areaYGrado,
-        style: const TextStyle(
-          fontSize: 16,
-          color: AppTheme.textoSecundario,
-        ),
-      ),
-      const SizedBox(height: 10),
-      const _EtiquetaSinConexion(),
-      if (modulo.tieneActualizacion) ...[
-        const SizedBox(height: 10),
-        const Text(
-          'Hay una versión nueva. Búscala en Inicio para actualizarla.',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.azul,
-          ),
-        ),
-      ],
-    ];
   }
 }
 
@@ -211,12 +282,15 @@ class _EtiquetaSinConexion extends StatelessWidget {
         children: [
           Icon(Icons.offline_pin_rounded, color: Colors.white, size: 20),
           SizedBox(width: 6),
-          Text(
-            'Disponible sin conexión',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
+          // En pantallas angostas o con letra grande baja a otra línea.
+          Flexible(
+            child: Text(
+              'Disponible sin conexión',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

@@ -1,2 +1,6 @@
 # Los contenidos se sirven desde Firebase Storage
 backend/contenidos/modulos/*/*.pdf
+
+# Herramienta local para ver la base del emulador (no se sube)
+ver_base_datos.bat
+base_de_datos/

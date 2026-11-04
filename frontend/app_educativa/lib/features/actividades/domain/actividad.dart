@@ -9,9 +9,18 @@ library;
 /// fáciles de reconocer para niños que aún no leen bien.
 class ElementoVisual {
   final String emoji;
+
+  /// Lo que se ve en pantalla: corto, para niños que empiezan a leer.
   final String texto;
 
-  const ElementoVisual({required this.emoji, required this.texto});
+  /// Frase completa que dice la voz (opcional). Así el texto en pantalla
+  /// puede ser corto sin perder lo que dice la cartilla.
+  final String? lectura;
+
+  const ElementoVisual({required this.emoji, required this.texto, this.lectura});
+
+  /// Lo que dice la voz: la [lectura] si hay, o el [texto].
+  String get paraLeer => lectura ?? texto;
 
   factory ElementoVisual.fromJson(Object? json) {
     final mapa = _mapa(json, 'elemento');
@@ -19,6 +28,7 @@ class ElementoVisual {
     return ElementoVisual(
       emoji: _texto(mapa, 'emoji'),
       texto: _texto(mapa, 'texto'),
+      lectura: _textoOpcional(mapa, 'lectura'),
     );
   }
 }
@@ -61,7 +71,9 @@ enum TipoActividad {
   atrapa('atrapa'),
   completa('completa'),
   arma('arma'),
-  sopa('sopa');
+  sopa('sopa'),
+  bienOMal('bienomal'),
+  escucha('escucha');
 
   final String valor;
 
@@ -183,6 +195,20 @@ sealed class Actividad {
           objetivo: ElementoVisual.fromJson(mapa['objetivo']),
           elementos: _lista(mapa, 'elementos', ElementoAtrapa.fromJson),
         ),
+      TipoActividad.bienOMal => ActividadBienOMal(
+          id: id,
+          titulo: titulo,
+          instruccion: instruccion,
+          pista: pista,
+          situaciones: _lista(mapa, 'situaciones', Situacion.fromJson),
+        ),
+      TipoActividad.escucha => ActividadEscucha(
+          id: id,
+          titulo: titulo,
+          instruccion: instruccion,
+          pista: pista,
+          rondas: _lista(mapa, 'rondas', PreguntaElige.fromJson),
+        ),
     };
 
     if (actividad.totalAciertos == 0) {
@@ -213,6 +239,7 @@ class ActividadElige extends Actividad {
 }
 
 class PreguntaElige {
+  /// Lo que se ve en pantalla: corto, para niños que empiezan a leer.
   final String enunciado;
   final List<ElementoVisual> opciones;
 
@@ -222,14 +249,21 @@ class PreguntaElige {
   /// Pista de esta pregunta (opcional).
   final Pista? pista;
 
+  /// Pregunta completa que dice la voz (opcional).
+  final String? lectura;
+
   const PreguntaElige({
     required this.enunciado,
     required this.opciones,
     required this.correcta,
     this.pista,
+    this.lectura,
   });
 
   ElementoVisual get respuesta => opciones[correcta];
+
+  /// Lo que dice la voz: la [lectura] si hay, o el [enunciado].
+  String get paraLeer => lectura ?? enunciado;
 
   factory PreguntaElige.fromJson(Object? json) {
     final mapa = _mapa(json, 'pregunta');
@@ -248,8 +282,77 @@ class PreguntaElige {
       opciones: opciones,
       correcta: correcta,
       pista: Pista.desdeJson(mapa['pista']),
+      lectura: _textoOpcional(mapa, 'lectura'),
     );
   }
+}
+
+/// ¿Está bien o está mal? Aparece una situación con su dibujo, la voz la
+/// dice y el niño toca 😄 o 😢. No hay nada que leer.
+class ActividadBienOMal extends Actividad {
+  final List<Situacion> situaciones;
+
+  const ActividadBienOMal({
+    required super.id,
+    required super.titulo,
+    required super.instruccion,
+    super.pista,
+    required this.situaciones,
+  });
+
+  @override
+  TipoActividad get tipo => TipoActividad.bienOMal;
+
+  @override
+  int get totalAciertos => situaciones.length;
+}
+
+class Situacion {
+  final ElementoVisual elemento;
+  final bool estaBien;
+
+  /// Pista de esta situación (opcional).
+  final Pista? pista;
+
+  const Situacion({required this.elemento, required this.estaBien, this.pista});
+
+  factory Situacion.fromJson(Object? json) {
+    final mapa = _mapa(json, 'situación');
+    final estaBien = mapa['bien'];
+
+    if (estaBien is! bool) {
+      throw const FormatException(
+        'Cada situación necesita "bien": true o false.',
+      );
+    }
+
+    return Situacion(
+      elemento: ElementoVisual.fromJson(mapa),
+      estaBien: estaBien,
+      pista: Pista.desdeJson(mapa['pista']),
+    );
+  }
+}
+
+/// Escucha y toca: la voz dice qué buscar ("Toca el árbol") y el niño toca
+/// el dibujo. Cada ronda es como una pregunta de [ActividadElige], pero la
+/// consigna se escucha y las opciones son dibujos grandes.
+class ActividadEscucha extends Actividad {
+  final List<PreguntaElige> rondas;
+
+  const ActividadEscucha({
+    required super.id,
+    required super.titulo,
+    required super.instruccion,
+    super.pista,
+    required this.rondas,
+  });
+
+  @override
+  TipoActividad get tipo => TipoActividad.escucha;
+
+  @override
+  int get totalAciertos => rondas.length;
 }
 
 /// Unir cada elemento de la izquierda con su pareja de la derecha.
@@ -821,6 +924,11 @@ String _texto(Map<String, Object?> mapa, String clave) {
   }
 
   return valor;
+}
+
+/// Texto que puede no venir; si viene, no puede estar vacío.
+String? _textoOpcional(Map<String, Object?> mapa, String clave) {
+  return mapa[clave] == null ? null : _texto(mapa, clave);
 }
 
 List<T> _lista<T>(

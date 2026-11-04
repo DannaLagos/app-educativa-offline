@@ -12,7 +12,7 @@ class AppDatabase {
 
   static final AppDatabase instance = AppDatabase._();
 
-  static const int versionEsquema = 6;
+  static const int versionEsquema = 8;
   static const String _nombreArchivo = 'app_educativa.db';
 
   final String? _ruta;
@@ -41,6 +41,8 @@ class AppDatabase {
     await _agregarVersionDescargada(baseDatos);
     await _crearTablasProgreso(baseDatos);
     await _crearTablaEstadoSincronizacion(baseDatos);
+    await _agregarMascotaAlPerfil(baseDatos);
+    await _agregarNombreMascota(baseDatos);
   }
 
   Future<void> _migrarEsquema(
@@ -67,6 +69,30 @@ class AppDatabase {
     if (versionAnterior < 6) {
       await _crearTablaEstadoSincronizacion(baseDatos);
     }
+
+    if (versionAnterior < 7) {
+      await _agregarMascotaAlPerfil(baseDatos);
+    }
+
+    if (versionAnterior < 8) {
+      await _agregarNombreMascota(baseDatos);
+    }
+  }
+
+  // Las mascotas elegidas antes quedan sin nombre (NULL): se llaman como su
+  // especie.
+  Future<void> _agregarNombreMascota(Database baseDatos) async {
+    await baseDatos.execute(
+      'ALTER TABLE perfil_estudiante ADD COLUMN nombre_mascota TEXT',
+    );
+  }
+
+  // Los perfiles creados antes de esta migración quedan sin mascota (NULL) y
+  // la eligen desde el inicio.
+  Future<void> _agregarMascotaAlPerfil(Database baseDatos) async {
+    await baseDatos.execute(
+      'ALTER TABLE perfil_estudiante ADD COLUMN mascota TEXT',
+    );
   }
 
   /// HU11: cuándo se sincronizó por última vez el progreso de cada perfil.

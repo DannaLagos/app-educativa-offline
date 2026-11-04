@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/dibujo.dart';
 import '../../domain/actividad.dart';
+import '../widgets/efectos.dart';
 import '../widgets/tarjeta_elemento.dart';
 import 'juego_base.dart';
 
@@ -17,6 +19,7 @@ class JuegoOrdena extends JuegoBase {
     required super.onCompletado,
     required super.random,
     required super.pausa,
+    super.lecturaAsistida,
   });
 
   @override
@@ -39,7 +42,7 @@ class _JuegoOrdenaState extends State<JuegoOrdena>
       return;
     }
 
-    voz.hablar(_pasos[indice].texto);
+    voz.hablar(_pasos[indice].paraLeer);
     final esElSiguiente = indice == _colocados;
 
     setState(() {
@@ -78,7 +81,11 @@ class _JuegoOrdenaState extends State<JuegoOrdena>
           Text(
             _colocados == 0 ? '¿Qué va primero?' : '¿Qué sigue?',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.morado,
+            ),
           ),
           const SizedBox(height: 12),
           for (final indice in pendientes) ...[
@@ -88,6 +95,14 @@ class _JuegoOrdenaState extends State<JuegoOrdena>
               estado: _fallido == indice
                   ? EstadoTarjeta.incorrecta
                   : EstadoTarjeta.normal,
+              // El color no delata el orden: depende de dónde quedó la
+              // tarjeta al mezclar.
+              color: colorJuego(_mezclados.indexOf(indice) + 2),
+              // En lectura asistida se puede escuchar cada paso antes de
+              // elegirlo, sin que cuente como intento.
+              onEscuchar: widget.lecturaAsistida
+                  ? () => voz.hablar(_pasos[indice].paraLeer)
+                  : null,
               onTap: () => _tocar(indice),
             ),
             const SizedBox(height: 10),
@@ -98,7 +113,11 @@ class _JuegoOrdenaState extends State<JuegoOrdena>
   }
 }
 
+/// Casilla numerada del camino. Cada número tiene su color; vacía muestra
+/// un "?" y, llena, el paso aparece con un saltito.
 class _Lugar extends StatelessWidget {
+  static const double _tamanoNumero = 46;
+
   final int numero;
   final ElementoVisual? elemento;
 
@@ -107,47 +126,71 @@ class _Lugar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final contenido = elemento;
+    final color = colorJuego(numero - 1);
 
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: contenido == null ? AppTheme.grisSuave : AppTheme.verdeSuave,
+        color: contenido == null ? AppTheme.superficie : suave(color),
         borderRadius: BorderRadius.circular(AppTheme.radio),
         border: Border.all(
-          color: contenido == null ? AppTheme.borde : AppTheme.verde,
-          width: 2,
+          color: contenido == null ? AppTheme.borde : color,
+          width: 3,
         ),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor:
-                contenido == null ? AppTheme.textoSecundario : AppTheme.verde,
-            foregroundColor: Colors.white,
+          Container(
+            width: _tamanoNumero,
+            height: _tamanoNumero,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: relieve(color), offset: const Offset(0, 3)),
+              ],
+            ),
             child: Text(
               '$numero',
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 24,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 12),
-          if (contenido != null) ...[
-            Text(contenido.emoji, style: const TextStyle(fontSize: 30)),
-            const SizedBox(width: 10),
+          if (contenido != null)
             Expanded(
-              child: Text(
-                contenido.texto,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+              child: Aparecer(
+                child: Row(
+                  children: [
+                    Dibujo(contenido.emoji, tamano: 36),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        contenido.texto,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppTheme.verde,
+                      size: 30,
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ] else
+            )
+          else
             const Text(
               '?',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 28,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textoSecundario,
               ),

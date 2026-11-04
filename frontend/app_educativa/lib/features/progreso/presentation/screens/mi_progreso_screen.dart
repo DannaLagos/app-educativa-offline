@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/dibujo.dart';
+import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../../actividades/data/actividades_local_datasource.dart';
 import '../../../actividades/domain/actividad.dart';
 import '../../../modulos/domain/modulo.dart';
 import '../../../modulos/presentation/controllers/modulos_scope.dart';
 import '../../../modulos/presentation/widgets/icono_area.dart';
+import '../../../modulos/presentation/widgets/encabezado_mundo.dart';
 import '../../../sincronizacion/presentation/widgets/barra_conexion.dart';
 import '../../domain/progreso_modulo.dart';
 import '../../domain/resumen_modulo.dart';
@@ -134,49 +137,54 @@ class _MiProgresoScreenState extends State<MiProgresoScreen> {
     final sinEmpezar = resumenes.where((r) => !r.estaIniciado).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi progreso')),
-      body: SafeArea(
-        child: _estaCargando
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  _Totales(resumenes: iniciados),
-                  const SizedBox(height: 12),
-                  const _AvisoSinInternet(),
-                  const SizedBox(height: 12),
-                  // HU10: si el progreso ya se envió o está pendiente.
-                  const TarjetaSincronizacion(),
-                  const SizedBox(height: 24),
-                  const _Titulo('Módulos que empezaste'),
-                  const SizedBox(height: 10),
-                  if (iniciados.isEmpty)
-                    const Text(
-                      'Todavía no has empezado ningún módulo. ¡Elige uno y '
-                      'empieza a jugar!',
-                      style: TextStyle(fontSize: 18),
+      body: FondoDivertido(
+        child: SafeArea(
+          child: _estaCargando
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  children: [
+                    EncabezadoMundo(
+                      area: '',
+                      titulo: 'Mi progreso',
+                      subtitulo: '¡Mira todo lo que has aprendido!',
+                      color: AppTheme.morado,
+                      emoji: '🏆',
+                      accion: _Totales(resumenes: iniciados),
                     ),
-                  for (final resumen in iniciados) ...[
-                    _TarjetaModulo(
-                      resumen: resumen,
-                      onTap: () => _abrirDetalle(resumen),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  if (sinEmpezar.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    const _Titulo('Sin empezar'),
+                    const SizedBox(height: 24),
+                    const _Titulo('Módulos que empezaste'),
                     const SizedBox(height: 10),
-                    for (final resumen in sinEmpezar) ...[
+                    if (iniciados.isEmpty)
+                      const Text(
+                        'Todavía no has empezado ningún módulo. ¡Elige uno y '
+                        'empieza a jugar!',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    for (final resumen in iniciados) ...[
                       _TarjetaModulo(
                         resumen: resumen,
                         onTap: () => _abrirDetalle(resumen),
                       ),
                       const SizedBox(height: 12),
                     ],
+                    if (sinEmpezar.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      const _Titulo('Sin empezar'),
+                      const SizedBox(height: 10),
+                      for (final resumen in sinEmpezar) ...[
+                        _TarjetaModulo(
+                          resumen: resumen,
+                          onTap: () => _abrirDetalle(resumen),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ],
+                    const SizedBox(height: 24),
+                    const _PieGuardado(),
                   ],
-                ],
-              ),
+                ),
+        ),
       ),
     );
   }
@@ -189,11 +197,27 @@ class _Titulo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Text(
-        texto,
-        style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+    // Pastilla blanca: se lee bien sobre el paisaje.
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Semantics(
+        header: true,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppTheme.superficie,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.borde, width: 2),
+          ),
+          child: Text(
+            texto,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.morado,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -209,22 +233,73 @@ class _Totales extends StatelessWidget {
     final juegos = resumenes.fold(0, (t, r) => t + r.juegosTerminados);
     final estrellas = resumenes.fold(0, (t, r) => t + r.estrellas);
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppTheme.azul,
-        borderRadius: BorderRadius.circular(AppTheme.radio),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _Dato(valor: '$juegos', etiqueta: 'juegos terminados'),
+    return Row(
+      children: [
+        Expanded(
+          child: _Dato(
+            emoji: '🎮',
+            valor: '$juegos',
+            etiqueta: 'juegos terminados',
           ),
-          Expanded(child: _Dato(valor: '⭐ $estrellas', etiqueta: 'estrellas')),
-          Expanded(
-            child: _Dato(
-              valor: '${resumenes.length}',
-              etiqueta: resumenes.length == 1 ? 'módulo' : 'módulos',
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _Dato(
+            emoji: '⭐',
+            valor: '$estrellas',
+            etiqueta: 'estrellas',
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _Dato(
+            emoji: '📚',
+            valor: '${resumenes.length}',
+            etiqueta: resumenes.length == 1 ? 'módulo' : 'módulos',
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Dato extends StatelessWidget {
+  final String emoji;
+  final String valor;
+  final String etiqueta;
+
+  const _Dato({
+    required this.emoji,
+    required this.valor,
+    required this.etiqueta,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+      decoration: BoxDecoration(
+        color: const Color(0x26FFFFFF),
+        borderRadius: BorderRadius.circular(AppTheme.radioBoton),
+      ),
+      child: Column(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 28)),
+          Text(
+            valor,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            etiqueta,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
           ),
         ],
@@ -233,51 +308,47 @@ class _Totales extends StatelessWidget {
   }
 }
 
-class _Dato extends StatelessWidget {
-  final String valor;
-  final String etiqueta;
-
-  const _Dato({required this.valor, required this.etiqueta});
+/// Pie discreto: dónde está guardado el progreso y si ya se envió (HU10).
+class _PieGuardado extends StatelessWidget {
+  const _PieGuardado();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          valor,
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 36,
+                child: Icon(
+                  Icons.phone_android_rounded,
+                  color: AppTheme.textoSecundario,
+                  size: 22,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Guardado en este teléfono. Puedes verlo sin internet.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppTheme.textoSecundario,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        Text(
-          etiqueta,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 14, color: Colors.white),
-        ),
-      ],
-    );
-  }
-}
-
-class _AvisoSinInternet extends StatelessWidget {
-  const _AvisoSinInternet();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Icon(Icons.phone_android_rounded, color: AppTheme.verde),
-        SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            'Tu progreso está guardado en este teléfono. Puedes verlo sin '
-            'internet.',
-            style: TextStyle(fontSize: 16, color: AppTheme.verde),
-          ),
-        ),
-      ],
+          SizedBox(height: 10),
+          TarjetaSincronizacion(),
+        ],
+      ),
     );
   }
 }
@@ -295,71 +366,99 @@ class _TarjetaModulo extends StatelessWidget {
     final avance = resumen.avanceJuegos;
     final lectura = resumen.lectura;
 
-    return Card(
-      child: InkWell(
-        key: ValueKey('resumen-${modulo.id}'),
-        borderRadius: BorderRadius.circular(AppTheme.radio),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconoArea(area: modulo.area, tamano: 44),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      modulo.nombre,
-                      style: const TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
+    final apariencia = AparienciaArea.de(modulo.area);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 5),
+      decoration: BoxDecoration(
+        color: AppTheme.superficie,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Color.lerp(apariencia.color, Colors.white, 0.6)!,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color.lerp(apariencia.color, Colors.white, 0.45)!,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          key: ValueKey('resumen-${modulo.id}'),
+          borderRadius: BorderRadius.circular(24),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: apariencia.color,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Dibujo(apariencia.emoji, tamano: 36),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        modulo.nombre,
+                        style: const TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                  if (resumen.estaTerminado)
-                    const Text('🏆', style: TextStyle(fontSize: 26)),
-                  const Icon(Icons.chevron_right_rounded),
-                ],
-              ),
-              const SizedBox(height: 10),
-              if (!resumen.estaIniciado)
-                const Text(
-                  'Sin empezar',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textoSecundario,
-                  ),
-                )
-              else ...[
-                Text(
-                  total == null
-                      ? '🎮 ${resumen.juegosTerminados} juegos terminados'
-                      : '🎮 ${resumen.juegosTerminados} de $total juegos · '
-                          '⭐ ${resumen.estrellas}',
-                  style: const TextStyle(fontSize: 17),
+                    if (resumen.estaTerminado) const Dibujo('🏆', tamano: 36),
+                    const Icon(Icons.chevron_right_rounded),
+                  ],
                 ),
-                if (avance != null) ...[
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      minHeight: 10,
-                      value: avance,
-                      color: AppTheme.verdeVivo,
+                const SizedBox(height: 10),
+                if (!resumen.estaIniciado)
+                  const Text(
+                    'Sin empezar',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textoSecundario,
                     ),
-                  ),
-                ],
-                if (lectura != null) ...[
-                  const SizedBox(height: 6),
+                  )
+                else ...[
                   Text(
-                    '📖 Página ${lectura.ultimaPagina} de ${lectura.totalPaginas}',
-                    style: const TextStyle(fontSize: 16),
+                    total == null
+                        ? '🎮 ${resumen.juegosTerminados} juegos terminados'
+                        : '🎮 ${resumen.juegosTerminados} de $total juegos · '
+                            '⭐ ${resumen.estrellas}',
+                    style: const TextStyle(fontSize: 17),
                   ),
+                  if (avance != null) ...[
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        minHeight: 14,
+                        value: avance,
+                        color: AparienciaArea.de(modulo.area).color,
+                      ),
+                    ),
+                  ],
+                  if (lectura != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '📖 Página ${lectura.ultimaPagina} de ${lectura.totalPaginas}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
                 ],
               ],
-            ],
+            ),
           ),
         ),
       ),
