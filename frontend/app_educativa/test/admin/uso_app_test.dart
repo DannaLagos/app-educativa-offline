@@ -128,6 +128,8 @@ void main() {
       expect(find.text('Ciencias Sociales'), findsOneWidget);
       expect(find.text('Luis'), findsOneWidget);
       expect(find.text('Ana'), findsOneWidget);
+      expect(find.text('ID: luis'), findsOneWidget);
+      expect(find.text('ID: ana'), findsOneWidget);
     });
 
     testWidgets('criterio 3: lo nuevo aparece al actualizar tras sincronizar', (

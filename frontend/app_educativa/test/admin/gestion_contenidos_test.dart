@@ -133,34 +133,13 @@ void main() {
     expect(find.text('Sociales 1'), findsOneWidget);
   });
 
-  testWidgets('criterio 2: registra un módulo nuevo, deshabilitado', (
+  testWidgets('no muestra el botón para registrar un módulo nuevo', (
     tester,
   ) async {
     await abrir(tester);
 
-    await tester.tap(find.text('Nuevo módulo'));
-    await tester.pumpAndSettle();
-
-    Future<void> escribir(String campo, String texto) {
-      return tester.enterText(find.widgetWithText(TextFormField, campo), texto);
-    }
-
-    await escribir('Identificador', 'mt-grado-2');
-    await escribir('Nombre', 'Matemáticas');
-    await escribir('Área', 'Matemáticas');
-    await escribir('Grado', '2');
-    await escribir('Descripción', 'Números y figuras');
-    await escribir('Contenidos (uno por línea)', 'Sumas\n\nRestas');
-    await tester.ensureVisible(find.text('Guardar'));
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
-
-    final nuevo = catalogo.modulos['mt-grado-2']!;
-    expect(nuevo.grado, 2);
-    expect(nuevo.version, 1);
-    expect(nuevo.estaHabilitado, isFalse);
-    expect(nuevo.contenidos, ['Sumas', 'Restas']);
-    expect(find.text('Matemáticas'), findsOneWidget);
+    expect(find.text('Nuevo módulo'), findsNothing);
+    expect(find.byType(FloatingActionButton), findsNothing);
   });
 
   group('validaciones del formulario', () {

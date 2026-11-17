@@ -589,6 +589,59 @@ void main() {
 
       expect(find.textContaining('Abriste el nivel 2'), findsOneWidget);
     });
+
+    testWidgets('con contexto, primero explica el juego y luego se empieza',
+        (tester) async {
+      pantallaAlta(tester);
+      await tester.pumpWidget(
+        app(
+          JuegoScreen(
+            moduloId: 'cs-grado-1',
+            plan: plan,
+            actividad: elige,
+            random: Random(1),
+            pausa: Duration.zero,
+            mostrarContexto: true,
+          ),
+        ),
+      );
+
+      expect(find.byKey(const ValueKey('contexto-juego')), findsOneWidget);
+      expect(find.text('🎮 ¿Cómo se juega?'), findsOneWidget);
+      expect(find.text(elige.instruccion), findsNothing);
+
+      await tester.tap(find.text('¡Empezar!'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('contexto-juego')), findsNothing);
+      expect(find.text(elige.instruccion), findsOneWidget);
+    });
+
+    testWidgets('si se equivoca, al terminar recibe un consejo para mejorar',
+        (tester) async {
+      pantallaAlta(tester);
+      await tester.pumpWidget(
+        app(
+          JuegoScreen(
+            moduloId: 'cs-grado-1',
+            plan: plan,
+            actividad: elige,
+            random: Random(1),
+            pausa: Duration.zero,
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Oreja'));
+      await tester.pump();
+      await tester.tap(find.text('Mano'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ojos'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('💡 Para mejorar'), findsOneWidget);
+      expect(find.textContaining('Tuviste 1 error.'), findsOneWidget);
+    });
   });
 
   group('Mapa de niveles', () {

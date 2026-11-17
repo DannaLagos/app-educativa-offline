@@ -298,6 +298,15 @@ class _TarjetaUsoEstudiante extends StatelessWidget {
               estudiante.nombre,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
+            const SizedBox(height: 2),
+            // Identificador único del perfil; se puede seleccionar y copiar.
+            SelectableText(
+              'ID: ${estudiante.perfilId}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.textoSecundario,
+              ),
+            ),
             const SizedBox(height: 6),
             Text(
               '${_plural(estudiante.modulosUsados, 'módulo', 'módulos')} · '

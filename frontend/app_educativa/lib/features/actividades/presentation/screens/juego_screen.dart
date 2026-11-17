@@ -30,6 +30,7 @@ import '../juegos/juego_parejas.dart';
 import '../juegos/juego_sopa.dart';
 import '../widgets/boton_pista.dart';
 import '../widgets/confeti.dart';
+import '../widgets/contexto_juego.dart';
 import '../widgets/efectos.dart';
 import '../widgets/tarjeta_elemento.dart';
 
@@ -49,6 +50,10 @@ class JuegoScreen extends StatefulWidget {
   /// grande (ver [JuegoBase.lecturaAsistida]).
   final bool lecturaAsistida;
 
+  /// Antes de empezar se muestra un breve contexto: el nivel, lo que se
+  /// aprende y cómo se juega. El niño toca "¡Empezar!" para jugar.
+  final bool mostrarContexto;
+
   const JuegoScreen({
     super.key,
     required this.moduloId,
@@ -57,6 +62,7 @@ class JuegoScreen extends StatefulWidget {
     this.random,
     this.pausa = pausaPorDefecto,
     this.lecturaAsistida = false,
+    this.mostrarContexto = false,
   });
 
   @override
@@ -95,6 +101,10 @@ class _JuegoScreenState extends State<JuegoScreen> {
     EtapaMascota nueva
   })? _evolucion;
 
+  /// Mientras es true se ve el contexto del juego en lugar del tablero.
+  late bool _enContexto = widget.mostrarContexto;
+  bool _contextoLeido = false;
+
   Actividad get _actividad => widget.actividad;
 
   LectorVoz get _voz => VozScope.de(context);
@@ -103,6 +113,23 @@ class _JuegoScreenState extends State<JuegoScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    if (_enContexto) {
+      if (!_contextoLeido) {
+        _contextoLeido = true;
+        _voz.hablar(
+          textoContexto(
+            nivelDeActividad(widget.plan, _actividad),
+            _actividad,
+          ),
+        );
+      }
+      return;
+    }
+
+    _leerInstruccion();
+  }
+
+  void _leerInstruccion() {
     // En "Elige", "¿Bien o mal?" y "Escucha" el propio juego lee cada
     // pregunta.
     if (_puntaje == null &&
@@ -112,6 +139,11 @@ class _JuegoScreenState extends State<JuegoScreen> {
         _actividad is! ActividadEscucha) {
       _voz.hablar(_actividad.instruccion);
     }
+  }
+
+  void _empezar() {
+    setState(() => _enContexto = false);
+    _leerInstruccion();
   }
 
   void _alResponder(bool esAcierto) {
@@ -317,7 +349,13 @@ class _JuegoScreenState extends State<JuegoScreen> {
       body: FondoDivertido(
         child: SafeArea(
           child: puntaje == null
-              ? _construirPartida()
+              ? (_enContexto
+                  ? ContextoJuego(
+                      nivel: nivelDeActividad(widget.plan, _actividad),
+                      actividad: _actividad,
+                      onEmpezar: _empezar,
+                    )
+                  : _construirPartida())
               : Stack(
                   children: [
                     Positioned.fill(
@@ -327,9 +365,11 @@ class _JuegoScreenState extends State<JuegoScreen> {
                         actividad: _actividad,
                         estrellas: estrellasPorPuntaje(puntaje),
                         mensaje: _mensajeFinal(estrellasPorPuntaje(puntaje)),
+                        errores: _errores,
                         random: widget.random,
                         pausa: widget.pausa,
                         lecturaAsistida: widget.lecturaAsistida,
+                        mostrarContexto: widget.mostrarContexto,
                       ),
                     ),
                     const Positioned.fill(child: Confeti()),
@@ -512,9 +552,11 @@ class _VistaResultado extends StatelessWidget {
   final Actividad actividad;
   final int estrellas;
   final String mensaje;
+  final int errores;
   final Random? random;
   final Duration pausa;
   final bool lecturaAsistida;
+  final bool mostrarContexto;
 
   const _VistaResultado({
     required this.moduloId,
@@ -522,9 +564,11 @@ class _VistaResultado extends StatelessWidget {
     required this.actividad,
     required this.estrellas,
     required this.mensaje,
+    required this.errores,
     required this.random,
     required this.pausa,
     required this.lecturaAsistida,
+    required this.mostrarContexto,
   });
 
   /// La siguiente actividad del camino y si empieza un nivel nuevo.
@@ -551,7 +595,13 @@ class _VistaResultado extends StatelessWidget {
     return null;
   }
 
-  void _jugar(BuildContext context, Actividad actividad) {
+  /// Un juego nuevo empieza con su contexto; al repetir el mismo ya no
+  /// hace falta.
+  void _jugar(
+    BuildContext context,
+    Actividad actividad, {
+    bool conContexto = false,
+  }) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => JuegoScreen(
@@ -561,6 +611,7 @@ class _VistaResultado extends StatelessWidget {
           random: random,
           pausa: pausa,
           lecturaAsistida: lecturaAsistida,
+          mostrarContexto: conContexto,
         ),
       ),
     );
@@ -601,6 +652,17 @@ class _VistaResultado extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
           ),
+          // Retroalimentación si le fue mal: cuántos errores, un consejo y
+          // la pista de la cartilla para repasar.
+          if (estrellas < 3 && errores > 0) ...[
+            const SizedBox(height: 16),
+            ConsejoParaMejorar(
+              actividad: actividad,
+              estrellas: estrellas,
+              errores: errores,
+              moduloId: moduloId,
+            ),
+          ],
           if (mascota != null && estrellas > 0) ...[
             const SizedBox(height: 12),
             Center(
@@ -666,7 +728,11 @@ class _VistaResultado extends StatelessWidget {
               texto: 'Siguiente juego',
               icono: Icons.arrow_forward_rounded,
               color: AppTheme.verde,
-              onPressed: () => _jugar(context, siguiente.$1),
+              onPressed: () => _jugar(
+                context,
+                siguiente.$1,
+                conContexto: mostrarContexto,
+              ),
             ),
             const SizedBox(height: 12),
           ],

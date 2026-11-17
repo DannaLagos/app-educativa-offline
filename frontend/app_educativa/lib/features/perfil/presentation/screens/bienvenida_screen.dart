@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/aviso_internet.dart';
 import '../../../../shared/widgets/boton_escuchar.dart';
 import '../../../../shared/widgets/fondo_divertido.dart';
 import '../../../../shared/widgets/logo_aprendo.dart';
@@ -51,6 +52,9 @@ class BienvenidaScreen extends StatelessWidget {
                   onPressed: () => _abrir(context, const CrearPerfilScreen()),
                 ),
               ),
+              const SizedBox(height: 16),
+              // Advertencia: los módulos se descargan con internet.
+              const AvisoInternet.paraDescargar(),
               const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () => _abrir(context, const LoginAdminScreen()),

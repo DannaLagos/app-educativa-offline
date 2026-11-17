@@ -67,6 +67,7 @@ class _MapaNivelesScreenState extends State<MapaNivelesScreen> {
           plan: plan,
           actividad: paso.actividad,
           lecturaAsistida: widget.modulo.necesitaLecturaAsistida,
+          mostrarContexto: true,
         ),
       ),
     );

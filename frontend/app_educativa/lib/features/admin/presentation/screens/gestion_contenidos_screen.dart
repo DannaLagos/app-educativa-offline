@@ -10,7 +10,8 @@ import '../../data/catalogo_admin.dart';
 import 'formulario_modulo_screen.dart';
 
 /// HU13: lista de los módulos registrados, con el interruptor para
-/// habilitarlos o deshabilitarlos y acceso al formulario.
+/// habilitarlos o deshabilitarlos y acceso al formulario de edición.
+/// Desde aquí no se registran módulos nuevos.
 class GestionContenidosScreen extends StatefulWidget {
   final CatalogoAdmin catalogo;
 
@@ -80,7 +81,7 @@ class _GestionContenidosScreenState extends State<GestionContenidosScreen> {
     }
   }
 
-  Future<void> _abrirFormulario([Modulo? modulo]) async {
+  Future<void> _abrirFormulario(Modulo modulo) async {
     final guardado = await Navigator.of(context).push<Modulo>(
       MaterialPageRoute(
         builder: (_) => FormularioModuloScreen(
@@ -93,11 +94,7 @@ class _GestionContenidosScreenState extends State<GestionContenidosScreen> {
 
     if (guardado == null || !mounted) return;
 
-    if (modulo == null) {
-      setState(() => _modulos = [...?_modulos, guardado]);
-    } else {
-      _reemplazar(guardado);
-    }
+    _reemplazar(guardado);
 
     _avisar(fueExitoso: true, mensaje: 'Se guardó "${guardado.nombre}".');
   }
@@ -129,13 +126,6 @@ class _GestionContenidosScreenState extends State<GestionContenidosScreen> {
           ),
         ],
       ),
-      floatingActionButton: _modulos == null
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _abrirFormulario,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Nuevo módulo'),
-            ),
       body: _construirCuerpo(),
     );
   }
@@ -171,7 +161,7 @@ class _GestionContenidosScreenState extends State<GestionContenidosScreen> {
     return RefreshIndicator(
       onRefresh: _cargar,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         itemCount: modulos.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, indice) {

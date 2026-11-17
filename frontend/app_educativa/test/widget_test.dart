@@ -39,6 +39,11 @@ void main() {
 
     await tester.ensureVisible(find.text('Comenzar aventura'));
     await tester.pumpAndSettle();
+    // Advertencia de que los módulos se descargan con internet.
+    expect(
+      find.text('Necesitas internet para descargar los módulos'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Comenzar aventura'));
     await tester.pumpAndSettle();
 

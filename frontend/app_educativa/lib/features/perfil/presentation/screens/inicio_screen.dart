@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/aviso_internet.dart';
 import '../../../../shared/widgets/boton_escuchar.dart';
 import '../../../../shared/widgets/boton_grande.dart';
 import '../../../../shared/widgets/fondo_divertido.dart';
@@ -90,6 +91,7 @@ class _InicioScreenState extends State<InicioScreen>
         ultimoId == null ? null : controller.buscarModulo(ultimoId);
     final mascota = _mascota;
     final nombre = widget.perfil.nombre;
+    final hayConexion = _hayConexion(controller, areas);
     final botonJugar = BotonJugar(
       detalle: ultimoModulo == null
           ? 'Elige un mundo'
@@ -113,10 +115,16 @@ class _InicioScreenState extends State<InicioScreen>
                   nombre: nombre,
                   mascota: mascota?.especie,
                   estrellas: progresos?.estrellasTotales ?? 0,
-                  hayConexion: _hayConexion(controller, areas),
+                  hayConexion: hayConexion,
                   onAbrirAdmin: () => _abrir(const LoginAdminScreen()),
                 ),
                 const SizedBox(height: 16),
+                // Sin internet se avisa que solo se pueden descargar módulos
+                // con conexión.
+                if (hayConexion == false) ...[
+                  const AvisoInternet.sinConexion(),
+                  const SizedBox(height: 16),
+                ],
                 if (mascota == null) ...[
                   _InvitacionMascota(onElegir: _elegirMascota),
                   const SizedBox(height: 16),
