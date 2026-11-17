@@ -79,19 +79,11 @@ Calidad esperada (requerimientos no funcionales principales):
 
 | Capa | Tecnología |
 |---|---|
-| App móvil | _[completar]_ |
-| Almacenamiento local | _[completar]_ |
-| Backend / API | _[completar]_ |
-| Base de datos | _[completar]_ |
+| App móvil |Flutter (Dart)|
+| Almacenamiento local |SQLite, mediante sqflite, para perfiles, catálogo y progreso; archivos descargados —como PDF— en el almacenamiento local del dispositivo. |
+| Backend / API |Firebase como backend gestionado: Firebase Authentication para sesiones y Cloud Firestore y Firebase Storage para datos y contenidos. Las descargas de archivos se hacen por HTTP con Dio.  |
+| Base de datos | Cloud Firestore en la nube y SQLite en el dispositivo. El progreso se guarda localmente primero y luego se sincroniza con Firestore. |
 
-## 🚀 Clonar repositorio
-
-
-
-```bash
-# 1. Clonar el repositorio
-git clone https://github.com/DannaLagos/app-educativa-offline.git
-cd app-educativa-offline
 
 
 ## 🧪 Pruebas previstas
