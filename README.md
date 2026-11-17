@@ -84,21 +84,15 @@ Calidad esperada (requerimientos no funcionales principales):
 | Backend / API | _[completar]_ |
 | Base de datos | _[completar]_ |
 
-## 🚀 Instalación y ejecución
+## 🚀 Clonar repositorio
 
-<!-- COMPLETAR con los pasos reales -->
+
 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/DannaLagos/app-educativa-offline.git
 cd app-educativa-offline
 
-# 2. Instalar dependencias
-# [completar]
-
-# 3. Ejecutar la aplicación
-# [completar]
-```
 
 ## 🧪 Pruebas previstas
 
@@ -123,4 +117,4 @@ El proyecto se organiza con **Scrum**. La planificación incluye 14 historias de
 
 ## 📄 Contenidos y licencia
 
-Los contenidos pedagógicos se basan en materiales del modelo Escuela Nueva del Ministerio de Educación Nacional de Colombia. Los derechos de los materiales originales pertenecen a sus titulares. _[Completar con la licencia del código, por ejemplo MIT.]_
+Los contenidos pedagógicos se basan en materiales del modelo Escuela Nueva del Ministerio de Educación Nacional de Colombia. Los derechos de los materiales originales pertenecen a sus titulares.
