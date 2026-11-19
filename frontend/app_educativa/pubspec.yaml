@@ -33,6 +33,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   mocktail: ^1.0.5
   sqflite_common_ffi: ^2.4.3
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -53,3 +54,20 @@ flutter:
           weight: 700
         - asset: assets/fonts/Nunito-ExtraBold.ttf
           weight: 800
+
+# Ícono de la app: se genera con `dart run flutter_launcher_icons`.
+flutter_launcher_icons:
+  image_path: "assets/icono/icono_app.png"
+  android: true
+  ios: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#FF8C4B"
+  adaptive_icon_foreground: "assets/icono/icono_app.png"
+  web:
+    generate: true
+    image_path: "assets/icono/icono_app.png"
+    background_color: "#FF8C4B"
+    theme_color: "#FF8C4B"
+  windows:
+    generate: true
+    image_path: "assets/icono/icono_app.png"
